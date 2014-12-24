@@ -93,7 +93,7 @@ Ks3Client初始化包含以下两种：
 - TransferEvent 上传下载操作时，返回的当前传输状态事件类
 
 >为方便开发者使用，SDK在REST API接口返回值基础上进行了封装，具体更多封装类详情请见
->[SDK-Javadoc:](http://www.ksyun.com/doc/4358412.html)
+>[SDK-Javadoc:](https://github.com/ks3sdk/ks3-android-sdk/tree/master/releases/doc)
 
 ###资源管理操作
 * [List Buckets](#list-buckets) 列出客户所有的Bucket信息
@@ -2336,4 +2336,4 @@ public void completeMultipartUpload(CompleteMultipartUploadRequest request, Comp
 ````
 
 ##其它
->完整示例，请见 [KS3-Android-SDK-Demo](http://www.ksyun.com/doc/4358412.html) 
+>完整示例，请见 [KS3-Android-SDK-Demo](https://github.com/ks3sdk/ks3-android-sdk/tree/master/Ks3SdkAndroid/demo) 
