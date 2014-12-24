@@ -20,7 +20,7 @@
 
 ```
 ###SDK配置
-SDK以jar包形式呈现。将library文件夹下*ks3-android-sdk-1.0.0.jar*，以及依赖库文件，放入工程libs文件下。
+SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.1.jar*，以及依赖库文件，放入工程libs文件下。
 
 ###运行环境
 支持Android 2.2及以上版本
@@ -456,7 +456,7 @@ public void getBucketACL(String bucketName ,GetBucketACLResponceHandler resultHa
 
 **回调参数：**
 
-* statesCode：Http请求返回的状态码，200表示请求成功，200表示请求成功，400表示客户端请求错误，403表示签名错误或本地日期时间错误，404表示获取一个不存在Bucket的ACL
+* statesCode：Http请求返回的状态码，200表示请求成功，400表示客户端请求错误，403表示签名错误或本地日期时间错误，404表示获取一个不存在Bucket的ACL
 * responceHeader:Http请求响应报头
 * responce：失败时返回的响应正文
 * Throwable：出错时抛出的异常，Bucket名字不符合需求，抛出IllegalArgumentException
@@ -492,7 +492,7 @@ public void getBucketACL(GetBucketACLRequest request ,GetBucketACLResponceHandle
 
 **回调参数：**
 
-* statesCode：Http请求返回的状态码，200表示请求成功，200表示请求成功，400表示客户端请求错误，403表示签名错误或本地日期时间错误，404表示获取一个不存在Bucket的ACL
+* statesCode：Http请求返回的状态码，200表示请求成功，400表示客户端请求错误，403表示签名错误或本地日期时间错误，404表示获取一个不存在Bucket的ACL
 * responceHeader:Http请求响应报头
 * responce：失败时返回的响应正文
 * Throwable：出错时抛出的异常，Bucket名字不符合需求，抛出IllegalArgumentException
