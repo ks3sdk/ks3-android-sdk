@@ -83,7 +83,7 @@ Ks3Client初始化包含以下两种：
 ```
 ##SDK介绍及使用
 ###核心类介绍
-- Ks3Client 封装接入Web Service的一系列操作，提供更加便利的接口以及回调。
+- Ks3Client 封装接入Web Service的一系列操作，提供更加便利的接口以及回调
 - Ks3ClientConfiguration 配置Ks3Client参数，包括代理设置，请求超时时长以及重试次数等
 - AuthUtils 包含授权算法的工具类
 - Uploader 上传操作控制类
@@ -109,6 +109,7 @@ Ks3Client初始化包含以下两种：
 * [Put Object ACL](#put-object-acl) 上传object的acl
 * [List Objects](#list-objects) 列举Bucket内的Object
 * [Put Object](#put-object) 上传Object数据
+* [Copy Object](#copy-object)复制Object数据
 * [Initiate Multipart Upload](#initiate-multipart-upload) 调用这个接口会初始化一个分块上传
 * [Upload Part](#upload-part) 上传分块
 * [List Parts](#list-parts) 罗列出已经上传的块
@@ -1457,6 +1458,185 @@ public void PutObject(PutObjectRequest request, PutObjectResponseHandler handler
 		);
 
 ```
+
+#####Copy Object：
+
+*复制Object*
+
+**方法名：** 
+
+public void copyObject(String destinationBucket, String destinationObject,String sourceBucket, String sourceKey,
+CopyObjectResponseHandler resultHandler) throws Ks3ClientException,Ks3ServiceException {}
+
+**参数说明：**
+
+* resultHandler：回调接口，包含onSuccess以及onFailure两个回调方法，运行在主线程
+* destinationBucket：需要复制到此Bucket之下
+* destinationObject：复制到指定Bucket之后的ObjectKey
+* sourceBucket:源BucketName
+* sourceKey:源ObjectKey
+
+**回调参数：**
+
+* statesCode：Http请求返回的状态码，200表示请求成功，400表示客户端请求错误，403表示签名错误或本地日期时间错误
+* responceHeader:Http请求响应报头
+* responce：失败时返回的响应正文
+* throwable：出错时抛出的异常
+* result:成功时返回的Copy结果信息实体类
+
+**代码示例：**
+````
+
+		client.copyObject("ks3-sdk-test", "object-source", "eflake", "object-copy", new CopyObjectResponseHandler() {
+			
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					CopyResult result) {
+				
+			}
+			
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable throwable) {
+				
+			}
+		});
+```
+
+*复制Object*
+
+**方法名：** 
+
+public void copyObject(String destinationBucket, String destinationObject,String sourceBucket, String sourceKey,
+CannedAccessControlList cannedAcl, CopyObjectResponseHandler resultHandler) throws Ks3ClientException,Ks3ServiceException {}
+
+**参数说明：**
+
+* resultHandler：回调接口，包含onSuccess以及onFailure两个回调方法，运行在主线程
+* destinationBucket：需要复制到此Bucket之下
+* destinationObject：复制到指定Bucket之后的ObjectKey
+* sourceBucket:源BucketName
+* sourceKey:源ObjectKey
+* cannedAcl:传入的acl参数
+
+**回调参数：**
+
+* statesCode：Http请求返回的状态码，200表示请求成功，400表示客户端请求错误，403表示签名错误或本地日期时间错误
+* responceHeader:Http请求响应报头
+* responce：失败时返回的响应正文
+* throwable：出错时抛出的异常
+* result:成功时返回的Copy结果信息实体类
+
+**代码示例：**
+
+````
+
+		CannedAccessControlList cannedAcl = CannedAccessControlList.PublicRead;
+		client.copyObject("ks3-sdk-test", "object-source", "eflake", "object-copy",cannedAcl, new CopyObjectResponseHandler() {
+			
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					CopyResult result) {
+				
+			}
+			
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable throwable) {
+				
+			}
+		});
+````
+
+*复制Object*
+
+**方法名：** 
+
+public void copyObject(String destinationBucket, String destinationObject,String sourceBucket, String sourceKey,
+AccessControlList accessControlList, CopyObjectResponseHandler resultHandler) throws Ks3ClientException,Ks3ServiceException {}
+
+**参数说明：**
+
+* resultHandler：回调接口，包含onSuccess以及onFailure两个回调方法，运行在主线程
+* destinationBucket：需要复制到此Bucket之下
+* destinationObject：复制到指定Bucket之后的ObjectKey
+* sourceBucket:源BucketName
+* sourceKey:源ObjectKey
+* accessControlList:传入的acl参数
+
+**回调参数：**
+
+* statesCode：Http请求返回的状态码，200表示请求成功，400表示客户端请求错误，403表示签名错误或本地日期时间错误
+* responceHeader:Http请求响应报头
+* responce：失败时返回的响应正文
+* throwable：出错时抛出的异常
+* result:成功时返回的Copy结果信息实体类
+
+**代码示例：**
+
+````
+
+		AccessControlList acList = new AccessControlList();
+		GranteeId grantee = new GranteeId();
+		grantee.setIdentifier("123456");
+		grantee.setDisplayName("TESTTEST1");
+		acList.addGrant(grantee, Permission.Read);
+		client.copyObject("ks3-sdk-test", "object-source", "eflake", "object-copy",acList, new CopyObjectResponseHandler() {
+			
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					CopyResult result) {
+				
+			}
+			
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable throwable) {
+				
+			}
+		});
+````
+
+*复制Object*
+
+**方法名：** 
+
+public void copyObject(CopyObjectRequest request,CopyObjectResponseHandler resultHandler) throws Ks3ClientException,Ks3ServiceException {}
+
+**参数说明：**
+
+* resultHandler：回调接口，包含onSuccess以及onFailure两个回调方法，运行在主线程
+* requset:request请求对象
+
+**回调参数：**
+
+* statesCode：Http请求返回的状态码，200表示请求成功，400表示客户端请求错误，403表示签名错误或本地日期时间错误
+* responceHeader:Http请求响应报头
+* responce：失败时返回的响应正文
+* throwable：出错时抛出的异常
+* result:成功时返回的Copy结果信息实体类
+
+**代码示例：**
+
+````
+		
+		CopyObjectRequest request = new CopyObjectRequest(destinationBucket,
+				destinationObject, sourceBucket, sourceKey);
+		client.copyObject(request, new CopyObjectResponseHandler() {
+			
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					CopyResult result) {
+				
+			}
+			
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable throwable) {
+				
+			}
+		});
+````
 
 ####Initiate Multipart Upload：
  
