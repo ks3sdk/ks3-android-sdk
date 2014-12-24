@@ -13,8 +13,8 @@ public class Constants {
 	protected static final String UPLOAD_ID = "YOUR_UPLOAD_ID";
 	public static final String APP_SERTVER_HOST = "YOUR_APP_SERVER_HOST";
 	// 测试用AK&SK
-	 public static final String ACCESS_KEY__ID = "IYh4GQWndtkH8iAIN2gX";
+	 public static final String ACCESS_KEY__ID = "GENJ6O5PQFVE37MEEMZA";
 	 public static final String ACCESS_KEY_SECRET
-	 ="8UUcQTS5WFJKktbu1P9MdtFqp6SiYy2rC43l2ZYg";
+	 ="9Z6VbeYUJ0BiKcuwYe5x/j76TZvYe9VRh2OdH15m";
 	public static final long MULTI_UPLOAD_THREADHOLD = 16 * 1024 * 1024;
 }
