@@ -92,11 +92,6 @@ Ks3Client初始化包含以下两种：
 - Ks3Client 封装接入Web Service的一系列操作，提供更加便利的接口以及回调
 - Ks3ClientConfiguration 配置Ks3Client参数，包括代理设置，请求超时时长以及重试次数等
 - AuthUtils 包含授权算法的工具类
-- Uploader 上传操作控制类
-- Downloader 下载操作控制类
-- TransferManager 传输操作管理类，包含传输操作核心逻辑
-- TransferManagerConfiguration 配置TransferManager参数，包括MultiUpload最小要求大小以及每块的Size等
-- TransferEvent 上传下载操作时，返回的当前传输状态事件类
 
 >为方便开发者使用，SDK在REST API接口返回值基础上进行了封装，具体更多封装类详情请见
 >[SDK-Javadoc:](https://github.com/ks3sdk/ks3-android-sdk/tree/master/releases/doc)
