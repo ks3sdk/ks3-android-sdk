@@ -26,12 +26,18 @@ SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.1.jar*，
 支持Android 2.2及以上版本
 
 ###补充说明
-**线程安全:** 考虑到Android 4.0之后不再允许主线程内进行网络请求，以及UI操作必须在主线程中进行。ks3-android-sdk所提供的API，默认让开发者在主线程进行调用，且会以异步方式进行请求，请求回调方法仍将执行在主线程。如果开发者需要用非异步方式进行调用（即在自己开的线程内,调用同步API请求），请在初始化Ks3Client时，调用以下方法，以确保API以非异步方式进行。
+**线程安全:** 考虑到Android 4.0之后不再允许主线程内进行网络请求，以及UI操作必须在主线程中进行。ks3-android-sdk所提供的API，默认让开发者在主线程进行调用，且会以异步方式进行请求，请求回调方法仍将执行在主线程。
+
+如果开发者需要用同步方式进行API调用（即在自己开的线程内,调用同步API请求），需要调用以下方法，以确保API以同步方式进行。
 
 ~~~
 	
-	client.setIsUseAsyncMode(false);
+	client.setIsUseAsyncMode(false);// 设置同步模式开启
+	
+	ArrayList<Bucket> bucketList = client.syncListBuckets();// 同步API调用示例，需要在用户非主线程中执行，失败时会抛出异常
 ~~~
+
+>同步API接口文档，请见 [SDK-Javadoc:](https://github.com/ks3sdk/ks3-android-sdk/tree/master/releases/doc) 
 
 ##安全性
 ###使用场景

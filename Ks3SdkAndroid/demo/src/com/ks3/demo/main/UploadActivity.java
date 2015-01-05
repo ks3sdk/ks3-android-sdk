@@ -565,7 +565,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 	}
 
 	private void listParts(final ListPartsRequest request, final UploadFile item) {
-		client.ListParts(request, new ListPartsResponseHandler() {
+		client.listParts(request, new ListPartsResponseHandler() {
 
 			@Override
 			public void onSuccess(int statesCode, Header[] responceHeaders,

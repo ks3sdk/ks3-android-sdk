@@ -167,11 +167,11 @@ public abstract interface Ks3 {
 			GetObjectResponceHandler getObjectResponceHandler)
 			throws Ks3ClientException, Ks3ServiceException;
 
-	public void PutObject(String bucketname, String objectkey, File file,
+	public void putObject(String bucketname, String objectkey, File file,
 			PutObjectResponseHandler handler) throws Ks3ClientException,
 			Ks3ServiceException;
 
-	public void PutObject(String bucketname, String objectkey,
+	public void putObject(String bucketname, String objectkey,
 			InputStream inputstream, ObjectMetadata objectmeta,
 			PutObjectResponseHandler handler) throws Ks3ClientException,
 			Ks3ServiceException;
@@ -246,19 +246,19 @@ public abstract interface Ks3 {
 			AbortMultipartUploadResponseHandler handler)
 			throws Ks3ClientException, Ks3ServiceException;
 
-	public void ListParts(String bucketname, String objectkey, String uploadId,
+	public void listParts(String bucketname, String objectkey, String uploadId,
 			ListPartsResponseHandler handler) throws Ks3ClientException,
 			Ks3ServiceException;
 
-	public void ListParts(String bucketname, String objectkey, String uploadId,
+	public void listParts(String bucketname, String objectkey, String uploadId,
 			int maxParts, ListPartsResponseHandler handler)
 			throws Ks3ClientException, Ks3ServiceException;
 
-	public void ListParts(String bucketname, String objectkey, String uploadId,
+	public void listParts(String bucketname, String objectkey, String uploadId,
 			int maxParts, int partNumberMarker, ListPartsResponseHandler handler)
 			throws Ks3ClientException, Ks3ServiceException;
 
-	public void ListParts(ListPartsRequest request,
+	public void listParts(ListPartsRequest request,
 			ListPartsResponseHandler handler) throws Ks3ClientException,
 			Ks3ServiceException;
 

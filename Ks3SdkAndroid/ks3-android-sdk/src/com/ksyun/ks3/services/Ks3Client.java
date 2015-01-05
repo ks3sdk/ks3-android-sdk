@@ -2,20 +2,30 @@ package com.ksyun.ks3.services;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.http.Header;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.exception.Ks3ServiceException;
+import com.ksyun.ks3.model.Bucket;
+import com.ksyun.ks3.model.ObjectListing;
 import com.ksyun.ks3.model.ObjectMetadata;
 import com.ksyun.ks3.model.PartETag;
 import com.ksyun.ks3.model.acl.AccessControlList;
+import com.ksyun.ks3.model.acl.AccessControlPolicy;
 import com.ksyun.ks3.model.acl.Authorization;
 import com.ksyun.ks3.model.acl.CannedAccessControlList;
+import com.ksyun.ks3.model.result.CompleteMultipartUploadResult;
 import com.ksyun.ks3.model.result.CopyResult;
+import com.ksyun.ks3.model.result.GetObjectResult;
+import com.ksyun.ks3.model.result.HeadObjectResult;
+import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
 import com.ksyun.ks3.model.result.ListPartsResult;
 import com.ksyun.ks3.services.handler.AbortMultipartUploadResponseHandler;
 import com.ksyun.ks3.services.handler.CompleteMultipartUploadResponseHandler;
@@ -343,7 +353,7 @@ public class Ks3Client implements Ks3 {
 	}
 
 	@Override
-	public void PutObject(String bucketname, String objectkey, File file,
+	public void putObject(String bucketname, String objectkey, File file,
 			PutObjectResponseHandler handler) throws Ks3ClientException,
 			Ks3ServiceException {
 		this.putObject(new PutObjectRequest(bucketname, objectkey, file),
@@ -351,7 +361,7 @@ public class Ks3Client implements Ks3 {
 	}
 
 	@Override
-	public void PutObject(String bucketname, String objectkey,
+	public void putObject(String bucketname, String objectkey,
 			InputStream inputstream, ObjectMetadata objectmeta,
 			PutObjectResponseHandler handler) throws Ks3ClientException,
 			Ks3ServiceException {
@@ -381,7 +391,6 @@ public class Ks3Client implements Ks3 {
 		this.invoke(auth, request, resultHandler);
 	}
 
-	
 	@Override
 	public void copyObject(String destinationBucket, String destinationObject,
 			String sourceBucket, String sourceKey,
@@ -392,7 +401,7 @@ public class Ks3Client implements Ks3 {
 		this.copyObject(request, handler);
 
 	}
-	
+
 	@Override
 	public void copyObject(String destinationBucket, String destinationObject,
 			String sourceBucket, String sourceKey,
@@ -424,7 +433,7 @@ public class Ks3Client implements Ks3 {
 		this.invoke(auth, request, handler);
 
 	}
-	
+
 	/* MultiUpload */
 	@Override
 	public void initiateMultipartUpload(String bucketname, String objectkey,
@@ -497,31 +506,31 @@ public class Ks3Client implements Ks3 {
 	}
 
 	@Override
-	public void ListParts(String bucketname, String objectkey, String uploadId,
+	public void listParts(String bucketname, String objectkey, String uploadId,
 			ListPartsResponseHandler handler) throws Ks3ClientException,
 			Ks3ServiceException {
-		this.ListParts(new ListPartsRequest(bucketname, objectkey, uploadId),
+		this.listParts(new ListPartsRequest(bucketname, objectkey, uploadId),
 				handler);
 	}
 
 	@Override
-	public void ListParts(String bucketname, String objectkey, String uploadId,
+	public void listParts(String bucketname, String objectkey, String uploadId,
 			int maxParts, ListPartsResponseHandler handler)
 			throws Ks3ClientException, Ks3ServiceException {
-		this.ListParts(new ListPartsRequest(bucketname, objectkey, uploadId,
+		this.listParts(new ListPartsRequest(bucketname, objectkey, uploadId,
 				maxParts), handler);
 	}
 
 	@Override
-	public void ListParts(String bucketname, String objectkey, String uploadId,
+	public void listParts(String bucketname, String objectkey, String uploadId,
 			int maxParts, int partNumberMarker, ListPartsResponseHandler handler)
 			throws Ks3ClientException, Ks3ServiceException {
-		this.ListParts(new ListPartsRequest(bucketname, objectkey, uploadId,
+		this.listParts(new ListPartsRequest(bucketname, objectkey, uploadId,
 				maxParts, partNumberMarker), handler);
 	}
 
 	@Override
-	public void ListParts(ListPartsRequest request,
+	public void listParts(ListPartsRequest request,
 			ListPartsResponseHandler handler) throws Ks3ClientException,
 			Ks3ServiceException {
 		this.invoke(auth, request, handler);
@@ -557,4 +566,1179 @@ public class Ks3Client implements Ks3 {
 		this.isUseAsyncMode = isUseAsyncMode;
 	}
 
+	public ArrayList<Bucket> syncListBuckets() throws Throwable {
+		final ArrayList<Bucket> list = new ArrayList<Bucket>();
+
+		final Throwable error = new Throwable();
+		this.listBuckets(new ListBucketsResponceHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					ArrayList<Bucket> resultList) {
+				list.addAll(resultList);
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return list;
+	}
+
+	public AccessControlPolicy syncGetBucketACL(String bucketName)
+			throws Throwable {
+
+		final AccessControlPolicy policy = new AccessControlPolicy();
+		final Throwable error = new Throwable();
+		this.getBucketACL(bucketName, new GetBucketACLResponceHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					AccessControlPolicy accessControlPolicy) {
+				policy.setAccessControlList(accessControlPolicy
+						.getAccessControlList());
+				policy.setGrants(accessControlPolicy.getGrants());
+				policy.setOwner(accessControlPolicy.getOwner());
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return policy;
+	}
+
+	public AccessControlPolicy syncGetBucketACL(GetBucketACLRequest request)
+			throws Throwable {
+
+		final AccessControlPolicy policy = new AccessControlPolicy();
+		final Throwable error = new Throwable();
+		this.getBucketACL(request, new GetBucketACLResponceHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					AccessControlPolicy accessControlPolicy) {
+				policy.setAccessControlList(accessControlPolicy
+						.getAccessControlList());
+				policy.setGrants(accessControlPolicy.getGrants());
+				policy.setOwner(accessControlPolicy.getOwner());
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return policy;
+	}
+
+	public void syncPutBucketACL(String bucketName,
+			AccessControlList accessControlList) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.putBucketACL(bucketName, accessControlList,
+				new PutBucketACLResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders) {
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncPutBucketACL(String bucketName,
+			CannedAccessControlList accessControlList) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.putBucketACL(bucketName, accessControlList,
+				new PutBucketACLResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders) {
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncPutBucketACL(PutBucketACLRequest request) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.putBucketACL(request, new PutBucketACLResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders) {
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncPutObjectACL(String bucketName, String objectKey,
+			CannedAccessControlList accessControlList) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.putObjectACL(bucketName, objectKey, accessControlList,
+				new PutObjectACLResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders) {
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncPutObjectACL(String bucketName, String objectKey,
+			AccessControlList accessControlList) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.putObjectACL(bucketName, objectKey, accessControlList,
+				new PutObjectACLResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders) {
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncPutObjectACL(PutObjectACLRequest request,
+			AccessControlList accessControlList) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.putObjectACL(request, new PutObjectACLResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders) {
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public AccessControlPolicy syncGetObjectACL(String bucketName,
+			String ObjectKey) throws Throwable {
+
+		final AccessControlPolicy policy = new AccessControlPolicy();
+		final Throwable error = new Throwable();
+		this.getObjectACL(bucketName, ObjectKey,
+				new GetObjectACLResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders,
+							AccessControlPolicy accessControlPolicy) {
+						policy.setAccessControlList(accessControlPolicy
+								.getAccessControlList());
+						policy.setGrants(accessControlPolicy.getGrants());
+						policy.setOwner(accessControlPolicy.getOwner());
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return policy;
+	}
+
+	public AccessControlPolicy syncGetObjectACL(GetObjectACLRequest request)
+			throws Throwable {
+
+		final AccessControlPolicy policy = new AccessControlPolicy();
+		final Throwable error = new Throwable();
+		this.getObjectACL(request, new GetObjectACLResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					AccessControlPolicy accessControlPolicy) {
+				policy.setAccessControlList(accessControlPolicy
+						.getAccessControlList());
+				policy.setGrants(accessControlPolicy.getGrants());
+				policy.setOwner(accessControlPolicy.getOwner());
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return policy;
+	}
+
+	public void syncHeadBucket(String bucketName) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.headBucket(bucketName, new HeadBucketResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders) {
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncHeadBucket(HeadBucketRequest request) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.headBucket(request, new HeadBucketResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders) {
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncCreateBucket(String bucketName) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.createBucket(bucketName, new CreateBucketResponceHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders) {
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncCreateBucket(String bucketName,
+			CannedAccessControlList accessControlList) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.createBucket(bucketName, accessControlList,
+				new CreateBucketResponceHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders) {
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncCreateBucket(String bucketName,
+			AccessControlList accessControlList) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.createBucket(bucketName, accessControlList,
+				new CreateBucketResponceHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders) {
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncCreateBucket(CreateBucketRequest request) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.createBucket(request, new CreateBucketResponceHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders) {
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncDeleteBucket(String bucketName) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.deleteBucket(bucketName, new DeleteBucketResponceHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders) {
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncDeleteBucket(DeleteBucketRequest request) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.deleteBucket(request, new DeleteBucketResponceHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders) {
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public ObjectListing syncListObject(String bucketName) throws Throwable {
+
+		final ObjectListing listing = new ObjectListing();
+		final Throwable error = new Throwable();
+		this.listObjects(bucketName, new ListObjectsResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					ObjectListing objectListing) {
+				listing.setBucketName(objectListing.getBucketName());
+				listing.setCommonPrefixes(objectListing.getCommonPrefixes());
+				listing.setDelimiter(objectListing.getDelimiter());
+				listing.setMarker(objectListing.getMarker());
+				listing.setMaxKeys(objectListing.getMaxKeys());
+				listing.setNextMarker(objectListing.getNextMarker());
+				listing.setObjectSummaries(objectListing.getObjectSummaries());
+				listing.setPrefix(objectListing.getPrefix());
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return listing;
+	}
+
+	public ObjectListing syncListObject(String bucketName, String prefix)
+			throws Throwable {
+
+		final ObjectListing listing = new ObjectListing();
+		final Throwable error = new Throwable();
+		this.listObjects(bucketName, prefix, new ListObjectsResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					ObjectListing objectListing) {
+				listing.setBucketName(objectListing.getBucketName());
+				listing.setCommonPrefixes(objectListing.getCommonPrefixes());
+				listing.setDelimiter(objectListing.getDelimiter());
+				listing.setMarker(objectListing.getMarker());
+				listing.setMaxKeys(objectListing.getMaxKeys());
+				listing.setNextMarker(objectListing.getNextMarker());
+				listing.setObjectSummaries(objectListing.getObjectSummaries());
+				listing.setPrefix(objectListing.getPrefix());
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return listing;
+	}
+
+	public ObjectListing syncListObject(ListObjectsRequest request)
+			throws Throwable {
+
+		final ObjectListing listing = new ObjectListing();
+		final Throwable error = new Throwable();
+		this.listObjects(request, new ListObjectsResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					ObjectListing objectListing) {
+				listing.setBucketName(objectListing.getBucketName());
+				listing.setCommonPrefixes(objectListing.getCommonPrefixes());
+				listing.setDelimiter(objectListing.getDelimiter());
+				listing.setMarker(objectListing.getMarker());
+				listing.setMaxKeys(objectListing.getMaxKeys());
+				listing.setNextMarker(objectListing.getNextMarker());
+				listing.setObjectSummaries(objectListing.getObjectSummaries());
+				listing.setPrefix(objectListing.getPrefix());
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return listing;
+	}
+
+	public void syncDeleteObject(String bucketName, String objectKey)
+			throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.deleteObject(bucketName, objectKey,
+				new DeleteObjectRequestHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders) {
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncDeleteObject(DeleteObjectRequest request) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.deleteObject(request, new DeleteObjectRequestHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders) {
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public HeadObjectResult syncHeadObject(String bucketName, String objectKey)
+			throws Throwable {
+
+		final HeadObjectResult result = new HeadObjectResult();
+		final Throwable error = new Throwable();
+		this.headObject(bucketName, objectKey, new HeadObjectResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					HeadObjectResult headObjectResult) {
+				result.setETag(headObjectResult.getETag());
+				result.setLastmodified(headObjectResult.getLastmodified());
+				result.setObjectMetadata(headObjectResult.getObjectMetadata());
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return result;
+	}
+
+	public HeadObjectResult syncHeadObject(HeadObjectRequest request)
+			throws Throwable {
+
+		final HeadObjectResult result = new HeadObjectResult();
+		final Throwable error = new Throwable();
+		this.headObject(request, new HeadObjectResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					HeadObjectResult headObjectResult) {
+				result.setETag(headObjectResult.getETag());
+				result.setLastmodified(headObjectResult.getLastmodified());
+				result.setObjectMetadata(headObjectResult.getObjectMetadata());
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return result;
+	}
+
+	public CopyResult syncCopyObject(String destinationBucket,
+			String destinationObject, String sourceBucket, String sourceKey)
+			throws Throwable {
+
+		final CopyResult copyResult = new CopyResult();
+		final Throwable error = new Throwable();
+		this.copyObject(destinationBucket, destinationObject, sourceBucket,
+				sourceKey, new CopyObjectResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders, CopyResult result) {
+						copyResult.setETag(result.getETag());
+						copyResult.setLastModified(result.getLastModified());
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return copyResult;
+	}
+
+	public CopyResult syncCopyObject(String destinationBucket,
+			String destinationObject, String sourceBucket, String sourceKey,
+			CannedAccessControlList accessControlList) throws Throwable {
+
+		final CopyResult copyResult = new CopyResult();
+		final Throwable error = new Throwable();
+		this.copyObject(destinationBucket, destinationObject, sourceBucket,
+				sourceKey, accessControlList, new CopyObjectResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders, CopyResult result) {
+						copyResult.setETag(result.getETag());
+						copyResult.setLastModified(result.getLastModified());
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return copyResult;
+	}
+
+	public CopyResult syncCopyObject(String destinationBucket,
+			String destinationObject, String sourceBucket, String sourceKey,
+			AccessControlList accessControlList) throws Throwable {
+
+		final CopyResult copyResult = new CopyResult();
+		final Throwable error = new Throwable();
+		this.copyObject(destinationBucket, destinationObject, sourceBucket,
+				sourceKey, accessControlList, new CopyObjectResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders, CopyResult result) {
+						copyResult.setETag(result.getETag());
+						copyResult.setLastModified(result.getLastModified());
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return copyResult;
+	}
+
+	public CopyResult syncCopyObject(CopyObjectRequest request)
+			throws Throwable {
+
+		final CopyResult copyResult = new CopyResult();
+		final Throwable error = new Throwable();
+		this.copyObject(request, new CopyObjectResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					CopyResult result) {
+				copyResult.setETag(result.getETag());
+				copyResult.setLastModified(result.getLastModified());
+
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return copyResult;
+	}
+
+	public InitiateMultipartUploadResult syncInitiateMultipartUpload(
+			String bucketName, String objectKey) throws Throwable {
+		final InitiateMultipartUploadResult initResult = new InitiateMultipartUploadResult();
+		final Throwable error = new Throwable();
+		this.initiateMultipartUpload(bucketName, objectKey,
+				new InitiateMultipartUploadResponceHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders,
+							InitiateMultipartUploadResult result) {
+						initResult.setBucket(result.getBucket());
+						initResult.setKey(result.getKey());
+						initResult.setUploadId(result.getUploadId());
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return initResult;
+	}
+
+	public InitiateMultipartUploadResult syncInitiateMultipartUpload(
+			InitiateMultipartUploadRequest request) throws Throwable {
+
+		final InitiateMultipartUploadResult initResult = new InitiateMultipartUploadResult();
+		final Throwable error = new Throwable();
+		this.initiateMultipartUpload(request,
+				new InitiateMultipartUploadResponceHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders,
+							InitiateMultipartUploadResult result) {
+						initResult.setBucket(result.getBucket());
+						initResult.setKey(result.getKey());
+						initResult.setUploadId(result.getUploadId());
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return initResult;
+	}
+
+	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
+			String bucketName, String ObjectKey, String UploadId,
+			List<PartETag> partETags) throws Throwable {
+
+		final CompleteMultipartUploadResult completeMultipartUploadResult = new CompleteMultipartUploadResult();
+		final Throwable error = new Throwable();
+		this.completeMultipartUpload(bucketName, ObjectKey, UploadId,
+				partETags, new CompleteMultipartUploadResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders,
+							CompleteMultipartUploadResult result) {
+						completeMultipartUploadResult.setBucket(result
+								.getBucket());
+						completeMultipartUploadResult.setKey(result.getKey());
+						completeMultipartUploadResult.seteTag(result.geteTag());
+						completeMultipartUploadResult.setLocation(result
+								.getLocation());
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return completeMultipartUploadResult;
+	}
+
+	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
+			ListPartsResult result) throws Throwable {
+
+		final CompleteMultipartUploadResult completeMultipartUploadResult = new CompleteMultipartUploadResult();
+		final Throwable error = new Throwable();
+		this.completeMultipartUpload(result,
+				new CompleteMultipartUploadResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders,
+							CompleteMultipartUploadResult result) {
+						completeMultipartUploadResult.setBucket(result
+								.getBucket());
+						completeMultipartUploadResult.setKey(result.getKey());
+						completeMultipartUploadResult.seteTag(result.geteTag());
+						completeMultipartUploadResult.setLocation(result
+								.getLocation());
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return completeMultipartUploadResult;
+	}
+
+	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
+			CompleteMultipartUploadRequest request) throws Throwable {
+
+		final CompleteMultipartUploadResult completeMultipartUploadResult = new CompleteMultipartUploadResult();
+		final Throwable error = new Throwable();
+		this.completeMultipartUpload(request,
+				new CompleteMultipartUploadResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders,
+							CompleteMultipartUploadResult result) {
+						completeMultipartUploadResult.setBucket(result
+								.getBucket());
+						completeMultipartUploadResult.setKey(result.getKey());
+						completeMultipartUploadResult.seteTag(result.geteTag());
+						completeMultipartUploadResult.setLocation(result
+								.getLocation());
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return completeMultipartUploadResult;
+	}
+
+	public void syncAbortMultipartUpload(AbortMultipartUploadRequest request)
+			throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.abortMultipartUpload(request,
+				new AbortMultipartUploadResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders) {
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public void syncAbortMultipartUpload(String bucketname, String objectKey,
+			String uploadId) throws Throwable {
+
+		final Throwable error = new Throwable();
+		this.abortMultipartUpload(bucketname, objectKey, uploadId,
+				new AbortMultipartUploadResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders) {
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	public ListPartsResult syncListParts(String bucketName, String objectKey,
+			String uploadId) throws Throwable {
+
+		final ListPartsResult listPartsResult = new ListPartsResult();
+		final Throwable error = new Throwable();
+		this.listParts(bucketName, objectKey, uploadId,
+				new ListPartsResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders, ListPartsResult result) {
+						listPartsResult.setBucketname(result.getBucketname());
+						listPartsResult.setEncodingType(result
+								.getEncodingType());
+						listPartsResult.setInitiator(result.getInitiator());
+						listPartsResult.setKey(result.getKey());
+						listPartsResult.setMaxParts(result.getMaxParts());
+						listPartsResult.setNextPartNumberMarker(result
+								.getNextPartNumberMarker());
+						listPartsResult.setOwner(result.getOwner());
+						listPartsResult.setPartNumberMarker(result
+								.getPartNumberMarker());
+						listPartsResult.setParts(result.getParts());
+						listPartsResult.setUploadId(result.getUploadId());
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return listPartsResult;
+	}
+
+	public ListPartsResult syncListParts(String bucketName, String objectKey,
+			String uploadId, int maxParts) throws Throwable {
+
+		final ListPartsResult listPartsResult = new ListPartsResult();
+		final Throwable error = new Throwable();
+		this.listParts(bucketName, objectKey, uploadId, maxParts,
+				new ListPartsResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders, ListPartsResult result) {
+						listPartsResult.setBucketname(result.getBucketname());
+						listPartsResult.setEncodingType(result
+								.getEncodingType());
+						listPartsResult.setInitiator(result.getInitiator());
+						listPartsResult.setKey(result.getKey());
+						listPartsResult.setMaxParts(result.getMaxParts());
+						listPartsResult.setNextPartNumberMarker(result
+								.getNextPartNumberMarker());
+						listPartsResult.setOwner(result.getOwner());
+						listPartsResult.setPartNumberMarker(result
+								.getPartNumberMarker());
+						listPartsResult.setParts(result.getParts());
+						listPartsResult.setUploadId(result.getUploadId());
+
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return listPartsResult;
+	}
+
+	public ListPartsResult syncListParts(String bucketName, String objectKey,
+			String uploadId, int maxParts, int partNumberMarker)
+			throws Throwable {
+
+		final ListPartsResult listPartsResult = new ListPartsResult();
+		final Throwable error = new Throwable();
+		this.listParts(bucketName, objectKey, uploadId, maxParts,
+				partNumberMarker, new ListPartsResponseHandler() {
+
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders, ListPartsResult result) {
+						listPartsResult.setBucketname(result.getBucketname());
+						listPartsResult.setEncodingType(result
+								.getEncodingType());
+						listPartsResult.setInitiator(result.getInitiator());
+						listPartsResult.setKey(result.getKey());
+						listPartsResult.setMaxParts(result.getMaxParts());
+						listPartsResult.setNextPartNumberMarker(result
+								.getNextPartNumberMarker());
+						listPartsResult.setOwner(result.getOwner());
+						listPartsResult.setPartNumberMarker(result
+								.getPartNumberMarker());
+						listPartsResult.setParts(result.getParts());
+						listPartsResult.setUploadId(result.getUploadId());
+					}
+
+					@Override
+					public void onFailure(int statesCode,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+					}
+				});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return listPartsResult;
+	}
+
+	public ListPartsResult syncListParts(ListPartsRequest request)
+			throws Throwable {
+		final ListPartsResult listPartsResult = new ListPartsResult();
+		final Throwable error = new Throwable();
+		this.listParts(request, new ListPartsResponseHandler() {
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					ListPartsResult result) {
+				listPartsResult.setBucketname(result.getBucketname());
+				listPartsResult.setEncodingType(result.getEncodingType());
+				listPartsResult.setInitiator(result.getInitiator());
+				listPartsResult.setKey(result.getKey());
+				listPartsResult.setMaxParts(result.getMaxParts());
+				listPartsResult.setNextPartNumberMarker(result
+						.getNextPartNumberMarker());
+				listPartsResult.setOwner(result.getOwner());
+				listPartsResult.setPartNumberMarker(result
+						.getPartNumberMarker());
+				listPartsResult.setParts(result.getParts());
+				listPartsResult.setUploadId(result.getUploadId());
+			}
+
+			@Override
+			public void onFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return listPartsResult;
+	}
 }

@@ -26,7 +26,7 @@ public class AccessControlPolicy {
 		this.accessControlList = accessControlList;
 	}
 
-	public Set<Grant> getGrants() {
+	public HashSet<Grant> getGrants() {
 		return this.accessControlList.getGrants();
 	}
 

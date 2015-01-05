@@ -187,7 +187,7 @@ public class MainActivity extends Activity {
 				.setOnBucketObjectDialogListener(new OnBucketObjectDialogListener() {
 					@Override
 					public void confirmBucketAndObject(String name, String key) {
-						client.PutObject(name, key, file,
+						client.putObject(name, key, file,
 								new PutObjectResponseHandler() {
 
 									@Override
@@ -245,7 +245,7 @@ public class MainActivity extends Activity {
 				.setOnBucketObjectDialogListener(new OnBucketObjectDialogListener() {
 					@Override
 					public void confirmBucketAndObject(String name, String key) {
-						client.ListParts(name, key,
+						client.listParts(name, key,
 								Constants.UPLOAD_ID,
 								new ListPartsResponseHandler() {
 
