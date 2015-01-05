@@ -19,8 +19,13 @@
  	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
 ```
+
 ###SDK配置
-SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.1.jar*，以及依赖库文件，放入工程libs文件下。
+SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.2.jar*，以及依赖库文件，放入工程libs文件下。
+
+也可以下载[源码:](https://github.com/ks3sdk/ks3-android-sdk/tree/master/Ks3SdkAndroid/ks3-android-sdk)，以Library库形式添加。
+
+> 更多KS3介绍文档，请参考[文档中心:](http://ks3.ksyun.com/doc/index.html)
 
 ###运行环境
 支持Android 2.2及以上版本
