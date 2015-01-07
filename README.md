@@ -45,6 +45,7 @@ SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.2.jar*，
 >同步API接口文档，请见 [SDK-Javadoc:](https://github.com/ks3sdk/ks3-android-sdk/tree/master/releases/doc) 
 
 ##安全性
+
 ###使用场景
 由于在App端明文存储AccessKeyID、AccessKeySecret是极不安全的，因此推荐的使用场景如下图所示：
 
@@ -54,8 +55,44 @@ SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.2.jar*，
 Ks3Client初始化包含以下两种：
 
 - 直接利用AccessKeyID、AccessKeySecret初始化（***不安全,仅建议测试时使用***）
-- 实现授权回调（AuthListener）获取Token（***推荐使用***）
+- 实现授权回调（AuthListener）获取Token（签名），即由客户app端向客户业务服务器发送带签名参数的请求，业务服务器实现签名算法并返回Token（签名），SDK及对应Demo中的**AuthUtils**类提供了该算法的Java实现。之后SDK会将onCalculateAuth（）方法返回的Token（签名）带入所有请求，用户正常调用SDK提供的API即可（***推荐使用***）
 
+###请求签名
+方法: 在请求中加入名为 Authorization 的 Header，值为签名值。形如：
+Authorization: KSS P3UPCMORAFON76Q6RTNQ:vU9XqPLcXd3nWdlfLWIhruZrLAM=
+
+*签名生成规则*
+```
+
+		Authorization = “KSS YourAccessKeyID:Signature”
+
+ 		Signature = Base64(HMAC-SHA1(YourAccessKeyIDSecret, UTF-8-Encoding-Of( StringToSign ) ) );
+
+ 		StringToSign = HTTP-Verb + "\n" +
+               Content-MD5 + "\n" +
+               Content-Type + "\n" +
+               Date + "\n" +
+               CanonicalizedKssHeaders +
+               CanonicalizedResource;
+
+```
+
+**关于签名的必要说明：**
+
+
+对于使用AuthListener以Token方式初始化SDK的用户，需要注意onCalculateAuth（）回调方法中的参数，即为计算StringToSign的参数，服务器端应根据上述签名生成规则，利用AccessKeyID及AccessKeySecret**计算出签名并正确返回给SDK**。
+
+onCalculateAuth（）回调方法的参数Content-MD5, Content-Type, CanonicalizedKssHeaders参数**可为空**。若为空，则SDK会使用空字符串("")替代, 但Date和CanonicalizedResource不能为空。
+
+为保证请求时间的一致性，需要App客户端及客户业务服务器保证各自的时间正确性，否则用**错误的时间**尝试请求，会返回403Forbidden错误。
+
+onCalculateAuth（）回调方法参数说明：
+
+* Content-MD5 表示请求内容数据的MD5值, 使用Base64编码
+* Content-Type 表示请求内容的类型
+* Date 表示此次操作的时间,且必须为 HTTP1.1 中支持的 GMT 格式，客户端应**务必**保证本地时间正确性
+* CanonicalizedKssHeaders 表示HTTP请求中的以x-kss开头的Header组合
+* CanonicalizedResource 表示用户访问的资源
 
 对应的初始化代码如下：
 
