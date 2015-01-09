@@ -411,8 +411,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 	private void doSingleUpload(final String bucketName, final UploadFile item) {
 		final PutObjectRequest request = new PutObjectRequest(bucketName,
 				item.file.getName(), item.file);
-//		request.setCallBackUrl("");
-//		request.setCallBackBody("");
+//		request.setCallBack(callBackUrl, callBackBody, callBackHeaders);
 		client.putObject(request, new PutObjectResponseHandler() {
 
 			@Override

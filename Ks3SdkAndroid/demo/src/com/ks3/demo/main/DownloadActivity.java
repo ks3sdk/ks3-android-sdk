@@ -396,6 +396,7 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 			String objectName = item.objectKey.substring(item.objectKey
 					.lastIndexOf("/") == -1 ? 0 : item.objectKey
 					.lastIndexOf("/"));
+//			request.setCallBack(callBackUrl, callBackBody, callBackHeaders);
 			File file = new File(storeForder, objectName);
 			client.getObject(request, new GetObjectResponseHandler(file,
 					item.bucketName, item.objectKey) {

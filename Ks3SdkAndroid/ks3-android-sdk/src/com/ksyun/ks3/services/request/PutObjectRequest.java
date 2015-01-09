@@ -7,10 +7,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 
 import com.ksyun.ks3.auth.ValidateUtil;
 import com.ksyun.ks3.exception.Ks3ClientException;
@@ -25,6 +27,7 @@ import com.ksyun.ks3.model.acl.Grant;
 import com.ksyun.ks3.model.acl.Permission;
 import com.ksyun.ks3.model.transfer.MD5DigestCalculatingInputStream;
 import com.ksyun.ks3.model.transfer.RepeatableFileInputStream;
+import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.Md5Utils;
 import com.ksyun.ks3.util.StringUtils;
 
@@ -38,6 +41,7 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 	private String redirectLocation;
 	private String callBackUrl;
 	private String callBackBody;
+	private Map<String,String> callBackHeaders;
 
 	public PutObjectRequest(String bucketname, String key, File file) {
 		this.setBucketname(bucketname);
@@ -49,17 +53,11 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 		this(bucketname,key,file);
 		this.setObjectMeta(metadata == null ? this.objectMeta : metadata);	
 	}
-
-	public PutObjectRequest(String bucketname, String key, File file,String callBackUrl,String callBackBody) {
-		this(bucketname,key,file);
-		this.setCallBackUrl(callBackUrl);
-		this.setCallBackBody(callBackBody);
-	}
 	
-	public PutObjectRequest(String bucketname, String key,File file, ObjectMetadata metadata,String callBackUrl,String callBackBody) {
-		this(bucketname,key,file,metadata);
-		this.setCallBackUrl(callBackUrl);
-		this.setCallBackBody(callBackBody);
+	public void setCallBack(String callBackUrl, String callBackBody,Map<String,String> callBackHeaders){
+		this.callBackUrl = callBackUrl;
+		this.callBackBody = callBackBody;
+		this.callBackHeaders = callBackHeaders;
 	}
 	
 	
@@ -86,16 +84,34 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 			throw new Ks3ClientException(
 					"calculate file md5 error (" + e + ")", e);
 		}
-		if(!StringUtils.isBlank(this.callBackUrl)){
-			this.addHeader(HttpHeaders.XKssCallBackUrl, this.callBackUrl);
-		}
-		if(!StringUtils.isBlank(this.callBackBody)){
+		if(!StringUtils.isBlank(this.callBackUrl) && !StringUtils.isBlank(this.callBackBody)){
 			try {
+				this.addHeader(HttpHeaders.XKssCallBackUrl, this.callBackUrl);
 				this.addHeader(HttpHeaders.XKssCallBackBody, URLEncoder.encode(this.callBackBody, "UTF-8"));
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 				throw new Ks3ClientException(e);
 			}
+			if(this.callBackHeaders!= null && this.callBackHeaders.size() > 0){
+				for(Map.Entry<String, String> entry: this.callBackHeaders.entrySet()){
+					String key = entry.getKey();
+					String val = entry.getValue();
+					if(!StringUtils.isBlank(key) && key.startsWith("kss:") && !StringUtils.isBlank(val)){
+						try {
+							this.addHeader(key, URLEncoder.encode(val, "UTF-8"));
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+							throw new Ks3ClientException(e);
+						}
+					}else{
+						Log.e(Constants.LOG_TAG,"the header:"+key +"-"+val + " is not correct ,this head will be ignored");
+					}
+				}
+			}else{
+				Log.d(Constants.LOG_TAG, "the callbackheaders is null");
+			}
+		}else{
+			Log.d(Constants.LOG_TAG, "the callbacurl or callbackbody is null , ignore set the callback");
 		}
 		
 		for (Entry<Meta, String> entry : this.objectMeta.getMetadata()
@@ -228,6 +244,14 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 
 	public void setCallBackBody(String callBackBody) {
 		this.callBackBody = callBackBody;
+	}
+	
+	public Map<String, String> getCallBackHeaders() {
+		return callBackHeaders;
+	}
+
+	public void setCallBackHeaders(Map<String, String> callBackHeaders) {
+		this.callBackHeaders = callBackHeaders;
 	}
 	
 	public String getMd5() {

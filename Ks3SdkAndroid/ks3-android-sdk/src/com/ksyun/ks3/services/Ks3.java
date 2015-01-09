@@ -200,18 +200,9 @@ public abstract interface Ks3 {
 
 	public Ks3HttpRequest putObject(String bucketname, String objectkey, File file,
 			PutObjectResponseHandler handler);
-	
-	public Ks3HttpRequest putObject(String bucketname, String objectkey, File file,
-			String callBackUrl,String callBackBody,
-			PutObjectResponseHandler handler);
 
 	public Ks3HttpRequest putObject(String bucketname, String objectkey,
 			File file, ObjectMetadata objectmeta,
-			PutObjectResponseHandler handler);
-
-	public Ks3HttpRequest putObject(String bucketname, String objectkey,
-			File file, ObjectMetadata objectmeta,
-			String callBackUrl,String callBackBody,
 			PutObjectResponseHandler handler);
 	
 	public Ks3HttpRequest putObject(PutObjectRequest request,
@@ -280,26 +271,10 @@ public abstract interface Ks3 {
 	public CompleteMultipartUploadResult syncCompleteMultipartUpload(String bucketname, String objectkey,
 			String uploadId, List<PartETag> partETags)throws Throwable;
 	
-	public void completeMultipartUpload(String bucketname, String objectkey,
-			String uploadId, List<PartETag> partETags,
-			String callBackUrl,String callBackBody,
-			CompleteMultipartUploadResponseHandler handler);
-
-	public CompleteMultipartUploadResult syncCompleteMultipartUpload(String bucketname, String objectkey,
-			String uploadId, List<PartETag> partETags,
-			String callBackUrl,String callBackBody)throws Throwable;
-	
 	public void completeMultipartUpload(ListPartsResult result,
 			CompleteMultipartUploadResponseHandler handler);
 	
 	public CompleteMultipartUploadResult syncCompleteMultipartUpload(ListPartsResult result)throws Throwable;
-	
-	public void completeMultipartUpload(ListPartsResult result,
-			String callBackUrl,String callBackBody,
-			CompleteMultipartUploadResponseHandler handler);
-	
-	public CompleteMultipartUploadResult syncCompleteMultipartUpload(ListPartsResult result,
-			String callBackUrl,String callBackBody)throws Throwable;
 	
 	public void completeMultipartUpload(CompleteMultipartUploadRequest request,
 			CompleteMultipartUploadResponseHandler handler);

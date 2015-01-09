@@ -377,14 +377,6 @@ public class Ks3Client implements Ks3 {
 		return this.putObject(new PutObjectRequest(bucketname, objectkey, file),
 				handler);
 	}
-
-	@Override
-	public Ks3HttpRequest putObject(String bucketname, String objectkey, File file,
-			String callBackUrl,String callBackBody,
-			PutObjectResponseHandler handler) {
-		return this.putObject(new PutObjectRequest(bucketname, objectkey, file,callBackUrl,callBackBody),
-				handler);
-	}
 	
 	@Override
 	public Ks3HttpRequest putObject(String bucketname, String objectkey,
@@ -392,15 +384,6 @@ public class Ks3Client implements Ks3 {
 			PutObjectResponseHandler handler) {
 		return this.putObject(new PutObjectRequest(bucketname, objectkey, file,
 				objectmeta), handler);
-	}
-
-	@Override
-	public Ks3HttpRequest putObject(String bucketname, String objectkey,
-			File file, ObjectMetadata objectmeta,
-			String callBackUrl,String callBackBody,
-			PutObjectResponseHandler handler) {
-		return this.putObject(new PutObjectRequest(bucketname, objectkey, file,
-				objectmeta,callBackUrl,callBackBody), handler);
 	}
 	
 	@Override
@@ -522,27 +505,10 @@ public class Ks3Client implements Ks3 {
 	}
 	
 	@Override
-	public void completeMultipartUpload(String bucketname, String objectkey,
-			String uploadId, List<PartETag> partETags,
-			String callBackUrl,String callBackBody,
-			CompleteMultipartUploadResponseHandler handler) {
-		this.completeMultipartUpload(new CompleteMultipartUploadRequest(
-				bucketname, objectkey, uploadId, partETags,callBackUrl,callBackBody), handler);
-	}
-	
-	@Override
 	public void completeMultipartUpload(ListPartsResult result,
 			CompleteMultipartUploadResponseHandler handler) {
 		this.completeMultipartUpload(
 				new CompleteMultipartUploadRequest(result), handler);
-	}
-
-	@Override
-	public void completeMultipartUpload(ListPartsResult result,
-			String callBackUrl,String callBackBody,
-			CompleteMultipartUploadResponseHandler handler) {
-		this.completeMultipartUpload(
-				new CompleteMultipartUploadRequest(result,callBackUrl,callBackBody), handler);
 	}
 	
 	@Override
@@ -1119,26 +1085,11 @@ public class Ks3Client implements Ks3 {
 		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(bucketName, objectKey, uploadId, partETags);
 		return this.syncCompleteMultipartUpload(request);
 	}
-
-	@Override
-	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
-			String bucketName, String objectKey, String uploadId,
-			List<PartETag> partETags,String callBackUrl,String callBackBody) throws Throwable {
-		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(bucketName, objectKey, uploadId, partETags,callBackUrl,callBackBody) ;
-		return this.syncCompleteMultipartUpload(request);
-	}
 	
 	@Override
 	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
 			ListPartsResult result) throws Throwable {
 		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(result);
-		return this.syncCompleteMultipartUpload(request); 
-	}
-
-	@Override
-	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
-			ListPartsResult result,String callBackUrl,String callBackBody) throws Throwable {
-		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(result,callBackUrl,callBackBody);
 		return this.syncCompleteMultipartUpload(request); 
 	}
 	
