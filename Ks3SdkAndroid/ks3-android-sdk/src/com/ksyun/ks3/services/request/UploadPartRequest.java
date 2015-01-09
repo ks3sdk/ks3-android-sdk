@@ -18,7 +18,8 @@ import com.ksyun.ks3.model.transfer.RepeatableFileInputStream;
 import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.StringUtils;
 
-public class UploadPartRequest extends Ks3HttpRequest{
+public class UploadPartRequest extends Ks3HttpRequest {
+	private static final long serialVersionUID = -376145159039630694L;
 	private String uploadId;
 	private int partNumber;
 	private long partSize;
@@ -31,7 +32,9 @@ public class UploadPartRequest extends Ks3HttpRequest{
 	private CannedAccessControlList cannedAcl;
 	private AccessControlList acl = new AccessControlList();
 	private String redirectLocation;
-	public UploadPartRequest(String bucketName, String key, String uploadId,File file, long offset, int partNumber, long partSize) {
+
+	public UploadPartRequest(String bucketName, String key, String uploadId,
+			File file, long offset, int partNumber, long partSize) {
 		setBucketname(bucketName);
 		setObjectkey(key);
 		this.uploadId = uploadId;
@@ -39,29 +42,36 @@ public class UploadPartRequest extends Ks3HttpRequest{
 		this.fileOffset = offset;
 		this.partNumber = partNumber;
 		this.partSize = partSize;
-		if(file.length() - offset < partSize){
+		if (file.length() - offset < partSize) {
 			this.contentLength = file.length() - offset;
 			isLastPart = true;
-		}else{
+		} else {
 			this.contentLength = partSize;
 			isLastPart = false;
 		}
 	}
 
 	@Override
-	protected void setupRequest() {
+	protected void setupRequest() throws Ks3ClientException {
 		this.setHttpMethod(HttpMethod.PUT);
 		this.addParams("uploadId", this.uploadId);
-		this.addParams("partNumber",String.valueOf(this.partNumber));
+		this.addParams("partNumber", String.valueOf(this.partNumber));
 		this.addHeader(HttpHeaders.ContentType, "binary/octet-stream");
 		MD5DigestCalculatingInputStream inputStream = null;
 		try {
-			inputStream = new MD5DigestCalculatingInputStream(new InputSubStream(new RepeatableFileInputStream(this.file),this.fileOffset, contentLength, true));
-			Log.d("eflake", "bucketName :" + this.getBucketname() + ",objectkey :" + this.getObjectkey() + ",partNumber :" + this.partNumber + ",partSzie :" + partSize + ",conentLength:" + this.contentLength);
+			inputStream = new MD5DigestCalculatingInputStream(
+					new InputSubStream(
+							new RepeatableFileInputStream(this.file),
+							this.fileOffset, contentLength, true));
+			Log.d(Constants.LOG_TAG, "bucketName :" + this.getBucketname()
+					+ ",objectkey :" + this.getObjectkey() + ",partNumber :"
+					+ this.partNumber + ",partSzie :" + partSize
+					+ ",conentLength:" + this.contentLength);
 		} catch (FileNotFoundException e) {
-			throw new Ks3ClientException("read file "+file.getName()+" error");
-		} 
-	    this.addHeader(HttpHeaders.ContentLength,String.valueOf(this.contentLength));
+			throw new Ks3ClientException(e);
+		}
+		this.addHeader(HttpHeaders.ContentLength,
+				String.valueOf(this.contentLength));
 		this.setRequestBody(inputStream);
 	}
 
@@ -74,36 +84,45 @@ public class UploadPartRequest extends Ks3HttpRequest{
 	}
 
 	@Override
-	protected void validateParams() throws IllegalArgumentException {
-		if (StringUtils.isBlank(this.getBucketname())){
-			throw new IllegalArgumentException("bucket name can not be null");
+	protected void validateParams() throws Ks3ClientException {
+		if (StringUtils.isBlank(this.getBucketname())) {
+			throw new Ks3ClientException("bucket name can not be null");
 		}
-		if (StringUtils.isBlank(this.getObjectkey())){
-			throw new IllegalArgumentException("object key can not be null");
+		if (StringUtils.isBlank(this.getObjectkey())) {
+			throw new Ks3ClientException("object key can not be null");
 		}
-		if (StringUtils.isBlank(this.uploadId)){
-			throw new IllegalArgumentException("uploadId can not be null");
+		if (StringUtils.isBlank(this.uploadId)) {
+			throw new Ks3ClientException("uploadId can not be null");
 		}
-		if (this.partSize <= 0){
-			throw new IllegalArgumentException("part size can not should bigger than 0");
+		if (this.partSize <= 0) {
+			throw new Ks3ClientException(
+					"part size can not should bigger than 0");
 		}
-		if (partNumber < Constants.minPartNumber || partNumber > Constants.maxPartNumber){
-			throw new IllegalArgumentException("partNumber shoud between "+ Constants.minPartNumber + " and "	+ Constants.maxPartNumber);
+		if (partNumber < Constants.minPartNumber
+				|| partNumber > Constants.maxPartNumber) {
+			throw new Ks3ClientException("partNumber shoud between "
+					+ Constants.minPartNumber + " and "
+					+ Constants.maxPartNumber);
 		}
 		if (file == null) {
-			throw new IllegalArgumentException("file and content can not both be null");
-		} 
-		if (this.fileOffset < 0){
-			throw new IllegalArgumentException("fileoffset("+ this.fileOffset + ") should >= 0");
+			throw new Ks3ClientException(
+					"file and content can not both be null");
+		}
+		if (this.fileOffset < 0) {
+			throw new Ks3ClientException("fileoffset(" + this.fileOffset
+					+ ") should >= 0");
 		}
 		if (this.partSize > Constants.maxPartSize) {
-			throw new IllegalArgumentException("partsize(" + this.partSize+ ") should be small than"+ Constants.maxPartSize);
+			throw new Ks3ClientException("partsize(" + this.partSize
+					+ ") should be small than" + Constants.maxPartSize);
 		}
-		if(!this.isLastPart && this.partSize < Constants.minPartSize){
-			throw new IllegalArgumentException("partsize(" + this.partSize+ ") should be larger than"+ Constants.minPartSize);
+		if (!this.isLastPart && this.partSize < Constants.minPartSize) {
+			throw new Ks3ClientException("partsize(" + this.partSize
+					+ ") should be larger than" + Constants.minPartSize);
 		}
-		
+
 	}
+
 	public ObjectMetadata getObjectMeta() {
 		return objectMeta;
 	}
@@ -111,6 +130,7 @@ public class UploadPartRequest extends Ks3HttpRequest{
 	public void setObjectMeta(ObjectMetadata objectMeta) {
 		this.objectMeta = objectMeta;
 	}
+
 	public String getUploadId() {
 		return uploadId;
 	}

@@ -35,6 +35,8 @@ public abstract class HeadObjectResponseHandler extends Ks3HttpResponceHandler {
 	@Override
 	public final void onFinish() {}
 	
+	@Override
+	public final void onCancel() {}
 	
 	private HeadObjectResult parseHeaders(Header[] responceHeaders) {
 		

@@ -29,5 +29,7 @@ public abstract class AbortMultipartUploadResponseHandler extends
 	@Override
 	public final void onFinish() {}
 	
+	@Override
+	public final void onCancel() {}
 	
 }

@@ -22,8 +22,4 @@ public abstract class Ks3HttpResponceHandler extends AsyncHttpResponseHandler{
 
 	@Override
 	public final void onRetry(int retryNo) {}
-
-	@Override
-	public final void onCancel() {}
-	
 }

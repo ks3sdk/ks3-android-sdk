@@ -31,7 +31,8 @@ public abstract class CompleteMultipartUploadResponseHandler extends
 	@Override
 	public final void onFinish() {}
 
-	
+	@Override
+	public final void onCancel() {}
 	
 	
 }

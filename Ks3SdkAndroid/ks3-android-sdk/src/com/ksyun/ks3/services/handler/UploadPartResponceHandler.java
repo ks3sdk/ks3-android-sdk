@@ -28,6 +28,9 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 
 	@Override
 	public final void onFinish() {}
+	
+	@Override
+	public final void onCancel() {}
 
 	@Override
 	public final void onProgress(int bytesWritten, int totalSize) {}

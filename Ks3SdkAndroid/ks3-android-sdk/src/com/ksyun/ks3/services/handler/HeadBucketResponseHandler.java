@@ -26,4 +26,7 @@ public abstract class HeadBucketResponseHandler extends Ks3HttpResponceHandler {
 
 	@Override
 	public final void onFinish() {}
+	
+	@Override
+	public final void onCancel() {}
 }

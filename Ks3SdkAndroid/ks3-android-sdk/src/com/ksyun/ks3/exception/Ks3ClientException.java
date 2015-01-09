@@ -1,6 +1,6 @@
 package com.ksyun.ks3.exception;
 
-public class Ks3ClientException extends RuntimeException{
+public class Ks3ClientException extends Exception{
  
 	private static final long serialVersionUID = -2503345001841814995L;
 	

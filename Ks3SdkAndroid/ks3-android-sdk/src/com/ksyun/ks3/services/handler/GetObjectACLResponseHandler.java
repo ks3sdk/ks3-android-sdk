@@ -45,6 +45,9 @@ public abstract class GetObjectACLResponseHandler extends Ks3HttpResponceHandler
 	@Override
 	public final void onFinish() {}
 	
+	@Override
+	public final void onCancel() {}
+	
 	
 	private AccessControlPolicy parseXml(Header[] responceHeaders, byte[] response) {
 		XmlPullParserFactory factory;

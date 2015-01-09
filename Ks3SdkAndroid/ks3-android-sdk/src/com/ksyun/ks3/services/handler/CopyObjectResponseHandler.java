@@ -45,6 +45,11 @@ public abstract class CopyObjectResponseHandler extends Ks3HttpResponceHandler {
 	public final void onFinish() {
 	}
 
+	@Override
+	public final void onCancel() {
+		
+	}
+	
 	private CopyResult parseXml(byte[] response) {
 		XmlPullParserFactory factory;
 		CopyResult result = new CopyResult();

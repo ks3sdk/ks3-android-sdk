@@ -41,6 +41,9 @@ public abstract class ListPartsResponseHandler extends Ks3HttpResponceHandler {
 	@Override
 	public final void onFinish() {}
 	
+	@Override
+	public final void onCancel() {}
+	
 	private ListPartsResult parseXml(Header[] responceHeaders, byte[] response) {
 		XmlPullParserFactory factory = null;
 		ListPartsResult partsResult = null;

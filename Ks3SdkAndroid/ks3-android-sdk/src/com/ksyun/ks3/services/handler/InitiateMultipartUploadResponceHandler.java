@@ -35,6 +35,9 @@ public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResp
 
 	@Override
 	public final void onFinish() {}
+	
+	@Override
+	public final void onCancel() {}
 
 	private InitiateMultipartUploadResult parseXml(Header[] responceHeaders, byte[] response) {
 		XmlPullParserFactory factory;

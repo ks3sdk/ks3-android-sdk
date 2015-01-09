@@ -45,6 +45,9 @@ public abstract class ListBucketsResponceHandler extends Ks3HttpResponceHandler 
 	@Override
 	public final void onFinish() {}
 	
+	@Override
+	public final void onCancel() {}
+	
 	
 	private ArrayList<Bucket> parseXml(Header[] responceHeaders, byte[] response) {
 		XmlPullParserFactory factory;

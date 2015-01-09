@@ -42,6 +42,9 @@ public abstract class ListObjectsResponseHandler extends Ks3HttpResponceHandler{
 	@Override
 	public final void onFinish() {}
 	
+	@Override
+	public final void onCancel() {}
+	
 	private ObjectListing parseXml(Header[] responceHeaders, byte[] response) {
 		ObjectListing objectListing = null;
 		List<Ks3ObjectSummary> objectSummarys = null;

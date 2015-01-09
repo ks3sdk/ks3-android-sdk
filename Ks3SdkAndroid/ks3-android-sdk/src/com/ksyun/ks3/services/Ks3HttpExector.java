@@ -7,8 +7,10 @@ import com.ksyun.ks3.auth.AuthEvent;
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.acl.Authorization;
 import com.ksyun.ks3.services.request.Ks3HttpRequest;
+import com.ksyun.ks3.util.Constants;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestHandle;
 
 public class Ks3HttpExector {
 	private AsyncHttpClient client;
@@ -38,24 +40,73 @@ public class Ks3HttpExector {
 		} else {
 			request.setEndpoint(endpoint);
 		}
-		if (authListener != null) {
-			request.setAuthListener(authListener);
-			setUpRequsetInBackground(request, new Ks3AuthHandler() {
 
-				@Override
-				public void onSuccess(AuthEvent event) {
-					doRequset(request, context, resultHandler);
+		// 异步
+		if (isUseAsyncMode) {
+			// Token形式
+			if (authListener != null) {
+				request.setAuthListener(authListener);
+				setUpRequsetInBackground(request, new Ks3AuthHandler() {
+
+					@Override
+					public void onSuccess(AuthEvent event) {
+						doRequset(request, context, resultHandler);
+					}
+
+					@Override
+					public void onFailure(AuthEvent event) {
+						resultHandler.onFailure(0, null, null,
+								new Ks3ClientException(event.getContent()));
+					}
+				}, resultHandler);
+			}
+			// AK&SK形式
+			else {
+				try {
+					request.completeRequset(null, resultHandler);
+				} catch (Ks3ClientException e) {
+					resultHandler.onFailure(0, null, null, e);
+					return;
 				}
 
-				@Override
-				public void onFailure(AuthEvent event) {
-					Log.d("eflake", event.getContent());
-					throw new Ks3ClientException("Make requset failed");
+				doRequset(request, context, resultHandler);
+			}
+		}
+		// 同步
+		else {
+			// Token形式
+			if (authListener != null) {
+				request.setAuthListener(authListener);
+				Ks3AuthHandler ks3AuthHandler = new Ks3AuthHandler() {
+
+					@Override
+					public void onSuccess(AuthEvent event) {
+						doRequset(request, context, resultHandler);
+					}
+
+					@Override
+					public void onFailure(AuthEvent event) {
+						resultHandler.onFailure(0, null, null,
+								new Ks3ClientException(event.getContent()));
+					}
+				};
+				try {
+					request.completeRequset(ks3AuthHandler, resultHandler);
+				} catch (Ks3ClientException e) {
+					ks3AuthHandler.isNeedCalculateAuth = false;
+					resultHandler.onFailure(0, null, null, e);
+					return;
 				}
-			}, resultHandler);
-		} else {
-			request.completeRequset(null, resultHandler);
-			doRequset(request, context, resultHandler);
+				// AK&SK形式
+			} else {
+				try {
+					request.completeRequset(null, resultHandler);
+				} catch (Ks3ClientException e) {
+					resultHandler.onFailure(0, null, null, e);
+					return;
+				}
+				doRequset(request, context, resultHandler);
+			}
 		}
 
 	}
@@ -64,47 +115,54 @@ public class Ks3HttpExector {
 			AsyncHttpResponseHandler resultHandler) {
 		// For test
 		LogShow(request);
-
+		RequestHandle handler = null;
 		switch (request.getHttpMethod()) {
 		case GET:
-			client.get(context, request.getAsyncHttpRequestParam().getUrl(),
-					request.getAsyncHttpRequestParam().getHeader(), null,
-					resultHandler);
+			handler = client.get(context, request.getAsyncHttpRequestParam()
+					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
+					null, resultHandler);
 			break;
 		case POST:
-			client.post(context, request.getAsyncHttpRequestParam().getUrl(),
-					request.getAsyncHttpRequestParam().getHeader(),
+			handler = client.post(context, request.getAsyncHttpRequestParam()
+					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
 					request.getEntity(), request.getContentType(),
 					resultHandler);
 			break;
 		case PUT:
-			client.put(context, request.getAsyncHttpRequestParam().getUrl(),
-					request.getAsyncHttpRequestParam().getHeader(),
+			handler = client.put(context, request.getAsyncHttpRequestParam()
+					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
 					request.getEntity(), request.getContentType(),
 					resultHandler);
 			break;
 		case DELETE:
-			client.delete(context, request.getAsyncHttpRequestParam().getUrl(),
-					request.getAsyncHttpRequestParam().getHeader(),
+			handler = client.delete(context, request.getAsyncHttpRequestParam()
+					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
 					resultHandler);
 			break;
 		case HEAD:
-			client.head(context, request.getAsyncHttpRequestParam().getUrl(),
-					request.getAsyncHttpRequestParam().getHeader(), null,
-					resultHandler);
+			handler = client.head(context, request.getAsyncHttpRequestParam()
+					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
+					null, resultHandler);
 			break;
 		default:
+			Log.e(Constants.LOG_TAG, "unsupport http method ! ");
 			break;
 		}
+		request.setRequestHandler(handler);
 	}
 
 	private void setUpRequsetInBackground(final Ks3HttpRequest request,
 			final Ks3AuthHandler ks3AuthHandler,
-			final AsyncHttpResponseHandler handler) {
+			final AsyncHttpResponseHandler resultHandler) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				request.completeRequset(ks3AuthHandler, handler);
+				try {
+					request.completeRequset(ks3AuthHandler, resultHandler);
+				} catch (Ks3ClientException e) {
+					ks3AuthHandler.isNeedCalculateAuth = false;
+					resultHandler.onFailure(0, null, null, e);
+				}
 			}
 		}).start();
 	}
@@ -124,7 +182,7 @@ public class Ks3HttpExector {
 					.append(request.getAsyncHttpRequestParam().getHeader()[i]
 							.getValue()).append("\n");
 		}
-		Log.e("eflake", sb.toString());
+		Log.e(Constants.LOG_TAG, sb.toString());
 	}
 
 	public void cancel(Context context) {

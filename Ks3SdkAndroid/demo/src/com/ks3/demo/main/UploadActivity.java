@@ -1,12 +1,23 @@
 package com.ks3.demo.main;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -15,6 +26,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,12 +39,12 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
 import com.ksyun.ks3.model.PartETag;
 import com.ksyun.ks3.model.result.CompleteMultipartUploadResult;
 import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
 import com.ksyun.ks3.model.result.ListPartsResult;
+import com.ksyun.ks3.services.AuthListener;
 import com.ksyun.ks3.services.Ks3Client;
 import com.ksyun.ks3.services.Ks3ClientConfiguration;
 import com.ksyun.ks3.services.handler.CompleteMultipartUploadResponseHandler;
@@ -47,9 +59,9 @@ import com.ksyun.ks3.services.request.PutObjectRequest;
 import com.ksyun.ks3.services.request.UploadPartRequest;
 
 /**
- *
- * Upload相关API使用示例，Initiate Multipart Upload，Upload Part，List Parts，
- * Complete Multipart Upload等
+ * 
+ * Upload相关API使用示例，Initiate Multipart Upload，Upload Part，List Parts， Complete
+ * Multipart Upload等
  */
 public class UploadActivity extends Activity implements OnItemClickListener {
 	public static final long PART_SIZE = 5 * 1024 * 1024;
@@ -259,15 +271,56 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 		currentDirTextView = (TextView) findViewById(R.id.current_dir_tv);
 		currentDir = Environment.getExternalStorageDirectory();
 		setUp();
-		
+
 	}
 
 	private void setUp() {
 		// 初始化Ks3Client
 		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
-		client = new Ks3Client(Constants.ACCESS_KEY__ID,
-				Constants.ACCESS_KEY_SECRET, UploadActivity.this);
-		client.setConfiguration(configuration);
+		// client = new Ks3Client(Constants.ACCESS_KEY__ID,
+		// Constants.ACCESS_KEY_SECRET, UploadActivity.this);
+		// client.setConfiguration(configuration);
+		//
+		// AuthListener方式初始化
+		// client = new Ks3Client(new AuthListener() {
+		// @Override
+		// public String onCalculateAuth(final String httpMethod,
+		// final String ContentType, final String Date,
+		// final String ContentMD5, final String Resource,
+		// final String Headers) {
+		// // 此处应由APP端向业务服务器发送post请求返回Token。
+		// // 需要注意该回调方法运行在非主线程
+		// // 此处内部写法仅为示例，开发者请根据自身情况修改
+		// StringBuffer result = new StringBuffer();
+		// HttpPost request = new HttpPost(Constants.APP_SERTVER_HOST);
+		// StringEntity se;
+		// try {
+		// JSONObject object = new JSONObject();
+		// object.put("http_method", httpMethod.toString());
+		// object.put("content_type", ContentType);
+		// object.put("date", Date);
+		// object.put("content_md5", ContentMD5);
+		// object.put("resource", Resource);
+		// object.put("headers", Headers);
+		// se = new StringEntity(object.toString());
+		// request.setEntity(se);
+		// HttpResponse httpResponse = new DefaultHttpClient().execute(request);
+		// String retSrc = EntityUtils.toString(httpResponse
+		// .getEntity());
+		// result.append(retSrc);
+		// } catch (JSONException e) {
+		// e.printStackTrace();
+		// } catch (UnsupportedEncodingException e) {
+		// e.printStackTrace();
+		// } catch (ClientProtocolException e) {
+		// e.printStackTrace();
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		// return result.toString();
+		// }
+		// }, UploadActivity.this);
+
 		// 输入框确获取Bucket之后，允许选择文件，开始Upload操作
 		bucketInpuDialog = new BucketInpuDialog(UploadActivity.this);
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
@@ -282,6 +335,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 			}
 		});
 		bucketInpuDialog.show();
+		client.setConfiguration(configuration);
 	}
 
 	private void switchDir(File dir) {
@@ -332,7 +386,8 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-			if (currentDir.getPath().equalsIgnoreCase(Environment.getExternalStorageDirectory().getPath())) {
+			if (currentDir.getPath().equalsIgnoreCase(
+					Environment.getExternalStorageDirectory().getPath())) {
 				return super.onKeyDown(keyCode, event);
 			} else {
 				switchDir(currentDir.getParentFile());
@@ -351,15 +406,18 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 		else
 			doSingleUpload(bucketName, item);
 	}
-	
+
 	// 上传文件
-	private void doSingleUpload(String bucketName, final UploadFile item) {
-		PutObjectRequest request = new PutObjectRequest(bucketName,
+	private void doSingleUpload(final String bucketName, final UploadFile item) {
+		final PutObjectRequest request = new PutObjectRequest(bucketName,
 				item.file.getName(), item.file);
 		client.putObject(request, new PutObjectResponseHandler() {
 
 			@Override
 			public void onTaskProgress(double progress) {
+//				if (progress > 50.0) {
+//					request.abort();
+//				}
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
 				for (UploadFile file : uploadFiles) {
@@ -413,6 +471,8 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 			@Override
 			public void onTaskFailure(int statesCode, Header[] responceHeaders,
 					String response, Throwable paramThrowable) {
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+						paramThrowable.toString());
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
 				for (UploadFile file : uploadFiles) {
@@ -424,6 +484,11 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 				}
 				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 
+			}
+
+			@Override
+			public void onTaskCancel() {
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
 			}
 		});
 	}
@@ -566,7 +631,6 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 	private void listParts(final ListPartsRequest request, final UploadFile item) {
 		client.listParts(request, new ListPartsResponseHandler() {
-
 			@Override
 			public void onSuccess(int statesCode, Header[] responceHeaders,
 					ListPartsResult result) {
@@ -598,7 +662,6 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 	private void completeUploadPart(
 			final CompleteMultipartUploadRequest request, final UploadFile item) {
-
 		client.completeMultipartUpload(request,
 				new CompleteMultipartUploadResponseHandler() {
 					@Override

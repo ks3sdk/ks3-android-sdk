@@ -14,6 +14,7 @@ public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler im
 	
 	public abstract void onTaskFinish();
 	
+	public abstract void onTaskCancel();
 
 	@Override
 	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
@@ -35,6 +36,11 @@ public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler im
 		onTaskFinish();
 	}
 
+	@Override
+	public final void onCancel() {
+		onTaskCancel();
+	}
+	
 	@Override
 	public final void onProgress(int bytesWritten, int totalSize) {}
 	

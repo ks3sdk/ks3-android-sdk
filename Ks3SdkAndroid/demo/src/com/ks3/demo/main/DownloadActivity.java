@@ -1,13 +1,25 @@
 package com.ks3.demo.main;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -16,6 +28,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,9 +46,10 @@ import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
 import com.ksyun.ks3.model.Ks3ObjectSummary;
 import com.ksyun.ks3.model.ObjectListing;
 import com.ksyun.ks3.model.result.GetObjectResult;
+import com.ksyun.ks3.services.AuthListener;
 import com.ksyun.ks3.services.Ks3Client;
 import com.ksyun.ks3.services.Ks3ClientConfiguration;
-import com.ksyun.ks3.services.handler.GetObjectResponceHandler;
+import com.ksyun.ks3.services.handler.GetObjectResponseHandler;
 import com.ksyun.ks3.services.handler.ListObjectsResponseHandler;
 import com.ksyun.ks3.services.request.GetObjectRequest;
 import com.ksyun.ks3.services.request.ListObjectsRequest;
@@ -154,6 +168,47 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 		client = new Ks3Client(Constants.ACCESS_KEY__ID,
 				Constants.ACCESS_KEY_SECRET, DownloadActivity.this);
 		client.setConfiguration(configuration);
+
+		// AuthListener方式初始化
+		// client = new Ks3Client(new AuthListener() {
+		// @Override
+		// public String onCalculateAuth(final String httpMethod,
+		// final String ContentType, final String Date,
+		// final String ContentMD5, final String Resource,
+		// final String Headers) {
+		// // 此处应由APP端向业务服务器发送post请求返回Token。
+		// // 需要注意该回调方法运行在非主线程
+		// // 此处内部写法仅为示例，开发者请根据自身情况修改
+		// StringBuffer result = new StringBuffer();
+		// HttpPost request = new HttpPost(Constants.APP_SERTVER_HOST);
+		// StringEntity se;
+		// try {
+		// JSONObject object = new JSONObject();
+		// object.put("http_method", httpMethod.toString());
+		// object.put("content_type", ContentType);
+		// object.put("date", Date);
+		// object.put("content_md5", ContentMD5);
+		// object.put("resource", Resource);
+		// object.put("headers", Headers);
+		// se = new StringEntity(object.toString());
+		// request.setEntity(se);
+		// HttpResponse httpResponse = new DefaultHttpClient().execute(request);
+		// String retSrc = EntityUtils.toString(httpResponse
+		// .getEntity());
+		// result.append(retSrc);
+		// } catch (JSONException e) {
+		// e.printStackTrace();
+		// } catch (UnsupportedEncodingException e) {
+		// e.printStackTrace();
+		// } catch (ClientProtocolException e) {
+		// e.printStackTrace();
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		// return result.toString();
+		// }
+		// }, DownloadActivity.this);
+
 		// UI初始化
 		currentBucketTextView = (TextView) findViewById(R.id.current_bucket_tv);
 		mListView = (ListView) findViewById(R.id.object_list);
@@ -336,13 +391,13 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 					|| item.status == RemoteFile.STATUS_FINISH)
 				return;
 			// 下载操作示例
-			GetObjectRequest request = new GetObjectRequest(item.bucketName,
-					item.objectKey);
+			final GetObjectRequest request = new GetObjectRequest(
+					item.bucketName, item.objectKey);
 			String objectName = item.objectKey.substring(item.objectKey
 					.lastIndexOf("/") == -1 ? 0 : item.objectKey
 					.lastIndexOf("/"));
 			File file = new File(storeForder, objectName);
-			client.getObject(request, new GetObjectResponceHandler(file,
+			client.getObject(request, new GetObjectResponseHandler(file,
 					item.bucketName, item.objectKey) {
 
 				@Override
@@ -365,13 +420,15 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 
 				@Override
 				public void onTaskProgress(double progress) {
+//					if (progress > 50.0) {
+//						request.abort();
+//					}
 					RemoteFile remoteFile = dataSource.get(item.objectKey);
 					remoteFile.status = RemoteFile.STATUS_DOWNLOADING;
 					remoteFile.progress = (int) progress;
 					item.status = RemoteFile.STATUS_DOWNLOADING;
 					item.progress = (int) progress;
 					mHandler.sendEmptyMessage(0);
-
 				}
 
 				@Override
@@ -389,10 +446,17 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 				public void onTaskFailure(int paramInt,
 						Header[] paramArrayOfHeader, Throwable paramThrowable,
 						File paramFile) {
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+							"failure: reason = " + paramThrowable.toString());
 					RemoteFile remoteFile = dataSource.get(item.objectKey);
 					remoteFile.status = RemoteFile.STATUS_FAIL;
 					item.status = RemoteFile.STATUS_FAIL;
 					mHandler.sendEmptyMessage(0);
+				}
+
+				@Override
+				public void onTaskCancel() {
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
 				}
 			});
 		}

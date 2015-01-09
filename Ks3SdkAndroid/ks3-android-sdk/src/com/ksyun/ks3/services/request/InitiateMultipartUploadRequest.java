@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.HttpMethod;
 import com.ksyun.ks3.model.ObjectMetadata;
@@ -15,6 +16,7 @@ import com.ksyun.ks3.model.acl.Permission;
 import com.ksyun.ks3.util.StringUtils;
 
 public class InitiateMultipartUploadRequest extends Ks3HttpRequest {
+	private static final long serialVersionUID = 7282026856520472721L;
 	private ObjectMetadata objectMeta = new ObjectMetadata();
 	private AccessControlList acl = new AccessControlList();
 	private CannedAccessControlList cannedAcl;
@@ -25,21 +27,24 @@ public class InitiateMultipartUploadRequest extends Ks3HttpRequest {
 	}
 
 	@Override
-	protected void setupRequest() {
+	protected void setupRequest() throws Ks3ClientException {
 		this.setHttpMethod(HttpMethod.POST);
 		this.addParams("uploads", null);
 		this.addHeader(HttpHeaders.ContentType, "text/plain");
-		for (Entry<Meta, String> entry : this.objectMeta.getMetadata().entrySet()) {
+		for (Entry<Meta, String> entry : this.objectMeta.getMetadata()
+				.entrySet()) {
 			if (!entry.getKey().equals(Meta.ContentLength)) {
 				this.addHeader(entry.getKey().toString(), entry.getValue());
 			}
 		}
-		for (Entry<String, String> entry : this.objectMeta.getUserMetadata().entrySet()) {
+		for (Entry<String, String> entry : this.objectMeta.getUserMetadata()
+				.entrySet()) {
 			if (entry.getKey().startsWith(ObjectMetadata.userMetaPrefix))
 				this.addHeader(entry.getKey(), entry.getValue());
 		}
 		if (this.cannedAcl != null) {
-			this.addHeader(HttpHeaders.CannedAcl.toString(),cannedAcl.toString());
+			this.addHeader(HttpHeaders.CannedAcl.toString(),
+					cannedAcl.toString());
 		}
 		if (this.acl != null) {
 			List<String> grants_fullcontrol = new ArrayList<String>();
@@ -73,11 +78,11 @@ public class InitiateMultipartUploadRequest extends Ks3HttpRequest {
 	}
 
 	@Override
-	protected void validateParams() throws IllegalArgumentException {
-		if(StringUtils.validateBucketName(this.getBucketname())==null)
-			throw new IllegalArgumentException("bucket name is not correct");
-		if(StringUtils.isBlank(this.getObjectkey()))
-			throw new IllegalArgumentException("object key can not be null");
+	protected void validateParams() throws Ks3ClientException {
+		if (StringUtils.validateBucketName(this.getBucketname()) == null)
+			throw new Ks3ClientException("bucket name is not correct");
+		if (StringUtils.isBlank(this.getObjectkey()))
+			throw new Ks3ClientException("object key can not be null");
 	}
 
 	public ObjectMetadata getObjectMeta() {

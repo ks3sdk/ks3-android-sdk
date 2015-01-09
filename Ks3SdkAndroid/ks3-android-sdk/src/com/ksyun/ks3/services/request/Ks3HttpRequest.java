@@ -2,6 +2,7 @@ package com.ksyun.ks3.services.request;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -40,8 +41,10 @@ import com.ksyun.ks3.util.DateUtil;
 import com.ksyun.ks3.util.RequestUtils;
 import com.ksyun.ks3.util.StringUtils;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestHandle;
 
-public abstract class Ks3HttpRequest {
+public abstract class Ks3HttpRequest implements Serializable {
+	private static final long serialVersionUID = -5871616471337887313L;
 	private String url;
 	private String bucketname;
 	private String objectkey;
@@ -57,8 +60,8 @@ public abstract class Ks3HttpRequest {
 	private AuthListener authListener;
 	private String authorizationStr;
 	private RequestProgressListener progressListener;
+	private RequestHandle handler;
 	
-
 	/* url */
 	public String getUrl() {
 		return url;
@@ -226,30 +229,31 @@ public abstract class Ks3HttpRequest {
 	 * 
 	 * @param ks3AuthHandler
 	 */
-	public void completeRequset(Ks3AuthHandler ks3AuthHandler,AsyncHttpResponseHandler handler) {
+	public void completeRequset(Ks3AuthHandler ks3AuthHandler,
+			AsyncHttpResponseHandler handler) throws Ks3ClientException {
 		this.validateParams();
 		setupRequestDefault();
 		setupRequest();
-		if(handler instanceof RequestProgressListener){
+		if (handler instanceof RequestProgressListener) {
 			this.progressListener = (RequestProgressListener) handler;
 		}
 		this.asyncHttpRequestParam = finishHttpRequest(ks3AuthHandler);
-		if (authListener!=null) {
+		if (authListener != null && ks3AuthHandler.isNeedCalculateAuth) {
 			if (!TextUtils.isEmpty(authorizationStr)) {
 				AuthEvent event = new AuthEvent();
 				event.setCode(AuthEventCode.Success);
 				event.setContent(authorizationStr);
-				Log.d("eflake", "make requset complete");
+				Log.d(Constants.LOG_TAG, "make requset complete");
 				ks3AuthHandler.onSuccess(event);
 			} else {
 				AuthEvent event = new AuthEvent();
 				event.setCode(AuthEventCode.Failure);
 				event.setContent("failure reason : authorizaion is not correct");
-				Log.d("eflake", "make requset failed");
+				Log.d(Constants.LOG_TAG, "make requset failed");
 				ks3AuthHandler.onFailure(event);
 			}
 		}
-		Log.d("eflake", "make requset complete");
+		Log.d(Constants.LOG_TAG, "make requset complete");
 	}
 
 	private void setupRequestDefault() {
@@ -258,21 +262,25 @@ public abstract class Ks3HttpRequest {
 			url = url.replace("http://", "").replace("https://", "");
 		httpMethod = HttpMethod.POST;
 		this.setContentMD5("");
-		this.addHeader(HttpHeaders.UserAgent,Constants.KS3_SDK_USER_AGENT);
-		this.setContentType("text/plain");	
+		this.addHeader(HttpHeaders.UserAgent, Constants.KS3_SDK_USER_AGENT);
+		this.setContentType("text/plain");
 		this.setDate(DateUtil.GetUTCTime());
 	}
 
 	@SuppressWarnings("deprecation")
-	private AsyncHttpRequsetParam finishHttpRequest(Ks3AuthHandler ks3AuthHandler){
+	private AsyncHttpRequsetParam finishHttpRequest(
+			Ks3AuthHandler ks3AuthHandler) throws Ks3ClientException {
 		// Prepare md5 if need
 		if (this instanceof MD5CalculateAble && this.getRequestBody() != null) {
 			if (!(this.getRequestBody() instanceof MD5DigestCalculatingInputStream))
-				this.setRequestBody(new MD5DigestCalculatingInputStream(this.getRequestBody()));
+				this.setRequestBody(new MD5DigestCalculatingInputStream(this
+						.getRequestBody()));
 		}
 		String encodedParams = encodeParams();
-		String encodedObjectKey = (StringUtils.isBlank(this.objectkey))?"":URLEncoder.encode(this.objectkey);
-		url = new StringBuffer("http://").append(url).append("/").append(encodedObjectKey).toString();
+		String encodedObjectKey = (StringUtils.isBlank(this.objectkey)) ? ""
+				: URLEncoder.encode(this.objectkey);
+		url = new StringBuffer("http://").append(url).append("/")
+				.append(encodedObjectKey).toString();
 		if (!TextUtils.isEmpty(encodedParams))
 			url += "?" + encodedParams;
 		// Pass url
@@ -286,13 +294,16 @@ public abstract class Ks3HttpRequest {
 							"Unable to create HTTP entity:" + e, e);
 				}
 			} else {
-				String length = this.getHeader().get(HttpHeaders.ContentLength.toString());
-				HttpEntity entity = new RepeatableInputStreamRequestEntity(requestBody, length);
+				String length = this.getHeader().get(
+						HttpHeaders.ContentLength.toString());
+				HttpEntity entity = new RepeatableInputStreamRequestEntity(
+						requestBody, length);
 				try {
 					entity = new BufferedHttpEntity(entity);
 				} catch (IOException e) {
 					e.printStackTrace();
-					throw new Ks3ClientException("init http request error(" + e+ ")", e);
+					throw new Ks3ClientException("init http request error(" + e
+							+ ")", e);
 				}
 				// Set entity
 				setEntity(entity);
@@ -301,10 +312,13 @@ public abstract class Ks3HttpRequest {
 		} else if (this.getHttpMethod() == HttpMethod.PUT) {
 			if (requestBody != null) {
 				Map<String, String> headrs = this.getHeader();
-				String length = headrs.get(HttpHeaders.ContentLength.toString());
-				if(length == null)
-					throw new IllegalArgumentException("content-length can not be null when put request");
-				RepeatableInputStreamRequestEntity entity =new RepeatableInputStreamRequestEntity(requestBody, length);
+				String length = headrs
+						.get(HttpHeaders.ContentLength.toString());
+				if (length == null)
+					throw new Ks3ClientException(
+							"content-length can not be null when put request");
+				RepeatableInputStreamRequestEntity entity = new RepeatableInputStreamRequestEntity(
+						requestBody, length);
 				entity.setProgressLisener(this.progressListener);
 				setEntity(entity);
 			}
@@ -339,7 +353,7 @@ public abstract class Ks3HttpRequest {
 		} else {
 			return new AsyncHttpRequsetParam(url, header, params);
 		}
-		
+
 	}
 
 	@SuppressWarnings("deprecation")
@@ -381,10 +395,10 @@ public abstract class Ks3HttpRequest {
 	}
 
 	/* Setup header,parameter and so on */
-	protected abstract void setupRequest();
+	protected abstract void setupRequest() throws Ks3ClientException;
 
 	/* Validate parameters */
-	protected abstract void validateParams() throws IllegalArgumentException;
+	protected abstract void validateParams() throws Ks3ClientException;
 
 	public AuthListener getAuthListener() {
 		return authListener;
@@ -395,5 +409,23 @@ public abstract class Ks3HttpRequest {
 
 	}
 
+	public void setRequestHandler(RequestHandle handler) {
+		if(this.handler != null){
+			Log.e(Constants.LOG_TAG,"method : setRequestHandler , is an internal method, and the handler is already set up , ingnore ! ");
+			return ;
+		}
+			
+		this.handler = handler;
+	}
+	
+	public boolean abort(){
+		if(this.handler != null){
+			return this.handler.cancel(true);
+		}else{
+			Log.e(Constants.LOG_TAG,"the request is on RUNNING status , or the request is on sync mode , igonre abort request ! ");
+			return false;
+		}
+	}
+	
 
 }

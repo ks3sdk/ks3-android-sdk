@@ -3,6 +3,7 @@ package com.ksyun.ks3.services;
 import com.ksyun.ks3.auth.AuthEvent;
 
 public abstract class Ks3AuthHandler {
+	public boolean isNeedCalculateAuth = true;
 	public abstract void onSuccess (AuthEvent event);
 	public abstract void onFailure (AuthEvent event);
 	

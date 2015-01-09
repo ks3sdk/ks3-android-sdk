@@ -1,10 +1,12 @@
 package com.ksyun.ks3.services.request;
 
+import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.HttpMethod;
 import com.ksyun.ks3.util.StringUtils;
 
 public class ListObjectsRequest extends Ks3HttpRequest {
+	private static final long serialVersionUID = 7624709560043939375L;
 
 	private String prefix;
 
@@ -66,7 +68,7 @@ public class ListObjectsRequest extends Ks3HttpRequest {
 	}
 
 	@Override
-	protected void setupRequest() {
+	protected void setupRequest() throws Ks3ClientException {
 		this.setHttpMethod(HttpMethod.GET);
 		this.addParams("prefix", prefix);
 		this.addParams("marker", marker);
@@ -79,12 +81,12 @@ public class ListObjectsRequest extends Ks3HttpRequest {
 	}
 
 	@Override
-	protected void validateParams() throws IllegalArgumentException {
+	protected void validateParams() throws Ks3ClientException {
 		if (StringUtils.isBlank(super.getBucketname()))
-			throw new IllegalArgumentException(
+			throw new Ks3ClientException(
 					"param bucketName can not be blank");
 		if (this.maxKeys != null && (this.maxKeys > 1000 || this.maxKeys < 1))
-			throw new IllegalArgumentException(
+			throw new Ks3ClientException(
 					"maxKeys should between 1 and 1000");
 	}
 
