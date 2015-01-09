@@ -277,10 +277,10 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 	private void setUp() {
 		// 初始化Ks3Client
 		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
-		// client = new Ks3Client(Constants.ACCESS_KEY__ID,
-		// Constants.ACCESS_KEY_SECRET, UploadActivity.this);
-		// client.setConfiguration(configuration);
-		//
+		client = new Ks3Client(Constants.ACCESS_KEY__ID,
+				Constants.ACCESS_KEY_SECRET, UploadActivity.this);
+		client.setConfiguration(configuration);
+
 		// AuthListener方式初始化
 		// client = new Ks3Client(new AuthListener() {
 		// @Override
@@ -415,9 +415,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 			@Override
 			public void onTaskProgress(double progress) {
-//				if (progress > 50.0) {
-//					request.abort();
-//				}
+				// if (progress > 50.0) {
+				// request.abort();
+				// }
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
 				for (UploadFile file : uploadFiles) {
