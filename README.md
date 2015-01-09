@@ -21,7 +21,7 @@
 ```
 
 ###SDK配置
-SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.2.jar*，以及依赖库文件，放入工程libs文件下。
+SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.3.jar*，以及依赖库文件，放入工程libs文件下。
 
 也可以下载[源码:](https://github.com/ks3sdk/ks3-android-sdk/tree/master/Ks3SdkAndroid/ks3-android-sdk)，以Library库形式添加。
 
@@ -36,8 +36,6 @@ SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.2.jar*，
 如果开发者需要用同步方式进行API调用（即在自己开的线程内,调用同步API请求），需要调用以下方法，以确保API以同步方式进行。
 
 ~~~
-	
-	client.setIsUseAsyncMode(false);// 设置同步模式开启
 	
 	ArrayList<Bucket> bucketList = client.syncListBuckets();// 同步API调用示例，需要在用户非主线程中执行，失败时会抛出异常
 ~~~
