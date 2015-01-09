@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.text.TextUtils;
 
+import com.ksyun.ks3.auth.ValidateUtil;
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.HttpMethod;
@@ -12,7 +13,6 @@ import com.ksyun.ks3.model.acl.AccessControlList;
 import com.ksyun.ks3.model.acl.CannedAccessControlList;
 import com.ksyun.ks3.model.acl.Grant;
 import com.ksyun.ks3.model.acl.Permission;
-import com.ksyun.ks3.util.StringUtils;
 
 public class PutBucketACLRequest extends Ks3HttpRequest {
 	private static final long serialVersionUID = 612889209303233181L;
@@ -62,9 +62,8 @@ public class PutBucketACLRequest extends Ks3HttpRequest {
 	@Override
 	protected void validateParams() throws Ks3ClientException {
 
-		if (StringUtils.isBlank(this.getBucketname())) {
-			throw new Ks3ClientException("bucketname can not be null");
-		}
+		if (ValidateUtil.validateBucketName(this.getBucketname()) == null)
+			throw new Ks3ClientException("bucket name is not correct");
 		if (this.accessControlList == null && this.cannedAcl == null)
 			throw new Ks3ClientException(
 					"acl and cannedAcl can not both null");
@@ -87,7 +86,7 @@ public class PutBucketACLRequest extends Ks3HttpRequest {
 
 	public PutBucketACLRequest(String bucketName,
 			CannedAccessControlList cannedAcl) {
-		setBucketname(bucketName);
+		this(bucketName);
 		this.setCannedAcl(cannedAcl);
 	}
 

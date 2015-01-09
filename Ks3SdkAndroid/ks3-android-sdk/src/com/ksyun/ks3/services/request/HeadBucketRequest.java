@@ -1,8 +1,8 @@
 package com.ksyun.ks3.services.request;
 
+import com.ksyun.ks3.auth.ValidateUtil;
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.HttpMethod;
-import com.ksyun.ks3.util.StringUtils;
 
 public class HeadBucketRequest extends Ks3HttpRequest {
 	private static final long serialVersionUID = -3575015587209514328L;
@@ -22,8 +22,8 @@ public class HeadBucketRequest extends Ks3HttpRequest {
 
 	@Override
 	protected void validateParams() throws Ks3ClientException {
-		if (StringUtils.isBlank(this.getBucketname()))
-			throw new Ks3ClientException("bucket name can not be null");
+		if (ValidateUtil.validateBucketName(this.getBucketname()) == null)
+			throw new Ks3ClientException("bucket name is not correct");
 	}
 
 }

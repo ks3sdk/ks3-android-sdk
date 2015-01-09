@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.text.TextUtils;
 
+import com.ksyun.ks3.auth.ValidateUtil;
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.HttpMethod;
@@ -60,9 +61,8 @@ public class PutObjectACLRequest extends Ks3HttpRequest {
 
 	@Override
 	protected void validateParams() throws Ks3ClientException {
-		if (StringUtils.isBlank(this.getBucketname())) {
-			throw new Ks3ClientException("bucketname can not be null");
-		}
+		if (ValidateUtil.validateBucketName(this.getBucketname()) == null)
+			throw new Ks3ClientException("bucket name is not correct");
 		if (StringUtils.isBlank(this.getObjectkey())) {
 			throw new Ks3ClientException("object can not be null");
 		}

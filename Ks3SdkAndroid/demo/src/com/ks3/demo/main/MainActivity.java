@@ -280,50 +280,52 @@ public class MainActivity extends Activity {
 
 	private void setUpKs3Client() {
 		// AK&SK形式直接初始化，仅建议测试时使用，正式环境下请替换AuthListener方式
-		 client = new Ks3Client(Constants.ACCESS_KEY__ID,
-		 Constants.ACCESS_KEY_SECRET, MainActivity.this);
-		 configuration = Ks3ClientConfiguration.getDefaultConfiguration();
-		 client.setConfiguration(configuration);
+		client = new Ks3Client(Constants.ACCESS_KEY__ID,
+				Constants.ACCESS_KEY_SECRET, MainActivity.this);
+		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
+		client.setConfiguration(configuration);
 
 		// AuthListener方式初始化
-//		client = new Ks3Client(new AuthListener() {
-//			@Override
-//			public String onCalculateAuth(final String httpMethod,
-//					final String ContentType, final String Date,
-//					final String ContentMD5, final String Resource,
-//					final String Headers) {
-//				// 此处应由APP端向业务服务器发送post请求返回Token。
-//				// 需要注意该回调方法运行在非主线程
-//				// 此处内部写法仅为示例，开发者请根据自身情况修改
-//				StringBuffer result = new StringBuffer();
-//				HttpPost request = new HttpPost(Constants.APP_SERTVER_HOST);
-//				StringEntity se;
-//				try {
-//					JSONObject object = new JSONObject();
-//					object.put("http_method", httpMethod.toString());
-//					object.put("content_type", ContentType);
-//					object.put("date", Date);
-//					object.put("content_md5", ContentMD5);
-//					object.put("resource", Resource);
-//					object.put("headers", Headers);
-//					se = new StringEntity(object.toString());
-//					request.setEntity(se);
-//					HttpResponse httpResponse = new DefaultHttpClient().execute(request);
-//					String retSrc = EntityUtils.toString(httpResponse
-//							.getEntity());
-//					result.append(retSrc);
-//				} catch (JSONException e) {
-//					e.printStackTrace();
-//				} catch (UnsupportedEncodingException e) {
-//					e.printStackTrace();
-//				} catch (ClientProtocolException e) {
-//					e.printStackTrace();
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
-//				return result.toString();
-//			}
-//		}, MainActivity.this);
+		// client = new Ks3Client(new AuthListener() {
+		// @Override
+		// public String onCalculateAuth(final String httpMethod,
+		// final String ContentType, final String Date,
+		// final String ContentMD5, final String Resource,
+		// final String Headers) {
+		// // 此处应由APP端向业务服务器发送post请求返回Token。
+		// // 需要注意该回调方法运行在非主线程
+		// // 此处内部写法仅为示例，开发者请根据自身情况修改
+		// StringBuffer result = new StringBuffer();
+		// HttpPost request = new HttpPost(Constants.APP_SERTVER_HOST);
+		// StringEntity se;
+		// try {
+		// JSONObject object = new JSONObject();
+		// object.put("http_method", httpMethod.toString());
+		// object.put("content_type", ContentType);
+		// object.put("date", Date);
+		// object.put("content_md5", ContentMD5);
+		// object.put("resource", Resource);
+		// object.put("headers", Headers);
+		// se = new StringEntity(object.toString());
+		// request.setEntity(se);
+		// HttpResponse httpResponse = new DefaultHttpClient().execute(request);
+		// String retSrc = EntityUtils.toString(httpResponse
+		// .getEntity());
+		// result.append(retSrc);
+		// } catch (JSONException e) {
+		// e.printStackTrace();
+		// } catch (UnsupportedEncodingException e) {
+		// e.printStackTrace();
+		// } catch (ClientProtocolException e) {
+		// e.printStackTrace();
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		// return result.toString();
+		// }
+		// }, MainActivity.this);
+		// client.setConfiguration(configuration);
+
 	}
 
 	@Override
@@ -954,68 +956,44 @@ public class MainActivity extends Activity {
 	}
 
 	private void listBuckets() {
-		new Thread(new Runnable() {
+		client.listBuckets(new ListBucketsResponceHandler() {
+			@Override
+			public void onSuccess(int paramInt, Header[] paramArrayOfHeader,
+					ArrayList<Bucket> resultList) {
+				StringBuffer stringBuffer = new StringBuffer();
+				for (Bucket bucket : resultList) {
+					stringBuffer.append(bucket.getName()).append("\n");
+					stringBuffer.append(bucket.getCreationDate()).append("\n");
+					stringBuffer.append(bucket.getOwner().getDisplayName())
+							.append("\n");
+					stringBuffer.append(bucket.getOwner().getId()).append("\n");
+				}
+				Intent intent = new Intent(MainActivity.this,
+						RESTAPITestResult.class);
+				Bundle data = new Bundle();
+				data.putString(RESULT, stringBuffer.toString());
+				data.putString(API, "List Bucket Result");
+				intent.putExtras(data);
+				startActivity(intent);
+			}
 
 			@Override
-			public void run() {
-				// List<Bucket> list = null;
-				// try {
-				// list = client.syncListBuckets();
-				// } catch (Throwable e) {
-				// e.printStackTrace();
-				// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, e.toString());
-				// }
-				// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "success,size = "
-				// + list.size());
-
-				 try {
-				 client.syncInitiateMultipartUpload("", "");
-				 } catch (Throwable e) {
-				 e.printStackTrace();
-				 Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, e.getCause().toString());
-				 }
-
+			public void onFailure(int statesCode, Header[] paramArrayOfHeader,
+					String paramString, Throwable paramThrowable) {
+				StringBuffer stringBuffer = new StringBuffer();
+				stringBuffer.append(
+						"list bucket fail , states code :" + statesCode)
+						.append("\n");
+				stringBuffer.append("Exception :" + paramThrowable.toString());
+				Intent intent = new Intent(MainActivity.this,
+						RESTAPITestResult.class);
+				Bundle data = new Bundle();
+				data.putString(RESULT, stringBuffer.toString());
+				data.putString(API, "List Buckets");
+				intent.putExtras(data);
+				startActivity(intent);
 			}
-		}).start();
-
-		// client.listBuckets(new ListBucketsResponceHandler() {
-		// @Override
-		// public void onSuccess(int paramInt, Header[] paramArrayOfHeader,
-		// ArrayList<Bucket> resultList) {
-		// StringBuffer stringBuffer = new StringBuffer();
-		// for (Bucket bucket : resultList) {
-		// stringBuffer.append(bucket.getName()).append("\n");
-		// stringBuffer.append(bucket.getCreationDate()).append("\n");
-		// stringBuffer.append(bucket.getOwner().getDisplayName())
-		// .append("\n");
-		// stringBuffer.append(bucket.getOwner().getId()).append("\n");
-		// }
-		// Intent intent = new Intent(MainActivity.this,
-		// RESTAPITestResult.class);
-		// Bundle data = new Bundle();
-		// data.putString(RESULT, stringBuffer.toString());
-		// data.putString(API, "List Bucket Result");
-		// intent.putExtras(data);
-		// startActivity(intent);
-		// }
-		//
-		// @Override
-		// public void onFailure(int statesCode, Header[] paramArrayOfHeader,
-		// String paramString, Throwable paramThrowable) {
-		// StringBuffer stringBuffer = new StringBuffer();
-		// stringBuffer.append(
-		// "list bucket fail , states code :" + statesCode)
-		// .append("\n");
-		// stringBuffer.append("Exception :" + paramThrowable.toString());
-		// Intent intent = new Intent(MainActivity.this,
-		// RESTAPITestResult.class);
-		// Bundle data = new Bundle();
-		// data.putString(RESULT, stringBuffer.toString());
-		// data.putString(API, "List Buckets");
-		// intent.putExtras(data);
-		// startActivity(intent);
-		// }
-		// });
+		});
 	}
 
 	private void createBucket() {

@@ -1,5 +1,6 @@
 package com.ksyun.ks3.services.request;
 
+import com.ksyun.ks3.auth.ValidateUtil;
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.HttpMethod;
 import com.ksyun.ks3.util.StringUtils;
@@ -18,24 +19,19 @@ public class ListPartsRequest extends Ks3HttpRequest {
 	public ListPartsRequest(String bucketname, String objectkey, String uploadId) {
 		super.setBucketname(bucketname);
 		super.setObjectkey(objectkey);
-		this.uploadId = uploadId;
+		this.setUploadId(uploadId);
 	}
 
 	public ListPartsRequest(String bucketname, String objectkey,
 			String uploadId, int maxParts) {
-		super.setBucketname(bucketname);
-		super.setObjectkey(objectkey);
-		this.uploadId = uploadId;
-		this.maxParts = maxParts;
+		this(bucketname,objectkey,uploadId);
+		this.setMaxParts(maxParts);
 	}
 
 	public ListPartsRequest(String bucketname, String objectkey,
 			String uploadId, int maxParts, int partNumberMarker) {
-		super.setBucketname(bucketname);
-		super.setObjectkey(objectkey);
-		this.uploadId = uploadId;
-		this.maxParts = maxParts;
-		this.partNumberMarker = partNumberMarker;
+		this(bucketname,objectkey,uploadId,maxParts);
+		this.setPartNumberMarker(partNumberMarker);
 	}
 
 	@Override
@@ -53,8 +49,8 @@ public class ListPartsRequest extends Ks3HttpRequest {
 
 	@Override
 	protected void validateParams() throws Ks3ClientException {
-		if (StringUtils.isBlank(this.getBucketname()))
-			throw new Ks3ClientException("bucket name can not be null");
+		if (ValidateUtil.validateBucketName(this.getBucketname()) == null)
+			throw new Ks3ClientException("bucket name is not correct");
 		if (StringUtils.isBlank(this.getObjectkey()))
 			throw new Ks3ClientException("object key can not be null");
 		if (StringUtils.isBlank(this.uploadId))

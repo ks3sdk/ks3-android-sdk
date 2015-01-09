@@ -1,7 +1,6 @@
 package com.ksyun.ks3.services;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -380,13 +379,30 @@ public class Ks3Client implements Ks3 {
 	}
 
 	@Override
-	public Ks3HttpRequest putObject(String bucketname, String objectkey,
-			InputStream inputstream, ObjectMetadata objectmeta,
+	public Ks3HttpRequest putObject(String bucketname, String objectkey, File file,
+			String callBackUrl,String callBackBody,
 			PutObjectResponseHandler handler) {
-		return this.putObject(new PutObjectRequest(bucketname, objectkey, inputstream,
+		return this.putObject(new PutObjectRequest(bucketname, objectkey, file,callBackUrl,callBackBody),
+				handler);
+	}
+	
+	@Override
+	public Ks3HttpRequest putObject(String bucketname, String objectkey,
+			File file, ObjectMetadata objectmeta,
+			PutObjectResponseHandler handler) {
+		return this.putObject(new PutObjectRequest(bucketname, objectkey, file,
 				objectmeta), handler);
 	}
 
+	@Override
+	public Ks3HttpRequest putObject(String bucketname, String objectkey,
+			File file, ObjectMetadata objectmeta,
+			String callBackUrl,String callBackBody,
+			PutObjectResponseHandler handler) {
+		return this.putObject(new PutObjectRequest(bucketname, objectkey, file,
+				objectmeta,callBackUrl,callBackBody), handler);
+	}
+	
 	@Override
 	public Ks3HttpRequest putObject(PutObjectRequest request,
 			PutObjectResponseHandler handler) {
@@ -496,6 +512,23 @@ public class Ks3Client implements Ks3 {
 			UploadPartResponceHandler resultHandler,boolean isUseAsyncMode) {
 		this.invoke(auth, request, resultHandler,isUseAsyncMode);
 	}
+
+	@Override
+	public void completeMultipartUpload(String bucketname, String objectkey,
+			String uploadId, List<PartETag> partETags,
+			CompleteMultipartUploadResponseHandler handler) {
+		this.completeMultipartUpload(new CompleteMultipartUploadRequest(
+				bucketname, objectkey, uploadId, partETags), handler);
+	}
+	
+	@Override
+	public void completeMultipartUpload(String bucketname, String objectkey,
+			String uploadId, List<PartETag> partETags,
+			String callBackUrl,String callBackBody,
+			CompleteMultipartUploadResponseHandler handler) {
+		this.completeMultipartUpload(new CompleteMultipartUploadRequest(
+				bucketname, objectkey, uploadId, partETags,callBackUrl,callBackBody), handler);
+	}
 	
 	@Override
 	public void completeMultipartUpload(ListPartsResult result,
@@ -505,13 +538,13 @@ public class Ks3Client implements Ks3 {
 	}
 
 	@Override
-	public void completeMultipartUpload(String bucketname, String objectkey,
-			String uploadId, List<PartETag> partETags,
+	public void completeMultipartUpload(ListPartsResult result,
+			String callBackUrl,String callBackBody,
 			CompleteMultipartUploadResponseHandler handler) {
-		this.completeMultipartUpload(new CompleteMultipartUploadRequest(
-				bucketname, objectkey, uploadId, partETags), handler);
+		this.completeMultipartUpload(
+				new CompleteMultipartUploadRequest(result,callBackUrl,callBackBody), handler);
 	}
-
+	
 	@Override
 	public void completeMultipartUpload(CompleteMultipartUploadRequest request,
 			CompleteMultipartUploadResponseHandler handler) {
@@ -596,6 +629,7 @@ public class Ks3Client implements Ks3 {
 		return this.context;
 	}
 	
+	@Override
 	public ArrayList<Bucket> syncListBuckets() throws Throwable {
 		final ArrayList<Bucket> list = new ArrayList<Bucket>();
 
@@ -620,12 +654,14 @@ public class Ks3Client implements Ks3 {
 		return list;
 	}
 
+	@Override
 	public AccessControlPolicy syncGetBucketACL(String bucketName)
 			throws Throwable {
 		GetBucketACLRequest request = new GetBucketACLRequest(bucketName);
 		return this.syncGetBucketACL(request);
 	}
 
+	@Override
 	public AccessControlPolicy syncGetBucketACL(GetBucketACLRequest request)
 			throws Throwable {
 
@@ -656,6 +692,7 @@ public class Ks3Client implements Ks3 {
 		return policy;
 	}
 
+	@Override
 	public void syncPutBucketACL(String bucketName,
 			AccessControlList accessControlList) throws Throwable {
 		PutBucketACLRequest request = new PutBucketACLRequest(bucketName,accessControlList);
@@ -663,6 +700,7 @@ public class Ks3Client implements Ks3 {
 
 	}
 
+	@Override
 	public void syncPutBucketACL(String bucketName,
 			CannedAccessControlList accessControlList) throws Throwable {
 		PutBucketACLRequest request = new PutBucketACLRequest(bucketName,accessControlList);
@@ -690,18 +728,21 @@ public class Ks3Client implements Ks3 {
 		}
 	}
 
+	@Override
 	public void syncPutObjectACL(String bucketName, String objectKey,
 			CannedAccessControlList accessControlList) throws Throwable {
 		PutObjectACLRequest request = new PutObjectACLRequest(bucketName, objectKey, accessControlList);
 		this.syncPutObjectACL(request);
 	}
 
+	@Override
 	public void syncPutObjectACL(String bucketName, String objectKey,
 			AccessControlList accessControlList) throws Throwable {
 		PutObjectACLRequest request = new PutObjectACLRequest(bucketName, objectKey, accessControlList);
 		this.syncPutObjectACL(request);
 	}
 
+	@Override
 	public void syncPutObjectACL(PutObjectACLRequest request) throws Throwable {
 
 		final Throwable error = new Throwable();
@@ -724,12 +765,14 @@ public class Ks3Client implements Ks3 {
 		}
 	}
 
+	@Override
 	public AccessControlPolicy syncGetObjectACL(String bucketName,
 			String objectKey) throws Throwable {
 		GetObjectACLRequest request = new GetObjectACLRequest(bucketName, objectKey);
 		return this.syncGetObjectACL(request);
 	}
 
+	@Override
 	public AccessControlPolicy syncGetObjectACL(GetObjectACLRequest request)
 			throws Throwable {
 
@@ -760,11 +803,13 @@ public class Ks3Client implements Ks3 {
 		return policy;
 	}
 
+	@Override
 	public void syncHeadBucket(String bucketName) throws Throwable {
 		HeadBucketRequest request = new HeadBucketRequest(bucketName);
 		this.syncHeadBucket(request);
 	}
 
+	@Override
 	public void syncHeadBucket(HeadBucketRequest request) throws Throwable {
 
 		final Throwable error = new Throwable();
@@ -787,23 +832,27 @@ public class Ks3Client implements Ks3 {
 		}
 	}
 
+	@Override
 	public void syncCreateBucket(String bucketName) throws Throwable {
 		CreateBucketRequest request = new CreateBucketRequest(bucketName);
 		this.syncCreateBucket(request);
 	}
 
+	@Override
 	public void syncCreateBucket(String bucketName,
 			CannedAccessControlList accessControlList) throws Throwable {
 		CreateBucketRequest request = new CreateBucketRequest(bucketName, accessControlList);
 		this.syncCreateBucket(request);
 	}
 
+	@Override
 	public void syncCreateBucket(String bucketName,
 			AccessControlList accessControlList) throws Throwable {
 		CreateBucketRequest request = new CreateBucketRequest(bucketName, accessControlList);
 		this.syncCreateBucket(request);
 	}
 
+	@Override
 	public void syncCreateBucket(CreateBucketRequest request) throws Throwable {
 
 		final Throwable error = new Throwable();
@@ -826,11 +875,13 @@ public class Ks3Client implements Ks3 {
 		}
 	}
 
+	@Override
 	public void syncDeleteBucket(String bucketName) throws Throwable {
 		DeleteBucketRequest request = new DeleteBucketRequest(bucketName);
 		this.syncDeleteBucket(request);
 	}
 
+	@Override
 	public void syncDeleteBucket(DeleteBucketRequest request) throws Throwable {
 
 		final Throwable error = new Throwable();
@@ -853,18 +904,21 @@ public class Ks3Client implements Ks3 {
 		}
 	}
 
-	public ObjectListing syncListObject(String bucketName) throws Throwable {
+	@Override
+	public ObjectListing syncListObjects(String bucketName) throws Throwable {
 		ListObjectsRequest request = new ListObjectsRequest(bucketName);
-		return syncListObject(request);
+		return syncListObjects(request);
 	}
 
-	public ObjectListing syncListObject(String bucketName, String prefix)
+	@Override
+	public ObjectListing syncListObjects(String bucketName, String prefix)
 			throws Throwable {
 		ListObjectsRequest request = new ListObjectsRequest(bucketName,prefix);
-		return syncListObject(request);
+		return syncListObjects(request);
 	}
 
-	public ObjectListing syncListObject(ListObjectsRequest request)
+	@Override
+	public ObjectListing syncListObjects(ListObjectsRequest request)
 			throws Throwable {
 
 		final ObjectListing listing = new ObjectListing();
@@ -898,12 +952,14 @@ public class Ks3Client implements Ks3 {
 		return listing;
 	}
 
+	@Override
 	public void syncDeleteObject(String bucketName, String objectKey)
 			throws Throwable {
 		DeleteObjectRequest request = new DeleteObjectRequest(bucketName, objectKey);
 		this.syncDeleteObject(request);
 	}
 
+	@Override
 	public void syncDeleteObject(DeleteObjectRequest request) throws Throwable {
 
 		final Throwable error = new Throwable();
@@ -926,12 +982,14 @@ public class Ks3Client implements Ks3 {
 		}
 	}
 
+	@Override
 	public HeadObjectResult syncHeadObject(String bucketName, String objectKey)
 			throws Throwable {
 		HeadObjectRequest request = new HeadObjectRequest(bucketName, objectKey);
 		return this.syncHeadObject(request);
 	}
 
+	@Override
 	public HeadObjectResult syncHeadObject(HeadObjectRequest request)
 			throws Throwable {
 
@@ -961,13 +1019,15 @@ public class Ks3Client implements Ks3 {
 		return result;
 	}
 
+	@Override
 	public CopyResult syncCopyObject(String destinationBucket,
 			String destinationObject, String sourceBucket, String sourceKey)
 			throws Throwable {
 		CopyObjectRequest request = new CopyObjectRequest(destinationBucket, destinationObject, sourceBucket, sourceKey);
 		return this.syncCopyObject(request);
 	}
-
+	
+	@Override
 	public CopyResult syncCopyObject(String destinationBucket,
 			String destinationObject, String sourceBucket, String sourceKey,
 			CannedAccessControlList accessControlList) throws Throwable {
@@ -975,6 +1035,7 @@ public class Ks3Client implements Ks3 {
 		return this.syncCopyObject(request);
 	}
 
+	@Override
 	public CopyResult syncCopyObject(String destinationBucket,
 			String destinationObject, String sourceBucket, String sourceKey,
 			AccessControlList accessControlList) throws Throwable {
@@ -982,6 +1043,7 @@ public class Ks3Client implements Ks3 {
 		return this.syncCopyObject(request);
 	}
 
+	@Override
 	public CopyResult syncCopyObject(CopyObjectRequest request)
 			throws Throwable {
 
@@ -1010,12 +1072,14 @@ public class Ks3Client implements Ks3 {
 		return copyResult;
 	}
 
+	@Override
 	public InitiateMultipartUploadResult syncInitiateMultipartUpload(
 			String bucketName, String objectKey) throws Throwable {
 		InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(bucketName, objectKey);
 		return this.syncInitiateMultipartUpload(request);
 	}
 
+	@Override
 	public InitiateMultipartUploadResult syncInitiateMultipartUpload(
 			InitiateMultipartUploadRequest request) throws Throwable {
 
@@ -1048,6 +1112,7 @@ public class Ks3Client implements Ks3 {
 		return initResult;
 	}
 
+	@Override
 	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
 			String bucketName, String objectKey, String uploadId,
 			List<PartETag> partETags) throws Throwable {
@@ -1055,12 +1120,29 @@ public class Ks3Client implements Ks3 {
 		return this.syncCompleteMultipartUpload(request);
 	}
 
+	@Override
+	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
+			String bucketName, String objectKey, String uploadId,
+			List<PartETag> partETags,String callBackUrl,String callBackBody) throws Throwable {
+		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(bucketName, objectKey, uploadId, partETags,callBackUrl,callBackBody) ;
+		return this.syncCompleteMultipartUpload(request);
+	}
+	
+	@Override
 	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
 			ListPartsResult result) throws Throwable {
 		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(result);
 		return this.syncCompleteMultipartUpload(request); 
 	}
 
+	@Override
+	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
+			ListPartsResult result,String callBackUrl,String callBackBody) throws Throwable {
+		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(result,callBackUrl,callBackBody);
+		return this.syncCompleteMultipartUpload(request); 
+	}
+	
+	@Override
 	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
 			CompleteMultipartUploadRequest request) throws Throwable {
 
@@ -1096,6 +1178,7 @@ public class Ks3Client implements Ks3 {
 		return completeMultipartUploadResult;
 	}
 
+	@Override
 	public void syncAbortMultipartUpload(AbortMultipartUploadRequest request)
 			throws Throwable {
 
@@ -1122,24 +1205,28 @@ public class Ks3Client implements Ks3 {
 		}
 	}
 
+	@Override
 	public void syncAbortMultipartUpload(String bucketname, String objectKey,
 			String uploadId) throws Throwable {
 		AbortMultipartUploadRequest request = new AbortMultipartUploadRequest(bucketname, objectKey, uploadId);
 		this.syncAbortMultipartUpload(request);
 	}
 
+	@Override
 	public ListPartsResult syncListParts(String bucketName, String objectKey,
 			String uploadId) throws Throwable {
 		ListPartsRequest request = new ListPartsRequest(bucketName, objectKey, uploadId);
 		return this.syncListParts(request);
 	}
 
+	@Override
 	public ListPartsResult syncListParts(String bucketName, String objectKey,
 			String uploadId, int maxParts) throws Throwable {
 		ListPartsRequest request = new ListPartsRequest(bucketName, objectKey, uploadId,maxParts);
 		return this.syncListParts(request);
 	}
 
+	@Override
 	public ListPartsResult syncListParts(String bucketName, String objectKey,
 			String uploadId, int maxParts, int partNumberMarker)
 			throws Throwable {
@@ -1147,6 +1234,7 @@ public class Ks3Client implements Ks3 {
 		return this.syncListParts(request);
 	}
 
+	@Override
 	public ListPartsResult syncListParts(ListPartsRequest request)
 			throws Throwable {
 		final ListPartsResult listPartsResult = new ListPartsResult();

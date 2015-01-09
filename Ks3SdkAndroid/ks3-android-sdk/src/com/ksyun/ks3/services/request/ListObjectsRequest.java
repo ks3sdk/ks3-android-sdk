@@ -1,5 +1,6 @@
 package com.ksyun.ks3.services.request;
 
+import com.ksyun.ks3.auth.ValidateUtil;
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.HttpMethod;
@@ -82,9 +83,8 @@ public class ListObjectsRequest extends Ks3HttpRequest {
 
 	@Override
 	protected void validateParams() throws Ks3ClientException {
-		if (StringUtils.isBlank(super.getBucketname()))
-			throw new Ks3ClientException(
-					"param bucketName can not be blank");
+		if (ValidateUtil.validateBucketName(this.getBucketname()) == null)
+			throw new Ks3ClientException("bucket name is not correct");
 		if (this.maxKeys != null && (this.maxKeys > 1000 || this.maxKeys < 1))
 			throw new Ks3ClientException(
 					"maxKeys should between 1 and 1000");

@@ -3,7 +3,8 @@ package com.ksyun.ks3.services.request;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -11,6 +12,7 @@ import java.util.Map.Entry;
 import android.text.TextUtils;
 import android.util.Base64;
 
+import com.ksyun.ks3.auth.ValidateUtil;
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.HttpMethod;
@@ -23,7 +25,6 @@ import com.ksyun.ks3.model.acl.Grant;
 import com.ksyun.ks3.model.acl.Permission;
 import com.ksyun.ks3.model.transfer.MD5DigestCalculatingInputStream;
 import com.ksyun.ks3.model.transfer.RepeatableFileInputStream;
-import com.ksyun.ks3.model.transfer.RepeatableInputStream;
 import com.ksyun.ks3.util.Md5Utils;
 import com.ksyun.ks3.util.StringUtils;
 
@@ -35,6 +36,8 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 	private CannedAccessControlList cannedAcl;
 	private AccessControlList acl = new AccessControlList();
 	private String redirectLocation;
+	private String callBackUrl;
+	private String callBackBody;
 
 	public PutObjectRequest(String bucketname, String key, File file) {
 		this.setBucketname(bucketname);
@@ -42,14 +45,24 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 		this.setFile(file);
 	}
 
-	public PutObjectRequest(String bucketname, String key,
-			InputStream inputStream, ObjectMetadata metadata) {
-		this.setBucketname(bucketname);
-		this.setObjectkey(key);
-		this.setObjectMeta(metadata == null ? this.objectMeta : metadata);
-		this.setRequestBody(new RepeatableInputStream(inputStream, 128 * 1024));
+	public PutObjectRequest(String bucketname, String key,File file, ObjectMetadata metadata) {
+		this(bucketname,key,file);
+		this.setObjectMeta(metadata == null ? this.objectMeta : metadata);	
 	}
 
+	public PutObjectRequest(String bucketname, String key, File file,String callBackUrl,String callBackBody) {
+		this(bucketname,key,file);
+		this.setCallBackUrl(callBackUrl);
+		this.setCallBackBody(callBackBody);
+	}
+	
+	public PutObjectRequest(String bucketname, String key,File file, ObjectMetadata metadata,String callBackUrl,String callBackBody) {
+		this(bucketname,key,file,metadata);
+		this.setCallBackUrl(callBackUrl);
+		this.setCallBackBody(callBackBody);
+	}
+	
+	
 	@Override
 	protected void setupRequest() throws Ks3ClientException {
 		this.setContentType("binary/octet-stream");
@@ -73,6 +86,18 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 			throw new Ks3ClientException(
 					"calculate file md5 error (" + e + ")", e);
 		}
+		if(!StringUtils.isBlank(this.callBackUrl)){
+			this.addHeader(HttpHeaders.XKssCallBackUrl, this.callBackUrl);
+		}
+		if(!StringUtils.isBlank(this.callBackBody)){
+			try {
+				this.addHeader(HttpHeaders.XKssCallBackBody, URLEncoder.encode(this.callBackBody, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+				throw new Ks3ClientException(e);
+			}
+		}
+		
 		for (Entry<Meta, String> entry : this.objectMeta.getMetadata()
 				.entrySet()) {
 			if (!entry.getKey().equals(Meta.ContentLength.toString())) {
@@ -126,8 +151,8 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 
 	@Override
 	protected void validateParams() throws Ks3ClientException {
-		if (StringUtils.isBlank(this.getBucketname()))
-			throw new Ks3ClientException("bucket name can not be null");
+		if (ValidateUtil.validateBucketName(this.getBucketname()) == null)
+			throw new Ks3ClientException("bucket name is not correct");
 		if (StringUtils.isBlank(this.getObjectkey()))
 			throw new Ks3ClientException("object key can not be null");
 		if (file == null)
@@ -189,6 +214,22 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 		this.redirectLocation = redirectLocation;
 	}
 
+	public String getCallBackUrl() {
+		return callBackUrl;
+	}
+
+	public void setCallBackUrl(String callBackUrl) {
+		this.callBackUrl = callBackUrl;
+	}
+
+	public String getCallBackBody() {
+		return callBackBody;
+	}
+
+	public void setCallBackBody(String callBackBody) {
+		this.callBackBody = callBackBody;
+	}
+	
 	public String getMd5() {
 		return Base64
 				.encodeToString(

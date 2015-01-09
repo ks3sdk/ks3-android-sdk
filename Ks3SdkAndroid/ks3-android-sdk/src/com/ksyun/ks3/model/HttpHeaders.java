@@ -26,7 +26,11 @@ public enum HttpHeaders {
 	XKssRestore("x-kss-restore"),
 	/* Default None */
 	XKssWebsiteRedirectLocation("x-kss-website-redirect-location"),
-	XKssCopySource("x-kss-copy-source");
+	XKssCopySource("x-kss-copy-source"),
+	
+	/*Call back */
+	XKssCallBackUrl("x-kss-callbackurl"),
+	XKssCallBackBody("x-kss-callbackbody");
 	private String value;
 
 	HttpHeaders(String value) {

@@ -7,6 +7,7 @@ import java.util.List;
 
 import android.text.TextUtils;
 
+import com.ksyun.ks3.auth.ValidateUtil;
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.HttpMethod;
@@ -94,13 +95,12 @@ public class CopyObjectRequest extends Ks3HttpRequest {
 
 	@Override
 	protected void validateParams() throws Ks3ClientException {
-		if (StringUtils.isBlank(sourceBucket))
-			throw new Ks3ClientException("sourceBucket can not be null");
+		if (ValidateUtil.validateBucketName(this.sourceBucket) == null)
+			throw new Ks3ClientException("source-bucket name is not correct");
 		if (StringUtils.isBlank(sourceKey))
 			throw new Ks3ClientException("sourceKey can not be null");
-		if (StringUtils.isBlank(this.getBucketname()))
-			throw new Ks3ClientException(
-					"destinationBucket can not be null");
+		if (ValidateUtil.validateBucketName(this.getBucketname()) == null)
+			throw new Ks3ClientException("destination-bucket name is not correct");
 		if (StringUtils.isBlank(this.getObjectkey()))
 			throw new Ks3ClientException(
 					"destinationObject can not be null");
