@@ -27,7 +27,7 @@ public class Constants {
 	public static final String ClientConfig_PROXY_USER_NAME = null;
 	public static final String ClientConfig_PROXY_WORKSTATION = null;
 	public static final String ClientConfig_IS_PREEMPTIVE_BASIC_PROXY_AUTH = "false";
-	public static final String ClientConfig_END_POINT = "115.231.96.27:8080";
+	public static final String ClientConfig_END_POINT = "kss.ksyun.com";
 	public static final String ClientConfig_CLIENT_SIGNER = "com.ksyun.ks3.signer.DefaultSigner";
 	// uploadPart
 	public static final int minPartNumber = 1;
