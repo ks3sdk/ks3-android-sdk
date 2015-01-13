@@ -55,6 +55,8 @@ SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.3.jar*，
 
 使用Callback回调功能，开发者必须在对应的request中传入**callBackUrl**以及**callBackBody**。 如需自定义参数，要以键值对形式将其传入。
 
+**注：setCallBack()方法仅在PutObejctRequest,CompleteMultipartUploadRequest两个类中提供)**
+
 **方法名**
 
 public void setCallBack(String callBackUrl, String callBackBody, Map<String, String> customParams){};
