@@ -90,24 +90,15 @@ public class CompleteMultipartUploadRequest extends Ks3HttpRequest {
 			this.setHttpMethod(HttpMethod.POST);
 			this.addParams("uploadId", this.uploadId);
 			if(!StringUtils.isBlank(this.callBackUrl) && !StringUtils.isBlank(this.callBackBody)){
-				try {
-					this.addHeader(HttpHeaders.XKssCallBackUrl, this.callBackUrl);
-					this.addHeader(HttpHeaders.XKssCallBackBody, URLEncoder.encode(this.callBackBody, "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-					throw new Ks3ClientException(e);
-				}
+				this.addHeader(HttpHeaders.XKssCallBackUrl, this.callBackUrl);
+				this.addHeader(HttpHeaders.XKssCallBackBody,this.callBackBody);
+				
 				if(this.callBackHeaders!= null && this.callBackHeaders.size() > 0){
 					for(Map.Entry<String, String> entry: this.callBackHeaders.entrySet()){
 						String key = entry.getKey();
 						String val = entry.getValue();
-						if(!StringUtils.isBlank(key) && key.startsWith("kss:") && !StringUtils.isBlank(val)){
-							try {
-								this.addHeader(key, URLEncoder.encode(val, "UTF-8"));
-							} catch (UnsupportedEncodingException e) {
-								e.printStackTrace();
-								throw new Ks3ClientException(e);
-							}
+						if(!StringUtils.isBlank(key) && key.startsWith(Constants.CALL_BACK_CUSTOM_PREFIX) && !StringUtils.isBlank(val)){
+								this.addHeader(key, val);
 						}else{
 							Log.e(Constants.LOG_TAG,"the header:"+key +"-"+val + " is not correct ,this head will be ignored");
 						}

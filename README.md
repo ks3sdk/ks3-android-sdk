@@ -49,6 +49,105 @@ SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.3.jar*，
 
 ![](http://androidsdktest21.kssws.ks-cdn.com/ks3-android-sdk-authlistener.png)
 
+如开发者需要在SDK请求完成后，向特定的URL发起一个回调请求，请参考以下使用**Callback**的场景：
+
+![](http://990aa.kssws.ks-cdn.com/calllback.png)
+
+使用Callback回调功能，开发者必须在对应的request中传入**callBackUrl**以及**callBackBody**。 如需自定义参数，要以键值对形式将其传入。
+
+**方法名**
+
+public void setCallBack(String callBackUrl, String callBackBody, Map<String, String> customParams){};
+
+
+**参数说明**
+
+**callBackUrl**: 回调url地址
+
+**callBackBody**: 回调参数，参数支持魔法变量、自定义参数以及常量形式，指明了回调方需要用到的参数：eg:String callBackBody = "objectKey=${key}&etag=${etag}&location=${kss-location}&name=${kss-name}";
+
+**customParams**:自定义参数，必须以前缀**kss-**开头
+
+
+**魔法变量说明：**是一组预先定义的变量，使用${key}形式作为CallBackBody的内容。
+
+目前可用的魔法变量如下:
+
+<table>
+  <tr>
+    <th>参数</th>
+    <th>说明</th>
+    <th>备注</th>
+  </tr>
+  <tr>
+    <td>bucket</td>
+    <td>文件上传的Bucket</td>
+    <td>Utf-8编码</td>
+  </tr>
+  <tr>
+    <td>key</td>
+    <td>文件的名称</td>
+    <td>Utf-8编码</td>
+  </tr>
+  <tr>
+    <td>etag</td>
+    <td>文件Md5值经过base64处理</td>
+  </tr>
+ <tr>
+    <td>objectSize</td>
+    <td>文件大小</td>
+    <td>以字节标识</td>
+  </tr>
+ <tr>
+    <td>mimeType</td>
+    <td>文件类型</td>
+  </tr>
+ <tr>
+    <td>createTime</td>
+    <td>文件创建时间</td>
+    <td>Unix时间戳表示，1420629372，精确到秒</td>
+  </tr>
+</table>
+
+**Callback使用范例**：
+
+```
+
+		Map<String,String> customParams = new HashMap<String, String>();
+		//自定义参数必须以kss-开头
+		params.put("kss-location", "user_input_location");
+		params.put("kss-name", "user_input_name");
+		request.setCallBack("http://127.0.0.1:19091/kss/call_back", "objectKey=${key}&etag=${etag}&location=${kss-location}&name=${kss-name}", customParams);
+		client.putObject(request, new PutObjectResponseHandler() {
+
+			@Override
+			public void onTaskProgress(double progress) {
+			}
+
+			@Override
+			public void onTaskSuccess(int statesCode, Header[] responceHeaders) {
+			}
+
+			@Override
+			public void onTaskStart() {
+			}
+
+			@Override
+			public void onTaskFinish() {
+			}
+
+			@Override
+			public void onTaskFailure(int statesCode, Header[] responceHeaders,
+					String response, Throwable paramThrowable) {
+			}
+
+			@Override
+			public void onTaskCancel() {
+			}
+		});
+
+```
+
 ###Ks3Client初始化
 Ks3Client初始化包含以下两种：
 
@@ -757,7 +856,7 @@ public void headBucket(HeadBucketRequest request,HeadBucketResponseHandler resul
 *下载该Object数据*  
 **方法名：** 
 
-public void getObject(Context context, String bucketname, String key, GetObjectResponceHandler getObjectResponceHandler（File file,String bucketname,String objectKey）)throws Ks3ClientException, Ks3ServiceException{}
+public Ks3HttpRequest getObject(Context context, String bucketname, String key, GetObjectResponceHandler getObjectResponceHandler（File file,String bucketname,String objectKey）)throws Ks3ClientException, Ks3ServiceException{}
 
 **参数说明：**
 
@@ -818,7 +917,7 @@ public void getObject(Context context, String bucketname, String key, GetObjectR
 
 **方法名：** 
 
-public void getObject(GetObjectRequest request, GetObjectResponceHandler getObjectResponceHandler（File file,String bucketname,String objectKey）)throws Ks3ClientException, Ks3ServiceException{}
+public Ks3HttpRequest getObject(GetObjectRequest request, GetObjectResponceHandler getObjectResponceHandler（File file,String bucketname,String objectKey）)throws Ks3ClientException, Ks3ServiceException{}
 
 **参数说明：**
 
@@ -1396,7 +1495,7 @@ throws Ks3ClientException, Ks3ServiceException{}
 
 **方法名：** 
 
-public void PutObject(String bucketname, String objectkey,
+public Ks3HttpRequest PutObject(String bucketname, String objectkey,
 File file , PutObjectResponseHandler handler) throws Ks3ClientException, Ks3ServiceException;
 
 
@@ -1452,7 +1551,7 @@ File file , PutObjectResponseHandler handler) throws Ks3ClientException, Ks3Serv
 
 **方法名：** 
 
-public void PutObject(PutObjectRequest request, PutObjectResponseHandler handler) throws Ks3ClientException, Ks3ServiceException;
+public Ks3HttpRequest PutObject(PutObjectRequest request, PutObjectResponseHandler handler) throws Ks3ClientException, Ks3ServiceException;
 
 **参数说明：**
 

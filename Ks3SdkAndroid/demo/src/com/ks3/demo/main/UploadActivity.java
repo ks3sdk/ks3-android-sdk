@@ -411,7 +411,10 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 	private void doSingleUpload(final String bucketName, final UploadFile item) {
 		final PutObjectRequest request = new PutObjectRequest(bucketName,
 				item.file.getName(), item.file);
-//		request.setCallBack(callBackUrl, callBackBody, callBackHeaders);
+		//自定义参数，必须以kss:开头
+		Map<String,String> params = new HashMap<String, String>();
+		params.put("kss:customkey", "customvalue");
+		request.setCallBack("http://127.0.0.1:19091/kss/call_back", "objectKey=bugDownload.txt", params);
 		client.putObject(request, new PutObjectResponseHandler() {
 
 			@Override
@@ -475,6 +478,8 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 					String response, Throwable paramThrowable) {
 				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
 						paramThrowable.toString());
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+						response);
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
 				for (UploadFile file : uploadFiles) {
