@@ -29,7 +29,7 @@ public class AuthUtils {
 			Ks3HttpRequest request) throws SignatureException {
 		String signature = calcSignature(auth.getAccessKeySecret(), request);
 		String value = "KSS " + auth.getAccessKeyId() + ":" + signature;
-		return value;  
+		return value;
 	}
 
 	private static String calcSignature(String accessKeySecret,

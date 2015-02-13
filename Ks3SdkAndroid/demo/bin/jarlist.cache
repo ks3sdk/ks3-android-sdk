@@ -1,7 +1,7 @@
 # cache for current jar dependency. DO NOT EDIT.
 # format is <lastModified> <length> <SHA-1> <path>
 # Encoding is UTF-8
-1423812488635 95377 a845a88238be0b5be9d238652c1bc0605ef91f52 C:\Users\guoli1\Documents\GitHub\ks3-android-sdk\Ks3SdkAndroid\demo\libs\android-async-http-1.4.6.jar
-1423812488724 95377 a845a88238be0b5be9d238652c1bc0605ef91f52 C:\Users\guoli1\Documents\GitHub\ks3-android-sdk\Ks3SdkAndroid\ks3-android-sdk\libs\android-async-http-1.4.6.jar
-1423812488641 621451 5896b0a4e377ac4242eb2bc785220c1c4fc052f4 C:\Users\guoli1\Documents\GitHub\ks3-android-sdk\Ks3SdkAndroid\demo\libs\android-support-v4.jar
-1423812488730 621451 5896b0a4e377ac4242eb2bc785220c1c4fc052f4 C:\Users\guoli1\Documents\GitHub\ks3-android-sdk\Ks3SdkAndroid\ks3-android-sdk\libs\android-support-v4.jar
+1420596452774 95377 a845a88238be0b5be9d238652c1bc0605ef91f52 E:\sync-workspace\ks3-android-sdk\Ks3SdkAndroid\demo\libs\android-async-http-1.4.6.jar
+1420596452915 95377 a845a88238be0b5be9d238652c1bc0605ef91f52 E:\sync-workspace\ks3-android-sdk\Ks3SdkAndroid\ks3-android-sdk\libs\android-async-http-1.4.6.jar
+1420596452921 621451 5896b0a4e377ac4242eb2bc785220c1c4fc052f4 E:\sync-workspace\ks3-android-sdk\Ks3SdkAndroid\ks3-android-sdk\libs\android-support-v4.jar
+1420596452779 621451 5896b0a4e377ac4242eb2bc785220c1c4fc052f4 E:\sync-workspace\ks3-android-sdk\Ks3SdkAndroid\demo\libs\android-support-v4.jar
