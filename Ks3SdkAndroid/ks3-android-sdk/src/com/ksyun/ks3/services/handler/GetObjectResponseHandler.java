@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.apache.http.Header;
 
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.ObjectMetadata;
 import com.ksyun.ks3.model.ObjectMetadata.Meta;
@@ -11,7 +12,7 @@ import com.ksyun.ks3.model.result.GetObjectResult;
 import com.ksyun.ks3.util.Md5Utils;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
 
-public abstract class GetObjectResponseHandler extends FileAsyncHttpResponseHandler{
+public abstract class GetObjectResponseHandler extends com.ksyun.ks3.asynchttpclient.FileAsyncHttpResponseHandler{
 
 	private String mBucketName;
 	private String mObjectKey;
@@ -36,12 +37,13 @@ public abstract class GetObjectResponseHandler extends FileAsyncHttpResponseHand
 
 	public abstract void onTaskSuccess(int paramInt, Header[] paramArrayOfHeader, GetObjectResult getObjectResult);
 	
-	public abstract void onTaskFailure(int paramInt, Header[] paramArrayOfHeader, Throwable paramThrowable, File paramFile);
+	public abstract void onTaskFailure(int paramInt, Ks3Error error, Header[] paramArrayOfHeader, Throwable paramThrowable, File paramFile);
 	
 	 
 	@Override
-	public final void onFailure(int paramInt, Header[] paramArrayOfHeader,Throwable paramThrowable, File paramFile) {
-		this.onTaskFailure(paramInt, paramArrayOfHeader, paramThrowable, paramFile);
+	public final void onFailure(int statesCode, Header[] paramArrayOfHeader,Throwable throwable,  byte[] response,File paramFile) {
+		Ks3Error error = new Ks3Error(statesCode, response, throwable);
+		this.onTaskFailure(statesCode, error,paramArrayOfHeader, throwable, paramFile);
 	}
 
 	

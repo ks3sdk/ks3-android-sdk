@@ -8,13 +8,14 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.result.CopyResult;
 import com.ksyun.ks3.util.DateUtil;
 import com.ksyun.ks3.util.StringUtils;
 
 public abstract class CopyObjectResponseHandler extends Ks3HttpResponceHandler {
 
-	public abstract void onFailure(int statesCode, Header[] responceHeaders,
+	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,
 			String response, Throwable paramThrowable);
 
 	public abstract void onSuccess(int statesCode, Header[] responceHeaders,
@@ -29,7 +30,8 @@ public abstract class CopyObjectResponseHandler extends Ks3HttpResponceHandler {
 	@Override
 	public final void onFailure(int statesCode, Header[] responceHeaders,
 			byte[] response, Throwable throwable) {
-		this.onFailure(statesCode, responceHeaders, response == null ? ""
+		Ks3Error error = new Ks3Error(statesCode, response, throwable);
+		this.onFailure(statesCode,error, responceHeaders, response == null ? ""
 				: new String(response), throwable);
 	}
 

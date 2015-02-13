@@ -8,6 +8,7 @@ import org.apache.http.Header;
 
 import android.content.Context;
 
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.Bucket;
 import com.ksyun.ks3.model.ObjectListing;
 import com.ksyun.ks3.model.ObjectMetadata;
@@ -70,7 +71,6 @@ public class Ks3Client implements Ks3 {
 	private Ks3HttpExector client = new Ks3HttpExector();
 	private Context context = null;
 	public AuthListener authListener = null;
-
 
 	public Ks3Client(String accesskeyid, String accesskeysecret, Context context) {
 		this(accesskeyid, accesskeysecret, Ks3ClientConfiguration
@@ -141,12 +141,12 @@ public class Ks3Client implements Ks3 {
 			ListBucketsResponceHandler resultHandler) {
 		this.listBuckets(request, resultHandler, true);
 	}
-	
+
 	private void listBuckets(ListBucketsRequest request,
-			ListBucketsResponceHandler resultHandler,boolean isUseAsyncMode) {
-		invoke(auth, request, resultHandler,isUseAsyncMode);
+			ListBucketsResponceHandler resultHandler, boolean isUseAsyncMode) {
+		invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	/* Bucket ACL */
 	@Override
 	public void getBucketACL(String bucketName,
@@ -160,12 +160,11 @@ public class Ks3Client implements Ks3 {
 		this.getBucketACL(request, resultHandler, true);
 	}
 
-	
 	private void getBucketACL(GetBucketACLRequest request,
-			GetBucketACLResponceHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+			GetBucketACLResponceHandler resultHandler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void putBucketACL(String bucketName,
 			AccessControlList accessControlList,
@@ -190,10 +189,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void putBucketACL(PutBucketACLRequest request,
-			PutBucketACLResponseHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+			PutBucketACLResponseHandler resultHandler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	/* Object ACL */
 	@Override
 	public void putObjectACL(String bucketName, String objectName,
@@ -218,10 +217,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void putObjectACL(PutObjectACLRequest request,
-			PutObjectACLResponseHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+			PutObjectACLResponseHandler resultHandler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void getObjectACL(String bucketName, String ObjectName,
 			GetObjectACLResponseHandler resultHandler) {
@@ -236,10 +235,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void getObjectACL(GetObjectACLRequest request,
-			GetObjectACLResponseHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+			GetObjectACLResponseHandler resultHandler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	/* Bucket */
 	@Override
 	public void headBucket(String bucketname,
@@ -254,10 +253,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void headBucket(HeadBucketRequest request,
-			HeadBucketResponseHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+			HeadBucketResponseHandler resultHandler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public boolean bucketExists(String bucketname) {
 		return false;
@@ -290,10 +289,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void createBucket(CreateBucketRequest request,
-			CreateBucketResponceHandler resultHandler,boolean isUseAsyncMode) {
-		invoke(auth, request, resultHandler,isUseAsyncMode);
+			CreateBucketResponceHandler resultHandler, boolean isUseAsyncMode) {
+		invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void deleteBucket(String bucketname,
 			DeleteBucketResponceHandler resultHandler) {
@@ -307,10 +306,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void deleteBucket(DeleteBucketRequest request,
-			DeleteBucketResponceHandler resultHandler,boolean isUseAsyncMode) {
-		invoke(auth, request, resultHandler,isUseAsyncMode);
+			DeleteBucketResponceHandler resultHandler, boolean isUseAsyncMode) {
+		invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	/* Object */
 	@Override
 	public void listObjects(String bucketname,
@@ -332,10 +331,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void listObjects(ListObjectsRequest request,
-			ListObjectsResponseHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+			ListObjectsResponseHandler resultHandler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void deleteObject(String bucketname, String key,
 			DeleteObjectRequestHandler handler) {
@@ -349,13 +348,13 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void deleteObject(DeleteObjectRequest request,
-			DeleteObjectRequestHandler handler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, handler,isUseAsyncMode);
+			DeleteObjectRequestHandler handler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	@Override
-	public Ks3HttpRequest getObject(Context context, String bucketname, String key,
-			GetObjectResponseHandler handler) {
+	public Ks3HttpRequest getObject(Context context, String bucketname,
+			String key, GetObjectResponseHandler handler) {
 		this.context = context;
 		return this.getObject(new GetObjectRequest(bucketname, key), handler);
 	}
@@ -367,17 +366,17 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private Ks3HttpRequest getObject(GetObjectRequest request,
-			GetObjectResponseHandler handler,boolean isUseAsyncMode) {
-		return this.invoke(auth, request, handler,isUseAsyncMode);
+			GetObjectResponseHandler handler, boolean isUseAsyncMode) {
+		return this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	@Override
-	public Ks3HttpRequest putObject(String bucketname, String objectkey, File file,
-			PutObjectResponseHandler handler) {
-		return this.putObject(new PutObjectRequest(bucketname, objectkey, file),
-				handler);
+	public Ks3HttpRequest putObject(String bucketname, String objectkey,
+			File file, PutObjectResponseHandler handler) {
+		return this.putObject(
+				new PutObjectRequest(bucketname, objectkey, file), handler);
 	}
-	
+
 	@Override
 	public Ks3HttpRequest putObject(String bucketname, String objectkey,
 			File file, ObjectMetadata objectmeta,
@@ -385,7 +384,7 @@ public class Ks3Client implements Ks3 {
 		return this.putObject(new PutObjectRequest(bucketname, objectkey, file,
 				objectmeta), handler);
 	}
-	
+
 	@Override
 	public Ks3HttpRequest putObject(PutObjectRequest request,
 			PutObjectResponseHandler handler) {
@@ -393,10 +392,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private Ks3HttpRequest putObject(PutObjectRequest request,
-			PutObjectResponseHandler handler,boolean isUseAsyncMode) {
-		return this.invoke(auth, request, handler,isUseAsyncMode);
+			PutObjectResponseHandler handler, boolean isUseAsyncMode) {
+		return this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void headObject(String bucketname, String objectkey,
 			HeadObjectResponseHandler resultHandler) {
@@ -411,10 +410,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void headObject(HeadObjectRequest request,
-			HeadObjectResponseHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+			HeadObjectResponseHandler resultHandler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void copyObject(String destinationBucket, String destinationObject,
 			String sourceBucket, String sourceKey,
@@ -454,10 +453,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void copyObject(CopyObjectRequest request,
-			CopyObjectResponseHandler handler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, handler,isUseAsyncMode);
+			CopyObjectResponseHandler handler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	/* MultiUpload */
 	@Override
 	public void initiateMultipartUpload(String bucketname, String objectkey,
@@ -471,12 +470,14 @@ public class Ks3Client implements Ks3 {
 			InitiateMultipartUploadResponceHandler resultHandler) {
 		this.initiateMultipartUpload(request, resultHandler, true);
 	}
-	
-	private void initiateMultipartUpload(InitiateMultipartUploadRequest request,
-			InitiateMultipartUploadResponceHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+
+	private void initiateMultipartUpload(
+			InitiateMultipartUploadRequest request,
+			InitiateMultipartUploadResponceHandler resultHandler,
+			boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void uploadPart(String bucketName, String key, String uploadId,
 			File file, long offset, int partNumber, long partSize,
@@ -492,8 +493,8 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void uploadPart(UploadPartRequest request,
-			UploadPartResponceHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+			UploadPartResponceHandler resultHandler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
 
 	@Override
@@ -503,25 +504,27 @@ public class Ks3Client implements Ks3 {
 		this.completeMultipartUpload(new CompleteMultipartUploadRequest(
 				bucketname, objectkey, uploadId, partETags), handler);
 	}
-	
+
 	@Override
 	public void completeMultipartUpload(ListPartsResult result,
 			CompleteMultipartUploadResponseHandler handler) {
 		this.completeMultipartUpload(
 				new CompleteMultipartUploadRequest(result), handler);
 	}
-	
+
 	@Override
 	public void completeMultipartUpload(CompleteMultipartUploadRequest request,
 			CompleteMultipartUploadResponseHandler handler) {
 		this.completeMultipartUpload(request, handler, true);
 	}
 
-	private void completeMultipartUpload(CompleteMultipartUploadRequest request,
-			CompleteMultipartUploadResponseHandler handler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, handler,isUseAsyncMode);
+	private void completeMultipartUpload(
+			CompleteMultipartUploadRequest request,
+			CompleteMultipartUploadResponseHandler handler,
+			boolean isUseAsyncMode) {
+		this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void abortMultipartUpload(String bucketname, String objectkey,
 			String uploadId, AbortMultipartUploadResponseHandler handler) {
@@ -536,10 +539,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void abortMultipartUpload(AbortMultipartUploadRequest request,
-			AbortMultipartUploadResponseHandler handler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, handler,isUseAsyncMode);
+			AbortMultipartUploadResponseHandler handler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void listParts(String bucketname, String objectkey, String uploadId,
 			ListPartsResponseHandler handler) {
@@ -568,13 +571,13 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void listParts(ListPartsRequest request,
-			ListPartsResponseHandler handler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, handler,isUseAsyncMode);
+			ListPartsResponseHandler handler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	/* Invoke asnyc http client */
 	private Ks3HttpRequest invoke(Authorization auth, Ks3HttpRequest request,
-			AsyncHttpResponseHandler resultHandler,boolean isUseAsyncMode) {
+			AsyncHttpResponseHandler resultHandler, boolean isUseAsyncMode) {
 		client.invoke(auth, request, resultHandler, clientConfiguration,
 				context, endpoint, authListener, isUseAsyncMode);
 		return request;
@@ -594,26 +597,29 @@ public class Ks3Client implements Ks3 {
 	public Context getContext() {
 		return this.context;
 	}
-	
+
 	@Override
 	public ArrayList<Bucket> syncListBuckets() throws Throwable {
 		final ArrayList<Bucket> list = new ArrayList<Bucket>();
 
 		final Throwable error = new Throwable();
-		this.listBuckets(new ListBucketsRequest(),new  ListBucketsResponceHandler() {
+		this.listBuckets(new ListBucketsRequest(),
+				new ListBucketsResponceHandler() {
 
-			@Override
-			public void onSuccess(int statesCode, Header[] responceHeaders,
-					ArrayList<Bucket> resultList) {
-				list.addAll(resultList);
-			}
+					@Override
+					public void onSuccess(int statesCode,
+							Header[] responceHeaders,
+							ArrayList<Bucket> resultList) {
+						list.addAll(resultList);
+					}
 
-			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
-				error.initCause(paramThrowable);
-			}
-		},false);
+					@Override
+					public void onFailure(int statesCode, Ks3Error ks3Error,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+					}
+				}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -646,12 +652,12 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error kseError,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
-
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -661,7 +667,8 @@ public class Ks3Client implements Ks3 {
 	@Override
 	public void syncPutBucketACL(String bucketName,
 			AccessControlList accessControlList) throws Throwable {
-		PutBucketACLRequest request = new PutBucketACLRequest(bucketName,accessControlList);
+		PutBucketACLRequest request = new PutBucketACLRequest(bucketName,
+				accessControlList);
 		this.syncPutBucketACL(request);
 
 	}
@@ -669,7 +676,8 @@ public class Ks3Client implements Ks3 {
 	@Override
 	public void syncPutBucketACL(String bucketName,
 			CannedAccessControlList accessControlList) throws Throwable {
-		PutBucketACLRequest request = new PutBucketACLRequest(bucketName,accessControlList);
+		PutBucketACLRequest request = new PutBucketACLRequest(bucketName,
+				accessControlList);
 		this.syncPutBucketACL(request);
 	}
 
@@ -684,11 +692,12 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
-				error.initCause(paramThrowable);
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
+				error.initCause(paramThrowable);	
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -697,14 +706,16 @@ public class Ks3Client implements Ks3 {
 	@Override
 	public void syncPutObjectACL(String bucketName, String objectKey,
 			CannedAccessControlList accessControlList) throws Throwable {
-		PutObjectACLRequest request = new PutObjectACLRequest(bucketName, objectKey, accessControlList);
+		PutObjectACLRequest request = new PutObjectACLRequest(bucketName,
+				objectKey, accessControlList);
 		this.syncPutObjectACL(request);
 	}
 
 	@Override
 	public void syncPutObjectACL(String bucketName, String objectKey,
 			AccessControlList accessControlList) throws Throwable {
-		PutObjectACLRequest request = new PutObjectACLRequest(bucketName, objectKey, accessControlList);
+		PutObjectACLRequest request = new PutObjectACLRequest(bucketName,
+				objectKey, accessControlList);
 		this.syncPutObjectACL(request);
 	}
 
@@ -720,12 +731,12 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
-
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -734,7 +745,8 @@ public class Ks3Client implements Ks3 {
 	@Override
 	public AccessControlPolicy syncGetObjectACL(String bucketName,
 			String objectKey) throws Throwable {
-		GetObjectACLRequest request = new GetObjectACLRequest(bucketName, objectKey);
+		GetObjectACLRequest request = new GetObjectACLRequest(bucketName,
+				objectKey);
 		return this.syncGetObjectACL(request);
 	}
 
@@ -757,12 +769,12 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
-				error.initCause(paramThrowable);
-
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
+				error.initCause(paramThrowable);				
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -785,14 +797,14 @@ public class Ks3Client implements Ks3 {
 			public void onSuccess(int statesCode, Header[] responceHeaders) {
 
 			}
-
+			
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
-
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -807,14 +819,16 @@ public class Ks3Client implements Ks3 {
 	@Override
 	public void syncCreateBucket(String bucketName,
 			CannedAccessControlList accessControlList) throws Throwable {
-		CreateBucketRequest request = new CreateBucketRequest(bucketName, accessControlList);
+		CreateBucketRequest request = new CreateBucketRequest(bucketName,
+				accessControlList);
 		this.syncCreateBucket(request);
 	}
 
 	@Override
 	public void syncCreateBucket(String bucketName,
 			AccessControlList accessControlList) throws Throwable {
-		CreateBucketRequest request = new CreateBucketRequest(bucketName, accessControlList);
+		CreateBucketRequest request = new CreateBucketRequest(bucketName,
+				accessControlList);
 		this.syncCreateBucket(request);
 	}
 
@@ -830,12 +844,12 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
-
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -859,12 +873,13 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
-
+				
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -879,7 +894,7 @@ public class Ks3Client implements Ks3 {
 	@Override
 	public ObjectListing syncListObjects(String bucketName, String prefix)
 			throws Throwable {
-		ListObjectsRequest request = new ListObjectsRequest(bucketName,prefix);
+		ListObjectsRequest request = new ListObjectsRequest(bucketName, prefix);
 		return syncListObjects(request);
 	}
 
@@ -906,12 +921,12 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
-
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -921,7 +936,8 @@ public class Ks3Client implements Ks3 {
 	@Override
 	public void syncDeleteObject(String bucketName, String objectKey)
 			throws Throwable {
-		DeleteObjectRequest request = new DeleteObjectRequest(bucketName, objectKey);
+		DeleteObjectRequest request = new DeleteObjectRequest(bucketName,
+				objectKey);
 		this.syncDeleteObject(request);
 	}
 
@@ -937,12 +953,12 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
-				error.initCause(paramThrowable);
-
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
+				error.initCause(paramThrowable);				
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -973,12 +989,13 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
-
+				
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -989,15 +1006,17 @@ public class Ks3Client implements Ks3 {
 	public CopyResult syncCopyObject(String destinationBucket,
 			String destinationObject, String sourceBucket, String sourceKey)
 			throws Throwable {
-		CopyObjectRequest request = new CopyObjectRequest(destinationBucket, destinationObject, sourceBucket, sourceKey);
+		CopyObjectRequest request = new CopyObjectRequest(destinationBucket,
+				destinationObject, sourceBucket, sourceKey);
 		return this.syncCopyObject(request);
 	}
-	
+
 	@Override
 	public CopyResult syncCopyObject(String destinationBucket,
 			String destinationObject, String sourceBucket, String sourceKey,
 			CannedAccessControlList accessControlList) throws Throwable {
-		CopyObjectRequest request = new CopyObjectRequest(destinationBucket, destinationObject, sourceBucket, sourceKey,accessControlList);
+		CopyObjectRequest request = new CopyObjectRequest(destinationBucket,
+				destinationObject, sourceBucket, sourceKey, accessControlList);
 		return this.syncCopyObject(request);
 	}
 
@@ -1005,7 +1024,8 @@ public class Ks3Client implements Ks3 {
 	public CopyResult syncCopyObject(String destinationBucket,
 			String destinationObject, String sourceBucket, String sourceKey,
 			AccessControlList accessControlList) throws Throwable {
-		CopyObjectRequest request = new CopyObjectRequest(destinationBucket, destinationObject, sourceBucket, sourceKey,accessControlList);
+		CopyObjectRequest request = new CopyObjectRequest(destinationBucket,
+				destinationObject, sourceBucket, sourceKey, accessControlList);
 		return this.syncCopyObject(request);
 	}
 
@@ -1026,12 +1046,12 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
-
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -1041,7 +1061,8 @@ public class Ks3Client implements Ks3 {
 	@Override
 	public InitiateMultipartUploadResult syncInitiateMultipartUpload(
 			String bucketName, String objectKey) throws Throwable {
-		InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(bucketName, objectKey);
+		InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(
+				bucketName, objectKey);
 		return this.syncInitiateMultipartUpload(request);
 	}
 
@@ -1065,13 +1086,12 @@ public class Ks3Client implements Ks3 {
 					}
 
 					@Override
-					public void onFailure(int statesCode,
+					public void onFailure(int statesCode, Ks3Error ks3Error,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						error.initCause(paramThrowable);
-
 					}
-				},false);
+				}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -1082,17 +1102,19 @@ public class Ks3Client implements Ks3 {
 	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
 			String bucketName, String objectKey, String uploadId,
 			List<PartETag> partETags) throws Throwable {
-		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(bucketName, objectKey, uploadId, partETags);
+		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(
+				bucketName, objectKey, uploadId, partETags);
 		return this.syncCompleteMultipartUpload(request);
 	}
-	
+
 	@Override
 	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
 			ListPartsResult result) throws Throwable {
-		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(result);
-		return this.syncCompleteMultipartUpload(request); 
+		CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest(
+				result);
+		return this.syncCompleteMultipartUpload(request);
 	}
-	
+
 	@Override
 	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
 			CompleteMultipartUploadRequest request) throws Throwable {
@@ -1116,13 +1138,12 @@ public class Ks3Client implements Ks3 {
 					}
 
 					@Override
-					public void onFailure(int statesCode,
+					public void onFailure(int statesCode, Ks3Error ks3Error,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						error.initCause(paramThrowable);
-
 					}
-				},false);
+				}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -1144,13 +1165,13 @@ public class Ks3Client implements Ks3 {
 					}
 
 					@Override
-					public void onFailure(int statesCode,
+					public void onFailure(int statesCode, Ks3Error ks3Error,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						error.initCause(paramThrowable);
-
+						
 					}
-				},false);
+				}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -1159,21 +1180,24 @@ public class Ks3Client implements Ks3 {
 	@Override
 	public void syncAbortMultipartUpload(String bucketname, String objectKey,
 			String uploadId) throws Throwable {
-		AbortMultipartUploadRequest request = new AbortMultipartUploadRequest(bucketname, objectKey, uploadId);
+		AbortMultipartUploadRequest request = new AbortMultipartUploadRequest(
+				bucketname, objectKey, uploadId);
 		this.syncAbortMultipartUpload(request);
 	}
 
 	@Override
 	public ListPartsResult syncListParts(String bucketName, String objectKey,
 			String uploadId) throws Throwable {
-		ListPartsRequest request = new ListPartsRequest(bucketName, objectKey, uploadId);
+		ListPartsRequest request = new ListPartsRequest(bucketName, objectKey,
+				uploadId);
 		return this.syncListParts(request);
 	}
 
 	@Override
 	public ListPartsResult syncListParts(String bucketName, String objectKey,
 			String uploadId, int maxParts) throws Throwable {
-		ListPartsRequest request = new ListPartsRequest(bucketName, objectKey, uploadId,maxParts);
+		ListPartsRequest request = new ListPartsRequest(bucketName, objectKey,
+				uploadId, maxParts);
 		return this.syncListParts(request);
 	}
 
@@ -1181,7 +1205,8 @@ public class Ks3Client implements Ks3 {
 	public ListPartsResult syncListParts(String bucketName, String objectKey,
 			String uploadId, int maxParts, int partNumberMarker)
 			throws Throwable {
-		ListPartsRequest request = new ListPartsRequest(bucketName, objectKey, uploadId,maxParts,partNumberMarker);
+		ListPartsRequest request = new ListPartsRequest(bucketName, objectKey,
+				uploadId, maxParts, partNumberMarker);
 		return this.syncListParts(request);
 	}
 
@@ -1210,11 +1235,13 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
+				
 			}
-		},false);
+		}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}

@@ -9,11 +9,12 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
 
 public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResponceHandler {
 	
-	public abstract void onFailure(int statesCode, Header[] responceHeaders,String response, Throwable paramThrowable);
+	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable paramThrowable);
 
 	public abstract void onSuccess(int statesCode, Header[] responceHeaders,InitiateMultipartUploadResult result);	
 	
@@ -24,7 +25,8 @@ public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResp
 	}
 
 	public final void onFailure(int statesCode, Header[] responceHeaders,byte[] response, Throwable throwable) {
-		onFailure(statesCode, responceHeaders, response == null ? "":new String(response), throwable);
+		Ks3Error error = new Ks3Error(statesCode, response, throwable);
+		onFailure(statesCode,error, responceHeaders, response == null ? "":new String(response), throwable);
 	}
 	
 	@Override

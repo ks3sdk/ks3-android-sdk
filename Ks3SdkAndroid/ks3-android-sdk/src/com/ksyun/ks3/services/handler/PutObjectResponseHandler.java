@@ -2,11 +2,12 @@ package com.ksyun.ks3.services.handler;
 
 import org.apache.http.Header;
 
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.transfer.RequestProgressListener;
 
 public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler implements RequestProgressListener{
 
-	public abstract void onTaskFailure(int statesCode, Header[] responceHeaders,String response, Throwable paramThrowable);
+	public abstract void onTaskFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable paramThrowable);
 
 	public abstract void onTaskSuccess(int statesCode, Header[] responceHeaders);
 	
@@ -23,7 +24,8 @@ public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler im
 
 	@Override
 	public final void onFailure(int statesCode, Header[] responceHeaders,byte[] response, Throwable throwable) {
-		onTaskFailure(statesCode, responceHeaders, response == null? "":new String(response), throwable);
+		Ks3Error error = new Ks3Error(statesCode, response, throwable);
+		onTaskFailure(statesCode,error, responceHeaders, response == null? "":new String(response), throwable);
 	}
 
 	@Override

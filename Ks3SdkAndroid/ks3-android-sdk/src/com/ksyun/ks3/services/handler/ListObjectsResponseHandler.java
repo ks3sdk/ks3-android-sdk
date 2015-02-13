@@ -10,6 +10,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.Ks3ObjectSummary;
 import com.ksyun.ks3.model.ObjectListing;
 import com.ksyun.ks3.model.Owner;
@@ -19,7 +20,7 @@ import com.ksyun.ks3.util.StringUtils;
 public abstract class ListObjectsResponseHandler extends Ks3HttpResponceHandler{
 	private boolean isCommonPrefixes = false;
 	
-	public abstract void onFailure(int statesCode, Header[] responceHeaders,String response, Throwable paramThrowable);
+	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable paramThrowable);
 
 	public abstract void onSuccess(int statesCode, Header[] responceHeaders,ObjectListing objectListing);
 	
@@ -30,7 +31,8 @@ public abstract class ListObjectsResponseHandler extends Ks3HttpResponceHandler{
 
 	@Override
 	public final void onFailure(int statesCode, Header[] responceHeaders,	byte[] response, Throwable throwable) {
-		this.onFailure(statesCode, responceHeaders, response==null?"":new String(response), throwable);
+		Ks3Error error = new Ks3Error(statesCode, response, throwable);
+		this.onFailure(statesCode,error, responceHeaders, response==null?"":new String(response), throwable);
 	}
 
 	@Override

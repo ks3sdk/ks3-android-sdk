@@ -43,6 +43,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.Ks3ObjectSummary;
 import com.ksyun.ks3.model.ObjectListing;
 import com.ksyun.ks3.model.result.GetObjectResult;
@@ -154,12 +155,12 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
-
+			public void onFailure(int statesCode, Ks3Error error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
+				
 			}
 		});
-
 	}
 
 	private void setUp() {
@@ -440,24 +441,23 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 					item.status = RemoteFile.STATUS_FINISH;
 					item.progress = 100;
 					mHandler.sendEmptyMessage(0);
-
-				}
-
-				@Override
-				public void onTaskFailure(int paramInt,
-						Header[] paramArrayOfHeader, Throwable paramThrowable,
-						File paramFile) {
-					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
-							"failure: reason = " + paramThrowable.toString());
-					RemoteFile remoteFile = dataSource.get(item.objectKey);
-					remoteFile.status = RemoteFile.STATUS_FAIL;
-					item.status = RemoteFile.STATUS_FAIL;
-					mHandler.sendEmptyMessage(0);
 				}
 
 				@Override
 				public void onTaskCancel() {
 					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
+				}
+
+				@Override
+				public void onTaskFailure(int paramInt, Ks3Error ks3Error,
+						Header[] paramArrayOfHeader, Throwable paramThrowable,
+						File paramFile) {
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+							paramInt+"failure: reason = " + paramThrowable.toString()+"/n"+"response:"+ks3Error.getErrorMessage());
+					RemoteFile remoteFile = dataSource.get(item.objectKey);
+					remoteFile.status = RemoteFile.STATUS_FAIL;
+					item.status = RemoteFile.STATUS_FAIL;
+					mHandler.sendEmptyMessage(0);					
 				}
 			});
 		}
