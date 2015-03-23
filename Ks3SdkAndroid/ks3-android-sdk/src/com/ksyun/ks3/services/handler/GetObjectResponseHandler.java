@@ -17,7 +17,7 @@ public abstract class GetObjectResponseHandler extends com.ksyun.ks3.asynchttpcl
 	private String mBucketName;
 	private String mObjectKey;
 	
-	private GetObjectResponseHandler(File file , boolean append){
+	public GetObjectResponseHandler(File file , boolean append){
 		super(file, append);
 	}
 	

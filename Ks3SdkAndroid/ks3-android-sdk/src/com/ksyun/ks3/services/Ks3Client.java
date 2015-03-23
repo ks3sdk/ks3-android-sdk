@@ -19,6 +19,7 @@ import com.ksyun.ks3.model.acl.Authorization;
 import com.ksyun.ks3.model.acl.CannedAccessControlList;
 import com.ksyun.ks3.model.result.CompleteMultipartUploadResult;
 import com.ksyun.ks3.model.result.CopyResult;
+import com.ksyun.ks3.model.result.GetObjectResult;
 import com.ksyun.ks3.model.result.HeadObjectResult;
 import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
 import com.ksyun.ks3.model.result.ListPartsResult;
@@ -1246,5 +1247,155 @@ public class Ks3Client implements Ks3 {
 			throw error;
 		}
 		return listPartsResult;
+	}
+	@Override
+	public void syncGetObject(GetObjectRequest request, File file,
+			boolean append) throws Throwable {
+		final Throwable error = new Throwable();
+		this.getObject(request, new GetObjectResponseHandler(file, append) {
+
+			@Override
+			public void onTaskStart() {
+
+			}
+
+			@Override
+			public void onTaskProgress(double progress) {
+
+			}
+
+			@Override
+			public void onTaskFinish() {
+
+			}
+
+			@Override
+			public void onTaskFailure(int paramInt, Ks3Error ks3Error,
+					Header[] paramArrayOfHeader, Throwable paramThrowable,
+					File paramFile) {
+				error.initCause(paramThrowable);
+			}
+
+			@Override
+			public void onTaskCancel() {
+
+			}
+
+			@Override
+			public void onTaskSuccess(int paramInt,
+					Header[] paramArrayOfHeader, GetObjectResult getObjectResult) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	@Override
+	public void syncGetObject(Context context, File file, boolean append,
+			String bucketname, String key,
+			GetObjectResponseHandler getObjectResponceHandler) throws Throwable {
+		GetObjectRequest request = new GetObjectRequest(bucketname, key);
+		this.syncGetObject(request, file, append);
+	}
+
+	@Override
+	public void syncPutObject(String bucketname, String objectkey, File file)
+			throws Throwable {
+		PutObjectRequest request = new PutObjectRequest(bucketname, objectkey,
+				file);
+		this.syncPutObject(request);
+	}
+
+	@Override
+	public void syncPutObject(String bucketname, String objectkey, File file,
+			ObjectMetadata objectmeta) throws Throwable {
+		PutObjectRequest request = new PutObjectRequest(bucketname, objectkey,
+				file, objectmeta);
+		this.syncPutObject(request);
+	}
+
+	@Override
+	public void syncPutObject(PutObjectRequest request) throws Throwable {
+		final Throwable error = new Throwable();
+		this.putObject(request, new PutObjectResponseHandler() {
+
+			@Override
+			public void onTaskProgress(double progress) {
+
+			}
+
+			@Override
+			public void onTaskSuccess(int statesCode, Header[] responceHeaders) {
+
+			}
+
+			@Override
+			public void onTaskStart() {
+
+			}
+
+			@Override
+			public void onTaskFinish() {
+
+			}
+
+			@Override
+			public void onTaskFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+			}
+
+			@Override
+			public void onTaskCancel() {
+
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+	}
+
+	@Override
+	public PartETag syncUploadPart(String bucketName, String key,
+			String uploadId, File file, long offset, int partNumber,
+			long partSize) throws Throwable {
+		UploadPartRequest request = new UploadPartRequest(bucketName, key,
+				uploadId, file, offset, partNumber, partSize);
+		return this.syncUploadPart(request);
+	}
+
+	@Override
+	public PartETag syncUploadPart(UploadPartRequest request) throws Throwable {
+		final Throwable error = new Throwable();
+		final PartETag result = new PartETag();
+		this.uploadPart(request, new UploadPartResponceHandler() {
+
+			@Override
+			public void onTaskProgress(double progress) {
+
+			}
+
+			@Override
+			public void onSuccess(int statesCode, Header[] responceHeaders,
+					PartETag response) {
+				result.seteTag(response.geteTag());
+				result.setPartNumber(response.getPartNumber());
+			}
+
+			@Override
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
+				error.initCause(paramThrowable);
+			}
+		});
+		if (error.getCause() != null) {
+			throw error;
+		}
+		return result;
 	}
 }
