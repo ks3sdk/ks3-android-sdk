@@ -117,7 +117,7 @@ public class UploadPartRequest extends Ks3HttpRequest {
 			throw new Ks3ClientException("partsize(" + this.partSize
 					+ ") should be small than" + Constants.maxPartSize);
 		}
-		if (!this.isLastPart && this.partSize < Constants.minPartSize) {
+		if (this.partSize <= Constants.minPartSize) {
 			throw new Ks3ClientException("partsize(" + this.partSize
 					+ ") should be larger than" + Constants.minPartSize);
 		}

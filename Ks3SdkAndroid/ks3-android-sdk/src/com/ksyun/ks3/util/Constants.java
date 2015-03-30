@@ -32,7 +32,7 @@ public class Constants {
 	// uploadPart
 	public static final int minPartNumber = 1;
 	public static final int maxPartNumber = 10000;
-	public static final int minPartSize = 5 * 1024 * 1024;
+	public static final int minPartSize = 0 ;
 	public static final int maxPartSize = 5 * 1024 * 1024 * 1024;
 	public static final int EXCEPTION = 0;
 	
