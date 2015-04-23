@@ -1,8 +1,8 @@
 package com.ksyun.ks3.util;
 
 public class Constants {
+
 	/* Global log tag */
-	public static final String GLOBLE_LOG_TAG = "ks3_sdk_android";
 	public final static String KS3_SDK_USER_AGENT = "ks3-kss-android-sdk";
 	public final static String LOG_TAG = "ks3_android_sdk";
 	/* Xml namespace */
@@ -32,15 +32,8 @@ public class Constants {
 	// uploadPart
 	public static final int minPartNumber = 1;
 	public static final int maxPartNumber = 10000;
-	public static final int minPartSize = 0 ;
+	public static final int minPartSize = 5 * 1024 * 1024;
 	public static final int maxPartSize = 5 * 1024 * 1024 * 1024;
 	public static final int EXCEPTION = 0;
-	
-	// call back 
-	public static final String CALL_BACK_CUSTOM_PREFIX = "kss-";
-	
-	
-	
-	
-	
+
 }

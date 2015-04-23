@@ -44,12 +44,12 @@ public class Mimetypes {
 				try {
 					is.close();
 				} catch (IOException ex) {
-					Log.d(Constants.GLOBLE_LOG_TAG,
+					Log.d(Constants.LOG_TAG,
 							"Failed to close inputstream");
 				}
 			}
 		} else {
-			Log.w(Constants.GLOBLE_LOG_TAG,
+			Log.w(Constants.LOG_TAG,
 					"Unable to find 'mime.types' file in classpath");
 		}
 		return mimetypes;

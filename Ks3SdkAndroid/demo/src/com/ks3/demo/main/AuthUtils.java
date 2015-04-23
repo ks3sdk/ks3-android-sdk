@@ -9,15 +9,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
+import android.text.TextUtils;
+import android.util.Base64;
 
 import com.ksyun.ks3.model.acl.Authorization;
 import com.ksyun.ks3.services.request.Ks3HttpRequest;
 import com.ksyun.ks3.util.ByteUtil;
-
-import android.text.TextUtils;
-import android.util.Base64;
 
 /**
  * 
@@ -25,23 +26,23 @@ import android.util.Base64;
  * 
  */
 public class AuthUtils {
-	public static String calcAuthorization(Authorization auth,
-			Ks3HttpRequest request) throws SignatureException {
+
+	public static String calcAuthorization(Authorization auth, Ks3HttpRequest request) throws SignatureException {
+
 		String signature = calcSignature(auth.getAccessKeySecret(), request);
 		String value = "KSS " + auth.getAccessKeyId() + ":" + signature;
-		return value;  
+		return value;
 	}
 
-	private static String calcSignature(String accessKeySecret,
-			Ks3HttpRequest request) throws SignatureException {
+	private static String calcSignature(String accessKeySecret, Ks3HttpRequest request) throws SignatureException {
+
 		String resource = CanonicalizedKSSResource(request);
 		String requestMethod = request.getHttpMethod().toString();
 		String contentMd5 = request.getContentMD5();
 		String contentType = request.getContentType();
 		String _signDate = request.getDate();
 		List<String> signList = new ArrayList<String>();
-		signList.addAll(Arrays.asList(new String[] { requestMethod, contentMd5,
-				contentType, _signDate }));
+		signList.addAll(Arrays.asList(new String[] { requestMethod, contentMd5, contentType, _signDate }));
 		String _headers = CanonicalizedKSSHeaders(request);
 		if (_headers != null && !_headers.equals("")) {
 			signList.add(_headers);
@@ -57,9 +58,9 @@ public class AuthUtils {
 			String date, String contentMD5, String resource, String Headers,
 			String accessKeyId, String accessKeySecret)
 			throws SignatureException {
+
 		List<String> signList = new ArrayList<String>();
-		signList.addAll(Arrays.asList(new String[] { httpMethod, contentMD5,
-				contentType, date }));
+		signList.addAll(Arrays.asList(new String[] { httpMethod, contentMD5, contentType, date }));
 		String _headers = Headers;
 		if (_headers != null && !_headers.equals("")) {
 			signList.add(_headers);
@@ -67,11 +68,13 @@ public class AuthUtils {
 		signList.add(resource);
 		String signStr = TextUtils.join("\n", signList.toArray());
 		String serverSignature = calculateRFC2104HMAC(signStr, accessKeySecret);
+
 		String value = "KSS " + accessKeyId + ":" + serverSignature;
 		return value;
 	}
 
 	public static String CanonicalizedKSSResource(Ks3HttpRequest request) {
+
 		boolean escapeDoubleSlash = true;
 
 		String bucketName = request.getBucketname();
@@ -87,6 +90,7 @@ public class AuthUtils {
 			String encodedPath = null;
 			try {
 				encodedPath = URLEncoder.encode(objectKey, "UTF-8");
+				encodedPath = Ks3HttpRequest.urlEncode(encodedPath);
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -105,6 +109,7 @@ public class AuthUtils {
 	}
 
 	public static String CanonicalizedKSSHeaders(Ks3HttpRequest request) {
+
 		String prefix = "x-kss";
 		Map<String, String> headers = request.getHeader();
 
@@ -117,7 +122,10 @@ public class AuthUtils {
 		}
 
 		Collections.sort(headList, new Comparator<String>() {
+
+			@Override
 			public int compare(String o1, String o2) {
+
 				return ByteUtil.compareTo(o1.getBytes(), o2.toString()
 						.getBytes());
 			}
@@ -136,6 +144,7 @@ public class AuthUtils {
 
 	public static String calculateRFC2104HMAC(String data, String key)
 			throws java.security.SignatureException {
+
 		String result;
 		try {
 			// get an hmac_sha1 key from the raw key bytes

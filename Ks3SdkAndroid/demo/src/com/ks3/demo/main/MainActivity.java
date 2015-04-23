@@ -34,7 +34,6 @@ import android.widget.Toast;
 
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
 import com.ks3.demo.main.BucketObjectInpuDialog.OnBucketObjectDialogListener;
-import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.Bucket;
 import com.ksyun.ks3.model.Ks3ObjectSummary;
 import com.ksyun.ks3.model.ObjectListing;
@@ -204,7 +203,6 @@ public class MainActivity extends Activity {
 														+ ",states code = "
 														+ statesCode).append(
 												"\n");
-										
 										Intent intent = new Intent(
 												MainActivity.this,
 												RESTAPITestResult.class);
@@ -228,6 +226,13 @@ public class MainActivity extends Activity {
 									}
 
 									@Override
+									public void onTaskFailure(int statesCode,
+											Header[] responceHeaders,
+											String response,
+											Throwable paramThrowable) {
+									}
+
+									@Override
 									public void onTaskProgress(double progress) {
 
 									}
@@ -236,22 +241,6 @@ public class MainActivity extends Activity {
 									public void onTaskCancel() {
 										// TODO Auto-generated method stub
 
-									}
-
-									@Override
-									public void onTaskFailure(int statesCode,
-											Ks3Error error,
-											Header[] responceHeaders,
-											String response,
-											Throwable paramThrowable) {
-										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer.append(
-												"upload file failure,file = "
-														+ Constants.TEST_IMG
-														+ ",states code = "
-														+ statesCode).append(
-												"\n").append("response:").append(response);
-										
 									}
 								});
 					}
@@ -278,12 +267,9 @@ public class MainActivity extends Activity {
 
 									@Override
 									public void onFailure(int statesCode,
-											Ks3Error error,
 											Header[] responceHeaders,
 											String response,
 											Throwable paramThrowable) {
-										// TODO Auto-generated method stub
-										
 									}
 								});
 					}
@@ -395,10 +381,10 @@ public class MainActivity extends Activity {
 
 									@Override
 									public void onFailure(int statesCode,
-											Ks3Error error,
 											Header[] responceHeaders,
 											String response,
 											Throwable paramThrowable) {
+
 										StringBuffer stringBuffer = new StringBuffer();
 										stringBuffer.append(
 												"head object , states code :"
@@ -415,7 +401,7 @@ public class MainActivity extends Activity {
 										data.putString(API,
 												"head object Result");
 										intent.putExtras(data);
-										startActivity(intent);										
+										startActivity(intent);
 									}
 								});
 
@@ -476,7 +462,6 @@ public class MainActivity extends Activity {
 
 									@Override
 									public void onFailure(int statesCode,
-											Ks3Error error,
 											Header[] responceHeaders,
 											String response,
 											Throwable paramThrowable) {
@@ -484,7 +469,7 @@ public class MainActivity extends Activity {
 										stringBuffer.append(
 												"get object ACL FAIL !!!!!!, states code :"
 														+ statesCode).append(
-												"\n").append("response:").append(response);
+												"\n");
 										stringBuffer.append("Exception :"
 												+ paramThrowable.toString());
 										Intent intent = new Intent(
@@ -496,7 +481,8 @@ public class MainActivity extends Activity {
 										data.putString(API,
 												"GET Object ACL Result");
 										intent.putExtras(data);
-										startActivity(intent);										
+										startActivity(intent);
+
 									}
 								});
 
@@ -528,7 +514,7 @@ public class MainActivity extends Activity {
 					}
 
 					@Override
-					public void onFailure(int statesCode, Ks3Error error,
+					public void onFailure(int statesCode,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						Intent intent = new Intent(MainActivity.this,
@@ -537,11 +523,11 @@ public class MainActivity extends Activity {
 						StringBuffer stringBuffer = new StringBuffer();
 						stringBuffer
 								.append("Delete bucket failed , states code :"
-										+ statesCode).append("/n").append("responce:").append(response);
+										+ statesCode);
 						data.putString(RESULT, stringBuffer.toString());
 						data.putString(API, "Delete Bucket Result");
 						intent.putExtras(data);
-						startActivity(intent);						
+						startActivity(intent);
 					}
 				});
 			}
@@ -596,15 +582,15 @@ public class MainActivity extends Activity {
 
 									@Override
 									public void onFailure(int statesCode,
-											Ks3Error error,
 											Header[] responceHeaders,
 											String response,
 											Throwable paramThrowable) {
+
 										StringBuffer stringBuffer = new StringBuffer();
 										stringBuffer.append(
 												"PUT Object ACL FAIL !!!!!!!!!, states code :"
 														+ statesCode).append(
-												"\n").append("responce:").append(response);
+												"\n");
 										stringBuffer.append("Exception :"
 												+ paramThrowable.toString());
 										Intent intent = new Intent(
@@ -616,7 +602,8 @@ public class MainActivity extends Activity {
 										data.putString(API,
 												"PUT Object ACL Result");
 										intent.putExtras(data);
-										startActivity(intent);										
+										startActivity(intent);
+
 									}
 								});
 					}
@@ -646,13 +633,14 @@ public class MainActivity extends Activity {
 					}
 
 					@Override
-					public void onFailure(int statesCode, Ks3Error error,
+					public void onFailure(int statesCode,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
+
 						StringBuffer stringBuffer = new StringBuffer();
 						stringBuffer.append(
 								"head Bucket Fail, states code :" + statesCode)
-								.append("\n").append("response:").append(response);
+								.append("\n");
 						stringBuffer.append("Exception :"
 								+ paramThrowable.toString());
 						Intent intent = new Intent(MainActivity.this,
@@ -661,7 +649,8 @@ public class MainActivity extends Activity {
 						data.putString(RESULT, stringBuffer.toString());
 						data.putString(API, "head Bucket Result");
 						intent.putExtras(data);
-						startActivity(intent);						
+						startActivity(intent);
+
 					}
 				});
 			}
@@ -724,13 +713,14 @@ public class MainActivity extends Activity {
 					}
 
 					@Override
-					public void onFailure(int statesCode, Ks3Error error,
+					public void onFailure(int statesCode,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
+
 						StringBuffer stringBuffer = new StringBuffer();
 						stringBuffer.append(
 								"PUT Bucket ACL FAIL, states code :"
-										+ statesCode).append("\n").append("responce :").append(response);
+										+ statesCode).append("\n");
 						stringBuffer.append("Exception :"
 								+ paramThrowable.toString());
 						Intent intent = new Intent(MainActivity.this,
@@ -739,7 +729,8 @@ public class MainActivity extends Activity {
 						data.putString(RESULT, stringBuffer.toString());
 						data.putString(API, "PUT Bucket ACL Result");
 						intent.putExtras(data);
-						startActivity(intent);						
+						startActivity(intent);
+
 					}
 				});
 			}
@@ -784,13 +775,13 @@ public class MainActivity extends Activity {
 					}
 
 					@Override
-					public void onFailure(int statesCode, Ks3Error error,
+					public void onFailure(int statesCode,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						StringBuffer stringBuffer = new StringBuffer();
 						stringBuffer.append(
 								"GET BUCKET ACL fail , states code :"
-										+ statesCode).append("\n").append("response = ").append(response);
+										+ statesCode).append("\n");
 						stringBuffer.append("Exception :"
 								+ paramThrowable.toString());
 						Intent intent = new Intent(MainActivity.this,
@@ -799,7 +790,7 @@ public class MainActivity extends Activity {
 						data.putString(RESULT, stringBuffer.toString());
 						data.putString(API, "GET BUCKET ACL Result");
 						intent.putExtras(data);
-						startActivity(intent);						
+						startActivity(intent);
 					}
 				});
 			}
@@ -836,10 +827,9 @@ public class MainActivity extends Activity {
 										intent.putExtras(data);
 										startActivity(intent);
 									}
-									
+
 									@Override
 									public void onFailure(int statesCode,
-											Ks3Error error,
 											Header[] responceHeaders,
 											String response,
 											Throwable paramThrowable) {
@@ -847,7 +837,7 @@ public class MainActivity extends Activity {
 										stringBuffer.append(
 												"Delete fail , states code :"
 														+ statesCode).append(
-												"\n").append("response:").append(response);
+												"\n");
 										stringBuffer.append("Exception :"
 												+ paramThrowable.toString());
 										Intent intent = new Intent(
@@ -859,7 +849,7 @@ public class MainActivity extends Activity {
 										data.putString(API,
 												"Delete Object Result");
 										intent.putExtras(data);
-										startActivity(intent);										
+										startActivity(intent);
 									}
 								});
 					}
@@ -953,11 +943,10 @@ public class MainActivity extends Activity {
 					}
 
 					@Override
-					public void onFailure(int statesCode, Ks3Error error,
+					public void onFailure(int statesCode,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
-						// TODO Auto-generated method stub
-						
+
 					}
 				});
 			}
@@ -989,13 +978,12 @@ public class MainActivity extends Activity {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Ks3Error error,
-					Header[] responceHeaders, String response,
-					Throwable paramThrowable) {
+			public void onFailure(int statesCode, Header[] paramArrayOfHeader,
+					String paramString, Throwable paramThrowable) {
 				StringBuffer stringBuffer = new StringBuffer();
 				stringBuffer.append(
 						"list bucket fail , states code :" + statesCode)
-								.append("\n").append("responce :").append(response);
+						.append("\n");
 				stringBuffer.append("Exception :" + paramThrowable.toString());
 				Intent intent = new Intent(MainActivity.this,
 						RESTAPITestResult.class);
@@ -1003,7 +991,7 @@ public class MainActivity extends Activity {
 				data.putString(RESULT, stringBuffer.toString());
 				data.putString(API, "List Buckets");
 				intent.putExtras(data);
-				startActivity(intent);				
+				startActivity(intent);
 			}
 		});
 	}
@@ -1026,13 +1014,13 @@ public class MainActivity extends Activity {
 					}
 
 					@Override
-					public void onFailure(int statesCode, Ks3Error error,
+					public void onFailure(int statesCode,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						StringBuffer stringBuffer = new StringBuffer();
 						stringBuffer.append(
 								"Delete fail , states code :" + statesCode)
-								.append("\n").append("responce :").append(response);
+								.append("\n");
 						stringBuffer.append("Exception :"
 								+ paramThrowable.toString());
 						Intent intent = new Intent(MainActivity.this,
@@ -1041,7 +1029,7 @@ public class MainActivity extends Activity {
 						data.putString(RESULT, stringBuffer.toString());
 						data.putString(API, "List Buckets");
 						intent.putExtras(data);
-						startActivity(intent);						
+						startActivity(intent);
 					}
 				});
 			}

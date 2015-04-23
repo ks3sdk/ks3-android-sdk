@@ -16,7 +16,9 @@ import android.widget.Toast;
  */
 public class BucketInpuDialog extends Dialog implements
 		android.view.View.OnClickListener {
+
 	public interface OnBucketDialogListener {
+
 		public void confirmBucket(String name);
 	}
 
@@ -24,19 +26,22 @@ public class BucketInpuDialog extends Dialog implements
 	private EditText bucketField;
 	private Button okBtn;
 	private Button cancelBtn;
-	private Context context;
+	private final Context context;
 
 	public BucketInpuDialog(Context context) {
+
 		super(context);
 		this.context = context;
 	}
 
 	public void setOnBucketInputListener(OnBucketDialogListener listener) {
+
 		this.listener = listener;
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.alert_bucket_input);
 		setTitle("Input Bucket Name");
@@ -44,7 +49,9 @@ public class BucketInpuDialog extends Dialog implements
 	}
 
 	private void setUpViews() {
+
 		bucketField = (EditText) findViewById(R.id.input);
+		bucketField.setText("acc");
 		okBtn = (Button) findViewById(R.id.ok);
 		cancelBtn = (Button) findViewById(R.id.cancel);
 		okBtn.setOnClickListener(this);
@@ -53,6 +60,7 @@ public class BucketInpuDialog extends Dialog implements
 
 	@Override
 	public void onClick(View v) {
+
 		if (listener != null) {
 			switch (v.getId()) {
 			case R.id.ok:

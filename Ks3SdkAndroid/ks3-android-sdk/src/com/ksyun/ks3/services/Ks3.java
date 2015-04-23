@@ -61,8 +61,8 @@ import com.ksyun.ks3.services.request.UploadPartRequest;
 public abstract interface Ks3 {
 
 	public void listBuckets(ListBucketsResponceHandler resultHandler);
-
-	public ArrayList<Bucket> syncListBuckets() throws Throwable;
+	
+	public ArrayList<Bucket> syncListBuckets() throws Throwable ;
 
 	public void listBuckets(ListBucketsRequest request,
 			ListBucketsResponceHandler resultHandler);
@@ -70,208 +70,193 @@ public abstract interface Ks3 {
 	public void getBucketACL(String bucketName,
 			GetBucketACLResponceHandler resultHandler);
 
-	public AccessControlPolicy syncGetBucketACL(String bucketName)
-			throws Throwable;
-
+	public AccessControlPolicy syncGetBucketACL(String bucketName)throws Throwable;
+	
 	public void getBucketACL(GetBucketACLRequest request,
 			GetBucketACLResponceHandler resultHandler);
 
-	public AccessControlPolicy syncGetBucketACL(GetBucketACLRequest request)
-			throws Throwable;
-
+	public AccessControlPolicy syncGetBucketACL(GetBucketACLRequest request)throws Throwable;
+	
 	public void putBucketACL(String bucketName,
 			AccessControlList accessControlList,
 			PutBucketACLResponseHandler resultHandler);
 
 	public void syncPutBucketACL(String bucketName,
-			AccessControlList accessControlList) throws Throwable;
-
+			AccessControlList accessControlList)throws Throwable;
+	
 	public void putBucketACL(String bucketName,
 			CannedAccessControlList CannedAcl,
 			PutBucketACLResponseHandler resultHandler);
 
 	public void syncPutBucketACL(String bucketName,
-			CannedAccessControlList accessControlList) throws Throwable;
-
+			CannedAccessControlList accessControlList)throws Throwable;
+	
 	public void putBucketACL(PutBucketACLRequest request,
 			PutBucketACLResponseHandler resultHandler);
 
-	public void syncPutBucketACL(PutBucketACLRequest request) throws Throwable;
-
+	public void syncPutBucketACL(PutBucketACLRequest request)throws Throwable;
+	
 	public void putObjectACL(String bucketName, String objectName,
 			CannedAccessControlList accessControlList,
 			PutObjectACLResponseHandler resultHandler);
 
 	public void syncPutObjectACL(String bucketName, String objectName,
-			CannedAccessControlList accessControlList) throws Throwable;
-
+			CannedAccessControlList accessControlList)throws Throwable;
+	
 	public void putObjectACL(String bucketName, String objectName,
 			AccessControlList accessControlList,
 			PutObjectACLResponseHandler resultHandler);
 
 	public void syncPutObjectACL(String bucketName, String objectName,
-			AccessControlList accessControlList) throws Throwable;
-
+			AccessControlList accessControlList)throws Throwable;
+	
 	public void putObjectACL(PutObjectACLRequest request,
 			PutObjectACLResponseHandler resultHandler);
 
-	public void syncPutObjectACL(PutObjectACLRequest request) throws Throwable;
-
+	public void syncPutObjectACL(PutObjectACLRequest request)throws Throwable;
+	
 	public void getObjectACL(String bucketName, String objectName,
 			GetObjectACLResponseHandler resultHandler);
 
-	public AccessControlPolicy syncGetObjectACL(String bucketName,
-			String objectName) throws Throwable;
-
+	public AccessControlPolicy syncGetObjectACL(String bucketName, String objectName)throws Throwable;
+	
 	public void getObjectACL(GetObjectACLRequest request,
 			GetObjectACLResponseHandler resultHandler);
 
-	public AccessControlPolicy syncGetObjectACL(GetObjectACLRequest request)
-			throws Throwable;
-
+	public AccessControlPolicy syncGetObjectACL(GetObjectACLRequest request)throws Throwable;
+	
 	public void headBucket(String bucketname,
 			HeadBucketResponseHandler resultHandler);
 
-	public void syncHeadBucket(String bucketname) throws Throwable;
-
+	public void syncHeadBucket(String bucketname)throws Throwable;
+	
 	public void headBucket(HeadBucketRequest request,
 			HeadBucketResponseHandler resultHandler);
 
-	public void syncHeadBucket(HeadBucketRequest request) throws Throwable;
-
+	public void syncHeadBucket(HeadBucketRequest request)throws Throwable;
+	
 	public boolean bucketExists(String bucketname);
 
 	public void createBucket(String bucketname,
 			CreateBucketResponceHandler handlhandler);
 
-	public void syncCreateBucket(String bucketname) throws Throwable;
-
+	public void syncCreateBucket(String bucketname)throws Throwable;
+	
 	public void createBucket(String bucketname, AccessControlList list,
 			CreateBucketResponceHandler handlhandler);
 
-	public void syncCreateBucket(String bucketname, AccessControlList list)
-			throws Throwable;
-
+	public void syncCreateBucket(String bucketname, AccessControlList list)throws Throwable;
+	
 	public void createBucket(String bucketname, CannedAccessControlList list,
 			CreateBucketResponceHandler handlhandler);
 
-	public void syncCreateBucket(String bucketname, CannedAccessControlList list)
-			throws Throwable;
-
+	public void syncCreateBucket(String bucketname, CannedAccessControlList list)throws Throwable;
+	
 	public void createBucket(CreateBucketRequest request,
 			CreateBucketResponceHandler handlhandler);
 
-	public void syncCreateBucket(CreateBucketRequest request) throws Throwable;
-
+	public void syncCreateBucket(CreateBucketRequest request)throws Throwable;
+	
 	public void deleteBucket(String bucketname,
 			DeleteBucketResponceHandler handler);
 
-	public void syncDeleteBucket(String bucketname) throws Throwable;
-
+	public void syncDeleteBucket(String bucketname)throws Throwable;
+	
 	public void deleteBucket(DeleteBucketRequest request,
 			DeleteBucketResponceHandler resultHandler);
 
-	public void syncDeleteBucket(DeleteBucketRequest request) throws Throwable;
-
+	public void syncDeleteBucket(DeleteBucketRequest request)throws Throwable;
+	
 	public void listObjects(String bucketname,
 			ListObjectsResponseHandler resultHandler);
 
-	public ObjectListing syncListObjects(String bucketname) throws Throwable;
-
+	public ObjectListing syncListObjects(String bucketname)throws Throwable;
+	
 	public void listObjects(String bucketname, String prefix,
 			ListObjectsResponseHandler resultHandler);
 
-	public ObjectListing syncListObjects(String bucketname, String prefix)
-			throws Throwable;
-
+	public ObjectListing syncListObjects(String bucketname, String prefix)throws Throwable;
+	
 	public void listObjects(ListObjectsRequest request,
 			ListObjectsResponseHandler resultHandler);
 
-	public ObjectListing syncListObjects(ListObjectsRequest request)
-			throws Throwable;
-
+	public ObjectListing syncListObjects(ListObjectsRequest request)throws Throwable;
+	
 	public void deleteObject(String bucketname, String objectKey,
 			DeleteObjectRequestHandler handler);
 
-	public void syncDeleteObject(String bucketname, String objectKey)
-			throws Throwable;
-
+	public void syncDeleteObject(String bucketname, String objectKey)throws Throwable;
+	
 	public void deleteObject(DeleteObjectRequest request,
 			DeleteObjectRequestHandler handler);
 
-	public void syncDeleteObject(DeleteObjectRequest request) throws Throwable;
-
-	public Ks3HttpRequest getObject(Context context, String bucketname,
-			String key, GetObjectResponseHandler getObjectResponceHandler);
+	public void syncDeleteObject(DeleteObjectRequest request)throws Throwable;
+	
+	public Ks3HttpRequest getObject(Context context, String bucketname, String key,
+			GetObjectResponseHandler getObjectResponceHandler);
 
 	public Ks3HttpRequest getObject(GetObjectRequest request,
 			GetObjectResponseHandler getObjectResponceHandler);
 
-	public Ks3HttpRequest putObject(String bucketname, String objectkey,
-			File file, PutObjectResponseHandler handler);
+	public Ks3HttpRequest putObject(String bucketname, String objectkey, File file,
+			PutObjectResponseHandler handler);
 
 	public Ks3HttpRequest putObject(String bucketname, String objectkey,
 			File file, ObjectMetadata objectmeta,
 			PutObjectResponseHandler handler);
-
+	
 	public Ks3HttpRequest putObject(PutObjectRequest request,
 			PutObjectResponseHandler handler);
 
 	public void headObject(String bucketname, String objectkey,
 			HeadObjectResponseHandler resultHandler);
 
-	public HeadObjectResult syncHeadObject(String bucketname, String objectkey)
-			throws Throwable;
-
+	public HeadObjectResult syncHeadObject(String bucketname, String objectkey)throws Throwable ;
+	
 	public void headObject(HeadObjectRequest request,
 			HeadObjectResponseHandler resultHandler);
 
-	public HeadObjectResult syncHeadObject(HeadObjectRequest request)
-			throws Throwable;
-
+	public HeadObjectResult syncHeadObject(HeadObjectRequest request)throws Throwable ;
+	
 	public void copyObject(String destinationBucket, String destinationObject,
 			String sourceBucket, String sourceKey,
 			CopyObjectResponseHandler handler);
 
-	public CopyResult syncCopyObject(String destinationBucket,
-			String destinationObject, String sourceBucket, String sourceKey)
-			throws Throwable;
-
+	public CopyResult syncCopyObject(String destinationBucket, String destinationObject,
+			String sourceBucket, String sourceKey) throws Throwable;
+	
 	public void copyObject(String destinationBucket, String destinationObject,
 			String sourceBucket, String sourceKey,
 			CannedAccessControlList cannedAcl, CopyObjectResponseHandler handler);
-
-	public CopyResult syncCopyObject(String destinationBucket,
-			String destinationObject, String sourceBucket, String sourceKey,
+	
+	public CopyResult syncCopyObject(String destinationBucket, String destinationObject,
+			String sourceBucket, String sourceKey,
 			CannedAccessControlList cannedAcl) throws Throwable;
-
+	
 	public void copyObject(String destinationBucket, String destinationObject,
 			String sourceBucket, String sourceKey,
 			AccessControlList accessControlList,
 			CopyObjectResponseHandler handler);
 
-	public CopyResult syncCopyObject(String destinationBucket,
-			String destinationObject, String sourceBucket, String sourceKey,
+	public CopyResult syncCopyObject(String destinationBucket, String destinationObject,
+			String sourceBucket, String sourceKey,
 			AccessControlList accessControlList) throws Throwable;
-
+	
 	public void copyObject(CopyObjectRequest request,
 			CopyObjectResponseHandler handler);
 
-	public CopyResult syncCopyObject(CopyObjectRequest request)
-			throws Throwable;
-
+	public CopyResult syncCopyObject(CopyObjectRequest request) throws Throwable;
+	
 	public void initiateMultipartUpload(String bucketname, String objectkey,
 			InitiateMultipartUploadResponceHandler resultHandler);
-
-	public InitiateMultipartUploadResult syncInitiateMultipartUpload(
-			String bucketname, String objectkey) throws Throwable;
+	
+	public InitiateMultipartUploadResult syncInitiateMultipartUpload(String bucketname, String objectkey)throws Throwable;
 
 	public void initiateMultipartUpload(InitiateMultipartUploadRequest request,
 			InitiateMultipartUploadResponceHandler resultHandler);
 
-	public InitiateMultipartUploadResult syncInitiateMultipartUpload(
-			InitiateMultipartUploadRequest request) throws Throwable;
-
+	public InitiateMultipartUploadResult syncInitiateMultipartUpload(InitiateMultipartUploadRequest request)throws Throwable;
+	
 	public void uploadPart(String bucketName, String key, String uploadId,
 			File file, long offset, int partNumber, long partSize,
 			UploadPartResponceHandler resultHandler);
@@ -282,84 +267,56 @@ public abstract interface Ks3 {
 	public void completeMultipartUpload(String bucketname, String objectkey,
 			String uploadId, List<PartETag> partETags,
 			CompleteMultipartUploadResponseHandler handler);
-
-	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
-			String bucketname, String objectkey, String uploadId,
-			List<PartETag> partETags) throws Throwable;
-
+	
+	public CompleteMultipartUploadResult syncCompleteMultipartUpload(String bucketname, String objectkey,
+			String uploadId, List<PartETag> partETags)throws Throwable;
+	
 	public void completeMultipartUpload(ListPartsResult result,
 			CompleteMultipartUploadResponseHandler handler);
-
-	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
-			ListPartsResult result) throws Throwable;
-
+	
+	public CompleteMultipartUploadResult syncCompleteMultipartUpload(ListPartsResult result)throws Throwable;
+	
 	public void completeMultipartUpload(CompleteMultipartUploadRequest request,
 			CompleteMultipartUploadResponseHandler handler);
 
-	public CompleteMultipartUploadResult syncCompleteMultipartUpload(
-			CompleteMultipartUploadRequest request) throws Throwable;
-
+	public CompleteMultipartUploadResult syncCompleteMultipartUpload(CompleteMultipartUploadRequest request)throws Throwable;
+	
 	public void abortMultipartUpload(String bucketname, String objectkey,
 			String uploadId, AbortMultipartUploadResponseHandler handler);
 
-	public void syncAbortMultipartUpload(String bucketname, String objectkey,
-			String uploadId) throws Throwable;
-
+	public void syncAbortMultipartUpload(String bucketname, String objectkey,String uploadId)throws Throwable;
+	
 	public void abortMultipartUpload(AbortMultipartUploadRequest request,
 			AbortMultipartUploadResponseHandler handler);
 
-	public void syncAbortMultipartUpload(AbortMultipartUploadRequest request)
-			throws Throwable;
-
+	public void syncAbortMultipartUpload(AbortMultipartUploadRequest request)throws Throwable;
+	
 	public void listParts(String bucketname, String objectkey, String uploadId,
 			ListPartsResponseHandler handler);
 
-	public ListPartsResult syncListParts(String bucketname, String objectkey,
-			String uploadId) throws Throwable;
-
+	public ListPartsResult syncListParts(String bucketname, String objectkey, String uploadId)throws Throwable;
+	
 	public void listParts(String bucketname, String objectkey, String uploadId,
 			int maxParts, ListPartsResponseHandler handler);
 
-	public ListPartsResult syncListParts(String bucketname, String objectkey,
-			String uploadId, int maxParts) throws Throwable;
-
+	public ListPartsResult syncListParts(String bucketname, String objectkey, String uploadId,
+			int maxParts)throws Throwable;
+	
 	public void listParts(String bucketname, String objectkey, String uploadId,
 			int maxParts, int partNumberMarker, ListPartsResponseHandler handler);
 
-	public ListPartsResult syncListParts(String bucketname, String objectkey,
-			String uploadId, int maxParts, int partNumberMarker)
-			throws Throwable;
-
+	public ListPartsResult syncListParts(String bucketname, String objectkey, String uploadId,
+			int maxParts, int partNumberMarker)throws Throwable;
+	
 	public void listParts(ListPartsRequest request,
 			ListPartsResponseHandler handler);
 
-	public ListPartsResult syncListParts(ListPartsRequest request)
-			throws Throwable;
-
+	public ListPartsResult syncListParts(ListPartsRequest request)throws Throwable;
+	
 	public void pause(Context context);
 
 	public void cancel(Context context);
 
 	public Context getContext();
 
-	public void syncGetObject(GetObjectRequest request, File downloadFile,
-			boolean append) throws Throwable;
-
-	public void syncGetObject(Context context, File file, boolean append,
-			String bucketname, String key,
-			GetObjectResponseHandler getObjectResponceHandler) throws Throwable;
-
-	public void syncPutObject(String bucketname, String objectkey, File file)
-			throws Throwable;
-
-	public void syncPutObject(String bucketname, String objectkey, File file,
-			ObjectMetadata objectmeta) throws Throwable;
-
-	public void syncPutObject(PutObjectRequest request) throws Throwable;
-
-	public PartETag syncUploadPart(String bucketName, String key,
-			String uploadId, File file, long offset, int partNumber,
-			long partSize) throws Throwable;
-
-	public PartETag syncUploadPart(UploadPartRequest request) throws Throwable;
 }

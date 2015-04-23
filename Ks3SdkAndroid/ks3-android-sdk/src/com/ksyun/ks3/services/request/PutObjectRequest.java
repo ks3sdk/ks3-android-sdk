@@ -3,6 +3,8 @@ package com.ksyun.ks3.services.request;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +74,9 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 		objectMeta.setContentLength(String.valueOf(file.length()));
 		this.addHeader(HttpHeaders.ContentLength, String.valueOf(file.length()));
 		try {
+			long time = System.currentTimeMillis();
 			String contentMd5_b64 = Md5Utils.md5AsBase64(file);
+			Log.i("guoli","coast :" + (System.currentTimeMillis() - time) + ", md5 :" + contentMd5_b64);
 			this.addHeader(HttpHeaders.ContentMD5.toString(), contentMd5_b64);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -83,15 +87,24 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 					"calculate file md5 error (" + e + ")", e);
 		}
 		if(!StringUtils.isBlank(this.callBackUrl) && !StringUtils.isBlank(this.callBackBody)){
-			this.addHeader(HttpHeaders.XKssCallBackUrl, this.callBackUrl);
-			this.addHeader(HttpHeaders.XKssCallBackBody, this.callBackBody);
-			
+			try {
+				this.addHeader(HttpHeaders.XKssCallBackUrl, this.callBackUrl);
+				this.addHeader(HttpHeaders.XKssCallBackBody, URLEncoder.encode(this.callBackBody, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+				throw new Ks3ClientException(e);
+			}
 			if(this.callBackHeaders!= null && this.callBackHeaders.size() > 0){
 				for(Map.Entry<String, String> entry: this.callBackHeaders.entrySet()){
 					String key = entry.getKey();
 					String val = entry.getValue();
-					if(!StringUtils.isBlank(key) && key.startsWith(Constants.CALL_BACK_CUSTOM_PREFIX) && !StringUtils.isBlank(val)){
-						this.addHeader(key, val);
+					if(!StringUtils.isBlank(key) && key.startsWith("kss:") && !StringUtils.isBlank(val)){
+						try {
+							this.addHeader(key, URLEncoder.encode(val, "UTF-8"));
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+							throw new Ks3ClientException(e);
+						}
 					}else{
 						Log.e(Constants.LOG_TAG,"the header:"+key +"-"+val + " is not correct ,this head will be ignored");
 					}

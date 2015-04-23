@@ -4,7 +4,9 @@ import java.io.File;
 
 import org.apache.http.Header;
 
-import com.ksyun.ks3.exception.Ks3Error;
+import android.provider.SyncStateContract.Constants;
+import android.util.Log;
+
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.ObjectMetadata;
 import com.ksyun.ks3.model.ObjectMetadata.Meta;
@@ -12,12 +14,12 @@ import com.ksyun.ks3.model.result.GetObjectResult;
 import com.ksyun.ks3.util.Md5Utils;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
 
-public abstract class GetObjectResponseHandler extends com.ksyun.ks3.asynchttpclient.FileAsyncHttpResponseHandler{
+public abstract class GetObjectResponseHandler extends FileAsyncHttpResponseHandler{
 
 	private String mBucketName;
 	private String mObjectKey;
 	
-	public GetObjectResponseHandler(File file , boolean append){
+	private GetObjectResponseHandler(File file , boolean append){
 		super(file, append);
 	}
 	
@@ -37,13 +39,26 @@ public abstract class GetObjectResponseHandler extends com.ksyun.ks3.asynchttpcl
 
 	public abstract void onTaskSuccess(int paramInt, Header[] paramArrayOfHeader, GetObjectResult getObjectResult);
 	
-	public abstract void onTaskFailure(int paramInt, Ks3Error error, Header[] paramArrayOfHeader, Throwable paramThrowable, File paramFile);
+	public abstract void onTaskFailure(int paramInt, Header[] paramArrayOfHeader, Throwable paramThrowable, File paramFile);
 	
 	 
 	@Override
-	public final void onFailure(int statesCode, Header[] paramArrayOfHeader,Throwable throwable,  byte[] response,File paramFile) {
-		Ks3Error error = new Ks3Error(statesCode, response, throwable);
-		this.onTaskFailure(statesCode, error,paramArrayOfHeader, throwable, paramFile);
+	public final void onFailure(int paramInt, Header[] paramArrayOfHeader,Throwable paramThrowable, File paramFile) {
+		StringBuffer sb = new StringBuffer("fail code :").append(paramInt).append("\n");
+		
+		if(paramArrayOfHeader != null && paramArrayOfHeader.length > 0){
+			sb.append("Fail headers==>");
+			for(Header header : paramArrayOfHeader){
+				sb.append("[").append(header.toString()).append("]");
+			}
+			sb.append("\n");
+		}
+		
+		if(paramThrowable != null){
+			sb.append("throwable message =>").append(paramThrowable.getMessage()).append(",cause by :").append(paramThrowable.getCause());
+		}
+		Log.e(com.ksyun.ks3.util.Constants.LOG_TAG,"get object failed , traces :" + sb.toString());
+		this.onTaskFailure(paramInt, paramArrayOfHeader, paramThrowable, paramFile);
 	}
 
 	

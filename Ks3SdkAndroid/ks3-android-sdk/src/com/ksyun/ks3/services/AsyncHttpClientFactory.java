@@ -1,7 +1,5 @@
 package com.ksyun.ks3.services;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import com.loopj.android.http.AsyncHttpClient;
 
 public class AsyncHttpClientFactory {

@@ -2,7 +2,8 @@ package com.ksyun.ks3.services.handler;
 
 import org.apache.http.Header;
 
-import com.ksyun.ks3.exception.Ks3Error;
+import android.util.Log;
+
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.PartETag;
 import com.ksyun.ks3.model.transfer.RequestProgressListener;
@@ -11,7 +12,7 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 
 	public abstract void onSuccess(int statesCode, Header[] responceHeaders,PartETag result);
 
-	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable throwable);
+	public abstract void onFailure(int statesCode, Header[] responceHeaders,String response, Throwable throwable);
 
 	@Override
 	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
@@ -20,8 +21,24 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 
 	@Override
 	public final void onFailure(int statesCode, Header[] responceHeaders,byte[] response, Throwable throwable) {
-		Ks3Error error = new Ks3Error(statesCode, response, throwable);
-		onFailure(statesCode,error, responceHeaders, response == null?"":new String(response), throwable);
+		StringBuffer sb = new StringBuffer("fail code :").append(statesCode).append("\n");
+		
+		if(responceHeaders != null && responceHeaders.length > 0){
+			sb.append("Fail headers==>");
+			for(Header header : responceHeaders){
+				sb.append("[").append(header.toString()).append("]");
+			}
+			sb.append("\n");
+		}
+		if(response != null){
+			sb.append("response ==>").append(new String(response)).append("\n");
+		}
+		if(throwable != null){
+			sb.append("throwable message =>").append(throwable.getMessage()).append(",cause by :").append(throwable.getCause());
+		}
+		
+		Log.e(com.ksyun.ks3.util.Constants.LOG_TAG,"get object failed , traces :" + sb.toString());
+		onFailure(statesCode, responceHeaders, response == null?"":new String(response), throwable);
 	}
 	
 	
