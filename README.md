@@ -213,15 +213,15 @@ onCalculateAuth（）回调方法参数说明：
 		/* Using authListener,Let your app server saved ak&sk and return token*/
 		client = new Ks3Client(new AuthListener() {
 			@Override
-			public String onCalculateAuth(String httpMethod,
+			public AuthResult onCalculateAuth(String httpMethod,
 					String ContentType, String Date, String ContentMD5,
 					String Resource, String Headers) {
 				// 此处应由APP端向业务服务器发送post请求返回Token。
 				// 需要注意该回调方法运行在非主线程
 				// 
-				String token = requsetToAppServer(httpMethod, ContentType,
+				AuthResult result = requsetToAppServer(httpMethod, ContentType,
 						Date, ContentMD5, Resource, Headers);
-				return token;
+				return result;
 			}
 		}, DummyActivity.this);
 	    configuration = Ks3ClientConfiguration.getDefaultConfiguration();
