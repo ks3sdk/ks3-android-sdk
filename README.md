@@ -216,7 +216,7 @@ onCalculateAuth（）回调方法参数说明：
 			public AuthResult onCalculateAuth(String httpMethod,
 					String ContentType, String Date, String ContentMD5,
 					String Resource, String Headers) {
-				// 此处应由APP端向业务服务器发送post请求返回Token。
+				// 此处应由APP端向业务服务器发送post请求返回Token及Data，组装成Result对象返回
 				// 需要注意该回调方法运行在非主线程
 				// 
 				AuthResult result = requsetToAppServer(httpMethod, ContentType,
