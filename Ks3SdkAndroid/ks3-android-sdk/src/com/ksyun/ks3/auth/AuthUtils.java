@@ -83,6 +83,7 @@ public class AuthUtils {
 			String encodedPath = null;
 			try {
 				encodedPath = URLEncoder.encode(objectKey, "UTF-8");
+				encodedPath = Ks3HttpRequest.urlEncode(encodedPath);
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}

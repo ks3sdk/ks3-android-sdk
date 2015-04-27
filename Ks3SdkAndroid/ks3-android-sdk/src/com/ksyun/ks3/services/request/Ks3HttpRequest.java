@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.BufferedHttpEntity;
@@ -61,7 +63,15 @@ public abstract class Ks3HttpRequest implements Serializable {
 	private String authorizationStr;
 	private RequestProgressListener progressListener;
 	private RequestHandle handler;
-	
+	private static final Pattern ENCODED_CHARACTERS_PATTERN;
+	static {
+		StringBuilder pattern = new StringBuilder();
+
+		pattern.append(Pattern.quote("+")).append("|").append(Pattern.quote("*")).append("|").append(Pattern.quote("%7E")).append("|");
+
+		ENCODED_CHARACTERS_PATTERN = Pattern.compile(pattern.toString());
+	}
+
 	/* url */
 	public String getUrl() {
 		return url;
@@ -281,10 +291,12 @@ public abstract class Ks3HttpRequest implements Serializable {
 				: URLEncoder.encode(this.objectkey);
 		url = new StringBuffer("http://").append(url).append("/")
 				.append(encodedObjectKey).toString();
+		url = urlEncode(url);
 		if (!TextUtils.isEmpty(encodedParams))
 			url += "?" + encodedParams;
 		// Pass url
 		this.setUrl(url);
+		
 		if (this.getHttpMethod() == HttpMethod.POST) {
 			if (requestBody == null && params != null) {
 				try {
@@ -342,7 +354,7 @@ public abstract class Ks3HttpRequest implements Serializable {
 					.CanonicalizedKSSResource(this), AuthUtils
 					.CanonicalizedKSSHeaders(this));
 			this.addHeader(HttpHeaders.Authorization.toString(),
-					authorizationStr);
+					authorizationStr.trim());
 		} else {
 			this.addHeader(HttpHeaders.Authorization.toString(),
 					new DefaultSigner().calculate(authorization, this).trim());
@@ -427,5 +439,32 @@ public abstract class Ks3HttpRequest implements Serializable {
 		}
 	}
 	
+	public static String urlEncode(final String value) {
+
+		if (value == null) {
+			return "";
+		}
+
+		Matcher matcher = ENCODED_CHARACTERS_PATTERN.matcher(value);
+		StringBuffer buffer = new StringBuffer(value.length());
+
+		while (matcher.find()) {
+			String replacement = matcher.group(0);
+
+			if ("+".equals(replacement)) {
+				replacement = "%20";
+			} else if ("*".equals(replacement)) {
+				replacement = "%2A";
+			} else if ("%7E".equals(replacement)) {
+				replacement = "~";
+			}
+
+			matcher.appendReplacement(buffer, replacement);
+		}
+
+		matcher.appendTail(buffer);
+		return buffer.toString();
+
+	}
 
 }
