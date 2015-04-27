@@ -17,6 +17,7 @@ public class GetObjectRequest extends Ks3HttpRequest {
 	private List<String> nonmatchingEtagConstraints = new ArrayList<String>();
 	private Date unmodifiedSinceConstraint;
 	private Date modifiedSinceConstraint;
+	public boolean isCryptoMode;
 
 	public GetObjectRequest(String bucket, String key) {
 		setBucketname(bucket);

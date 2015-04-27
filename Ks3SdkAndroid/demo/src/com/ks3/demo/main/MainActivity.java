@@ -3,9 +3,16 @@ package com.ks3.demo.main;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -16,7 +23,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.AlertDialog.Builder;
 import android.content.Intent;
@@ -43,11 +49,13 @@ import com.ksyun.ks3.model.Owner;
 import com.ksyun.ks3.model.acl.AccessControlPolicy;
 import com.ksyun.ks3.model.acl.CannedAccessControlList;
 import com.ksyun.ks3.model.acl.Grant;
+import com.ksyun.ks3.model.crypto.EncryptionMaterials;
 import com.ksyun.ks3.model.result.HeadObjectResult;
 import com.ksyun.ks3.model.result.ListPartsResult;
 import com.ksyun.ks3.services.AuthListener;
 import com.ksyun.ks3.services.Ks3Client;
 import com.ksyun.ks3.services.Ks3ClientConfiguration;
+import com.ksyun.ks3.services.crypto.Ks3EncryptionClient;
 import com.ksyun.ks3.services.handler.CreateBucketResponceHandler;
 import com.ksyun.ks3.services.handler.DeleteBucketResponceHandler;
 import com.ksyun.ks3.services.handler.DeleteObjectRequestHandler;
@@ -204,7 +212,7 @@ public class MainActivity extends Activity {
 														+ ",states code = "
 														+ statesCode).append(
 												"\n");
-										
+
 										Intent intent = new Intent(
 												MainActivity.this,
 												RESTAPITestResult.class);
@@ -245,13 +253,15 @@ public class MainActivity extends Activity {
 											String response,
 											Throwable paramThrowable) {
 										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer.append(
-												"upload file failure,file = "
+										stringBuffer
+												.append("upload file failure,file = "
 														+ Constants.TEST_IMG
 														+ ",states code = "
-														+ statesCode).append(
-												"\n").append("response:").append(response);
-										
+														+ statesCode)
+												.append("\n")
+												.append("response:")
+												.append(response);
+
 									}
 								});
 					}
@@ -283,7 +293,7 @@ public class MainActivity extends Activity {
 											String response,
 											Throwable paramThrowable) {
 										// TODO Auto-generated method stub
-										
+
 									}
 								});
 					}
@@ -340,6 +350,40 @@ public class MainActivity extends Activity {
 		// }, MainActivity.this);
 		// client.setConfiguration(configuration);
 
+		
+		
+		// Encryption Set Up
+		// Symmertric Ways Key
+		KeyGenerator symKeyGenerator = null;
+		try {
+			symKeyGenerator = KeyGenerator.getInstance("AES");
+			symKeyGenerator.init(256);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		SecretKey symKey = symKeyGenerator.generateKey();
+		EncryptionMaterials symmertricEncryptionMaterials = new EncryptionMaterials(
+				symKey);
+
+		// Asymetric Ways Key
+		KeyPairGenerator keyGenerator;
+		KeyPair keyPair = null;
+		try {
+			keyGenerator = KeyPairGenerator.getInstance("RSA");
+			keyGenerator.initialize(1024, new SecureRandom());
+			keyPair = keyGenerator.generateKeyPair();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		EncryptionMaterials asymmertricEncryptionMaterials = new EncryptionMaterials(
+				keyPair);
+		
+		// Encryption Client
+		Ks3EncryptionClient ks3EncryptionClient = new Ks3EncryptionClient(
+				Constants.ACCESS_KEY__ID, Constants.ACCESS_KEY_SECRET,
+				symmertricEncryptionMaterials, MainActivity.this);
+		// Encryption Use
+		// ks3EncryptionClient.putObject(request, handler);
 	}
 
 	@Override
@@ -415,7 +459,7 @@ public class MainActivity extends Activity {
 										data.putString(API,
 												"head object Result");
 										intent.putExtras(data);
-										startActivity(intent);										
+										startActivity(intent);
 									}
 								});
 
@@ -481,10 +525,12 @@ public class MainActivity extends Activity {
 											String response,
 											Throwable paramThrowable) {
 										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer.append(
-												"get object ACL FAIL !!!!!!, states code :"
-														+ statesCode).append(
-												"\n").append("response:").append(response);
+										stringBuffer
+												.append("get object ACL FAIL !!!!!!, states code :"
+														+ statesCode)
+												.append("\n")
+												.append("response:")
+												.append(response);
 										stringBuffer.append("Exception :"
 												+ paramThrowable.toString());
 										Intent intent = new Intent(
@@ -496,7 +542,7 @@ public class MainActivity extends Activity {
 										data.putString(API,
 												"GET Object ACL Result");
 										intent.putExtras(data);
-										startActivity(intent);										
+										startActivity(intent);
 									}
 								});
 
@@ -537,11 +583,12 @@ public class MainActivity extends Activity {
 						StringBuffer stringBuffer = new StringBuffer();
 						stringBuffer
 								.append("Delete bucket failed , states code :"
-										+ statesCode).append("/n").append("responce:").append(response);
+										+ statesCode).append("/n")
+								.append("responce:").append(response);
 						data.putString(RESULT, stringBuffer.toString());
 						data.putString(API, "Delete Bucket Result");
 						intent.putExtras(data);
-						startActivity(intent);						
+						startActivity(intent);
 					}
 				});
 			}
@@ -601,10 +648,12 @@ public class MainActivity extends Activity {
 											String response,
 											Throwable paramThrowable) {
 										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer.append(
-												"PUT Object ACL FAIL !!!!!!!!!, states code :"
-														+ statesCode).append(
-												"\n").append("responce:").append(response);
+										stringBuffer
+												.append("PUT Object ACL FAIL !!!!!!!!!, states code :"
+														+ statesCode)
+												.append("\n")
+												.append("responce:")
+												.append(response);
 										stringBuffer.append("Exception :"
 												+ paramThrowable.toString());
 										Intent intent = new Intent(
@@ -616,7 +665,7 @@ public class MainActivity extends Activity {
 										data.putString(API,
 												"PUT Object ACL Result");
 										intent.putExtras(data);
-										startActivity(intent);										
+										startActivity(intent);
 									}
 								});
 					}
@@ -650,9 +699,10 @@ public class MainActivity extends Activity {
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(
-								"head Bucket Fail, states code :" + statesCode)
-								.append("\n").append("response:").append(response);
+						stringBuffer
+								.append("head Bucket Fail, states code :"
+										+ statesCode).append("\n")
+								.append("response:").append(response);
 						stringBuffer.append("Exception :"
 								+ paramThrowable.toString());
 						Intent intent = new Intent(MainActivity.this,
@@ -661,7 +711,7 @@ public class MainActivity extends Activity {
 						data.putString(RESULT, stringBuffer.toString());
 						data.putString(API, "head Bucket Result");
 						intent.putExtras(data);
-						startActivity(intent);						
+						startActivity(intent);
 					}
 				});
 			}
@@ -728,9 +778,10 @@ public class MainActivity extends Activity {
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(
-								"PUT Bucket ACL FAIL, states code :"
-										+ statesCode).append("\n").append("responce :").append(response);
+						stringBuffer
+								.append("PUT Bucket ACL FAIL, states code :"
+										+ statesCode).append("\n")
+								.append("responce :").append(response);
 						stringBuffer.append("Exception :"
 								+ paramThrowable.toString());
 						Intent intent = new Intent(MainActivity.this,
@@ -739,7 +790,7 @@ public class MainActivity extends Activity {
 						data.putString(RESULT, stringBuffer.toString());
 						data.putString(API, "PUT Bucket ACL Result");
 						intent.putExtras(data);
-						startActivity(intent);						
+						startActivity(intent);
 					}
 				});
 			}
@@ -788,9 +839,10 @@ public class MainActivity extends Activity {
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(
-								"GET BUCKET ACL fail , states code :"
-										+ statesCode).append("\n").append("response = ").append(response);
+						stringBuffer
+								.append("GET BUCKET ACL fail , states code :"
+										+ statesCode).append("\n")
+								.append("response = ").append(response);
 						stringBuffer.append("Exception :"
 								+ paramThrowable.toString());
 						Intent intent = new Intent(MainActivity.this,
@@ -799,7 +851,7 @@ public class MainActivity extends Activity {
 						data.putString(RESULT, stringBuffer.toString());
 						data.putString(API, "GET BUCKET ACL Result");
 						intent.putExtras(data);
-						startActivity(intent);						
+						startActivity(intent);
 					}
 				});
 			}
@@ -836,7 +888,7 @@ public class MainActivity extends Activity {
 										intent.putExtras(data);
 										startActivity(intent);
 									}
-									
+
 									@Override
 									public void onFailure(int statesCode,
 											Ks3Error error,
@@ -844,10 +896,12 @@ public class MainActivity extends Activity {
 											String response,
 											Throwable paramThrowable) {
 										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer.append(
-												"Delete fail , states code :"
-														+ statesCode).append(
-												"\n").append("response:").append(response);
+										stringBuffer
+												.append("Delete fail , states code :"
+														+ statesCode)
+												.append("\n")
+												.append("response:")
+												.append(response);
 										stringBuffer.append("Exception :"
 												+ paramThrowable.toString());
 										Intent intent = new Intent(
@@ -859,7 +913,7 @@ public class MainActivity extends Activity {
 										data.putString(API,
 												"Delete Object Result");
 										intent.putExtras(data);
-										startActivity(intent);										
+										startActivity(intent);
 									}
 								});
 					}
@@ -957,7 +1011,7 @@ public class MainActivity extends Activity {
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						// TODO Auto-generated method stub
-						
+
 					}
 				});
 			}
@@ -993,9 +1047,9 @@ public class MainActivity extends Activity {
 					Header[] responceHeaders, String response,
 					Throwable paramThrowable) {
 				StringBuffer stringBuffer = new StringBuffer();
-				stringBuffer.append(
-						"list bucket fail , states code :" + statesCode)
-								.append("\n").append("responce :").append(response);
+				stringBuffer
+						.append("list bucket fail , states code :" + statesCode)
+						.append("\n").append("responce :").append(response);
 				stringBuffer.append("Exception :" + paramThrowable.toString());
 				Intent intent = new Intent(MainActivity.this,
 						RESTAPITestResult.class);
@@ -1003,7 +1057,7 @@ public class MainActivity extends Activity {
 				data.putString(RESULT, stringBuffer.toString());
 				data.putString(API, "List Buckets");
 				intent.putExtras(data);
-				startActivity(intent);				
+				startActivity(intent);
 			}
 		});
 	}
@@ -1030,9 +1084,10 @@ public class MainActivity extends Activity {
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(
-								"Delete fail , states code :" + statesCode)
-								.append("\n").append("responce :").append(response);
+						stringBuffer
+								.append("Delete fail , states code :"
+										+ statesCode).append("\n")
+								.append("responce :").append(response);
 						stringBuffer.append("Exception :"
 								+ paramThrowable.toString());
 						Intent intent = new Intent(MainActivity.this,
@@ -1041,7 +1096,7 @@ public class MainActivity extends Activity {
 						data.putString(RESULT, stringBuffer.toString());
 						data.putString(API, "List Buckets");
 						intent.putExtras(data);
-						startActivity(intent);						
+						startActivity(intent);
 					}
 				});
 			}

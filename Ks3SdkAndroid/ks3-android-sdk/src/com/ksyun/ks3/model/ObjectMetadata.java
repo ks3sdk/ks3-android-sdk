@@ -78,6 +78,15 @@ public class ObjectMetadata {
 		return contentLength.longValue();
 	}
 	
+	public void setContentMD5(String md5Base64) {
+	        if (md5Base64 == null) {
+	            metadata.remove(HttpHeaders.ContentMD5.toString());
+	        } else {
+	            metadata.put(Meta.ContentMD5, md5Base64);
+	        }
+
+	    }
+	  
 	public String getContentMD5(){
 		return  this.metadata.get(Meta.ContentMD5);
 	}

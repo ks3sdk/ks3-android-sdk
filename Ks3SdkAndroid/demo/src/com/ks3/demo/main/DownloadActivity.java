@@ -406,7 +406,7 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 				public void onTaskSuccess(int paramInt,
 						Header[] paramArrayOfHeader,
 						GetObjectResult getObjectResult) {
-
+					
 				}
 
 				@Override

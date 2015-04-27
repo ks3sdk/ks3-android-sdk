@@ -73,8 +73,6 @@ public class RepeatableInputStreamRequestEntity extends BasicHttpEntity {
 				inputStreamRequestEntity.writeTo(output);
 			}
 			
-			
-			
 		} catch (IOException ioe) {
 			if (originalException == null)
 				originalException = ioe;
