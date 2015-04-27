@@ -340,6 +340,7 @@ public abstract class Ks3HttpRequest implements Serializable {
 		String encodedObjectKey = (StringUtils.isBlank(this.objectkey)) ? "" : URLEncoder.encode(this.objectkey);
 		url = new StringBuffer("http://").append(url).append("/")
 				.append(encodedObjectKey).toString();
+		url = urlEncode(url);
 		if (!TextUtils.isEmpty(encodedParams))
 			url += "?" + encodedParams;
 		// Pass url
