@@ -15,7 +15,10 @@
 
 package com.ksyun.ks3.model.crypto.algorithm;
 
+import java.io.IOException;
 import java.io.InputStream;
+
+import org.apache.http.client.methods.HttpRequestBase;
 
 /**
  * Input stream representing the content of an {@link S3Object}. In addition to
@@ -25,9 +28,77 @@ import java.io.InputStream;
  */
 public class KS3ObjectInputStream extends SdkFilterInputStream {
 
-	protected KS3ObjectInputStream(InputStream in) {
-		super(in);
-		// TODO Auto-generated constructor stub
-	}
+	 private final HttpRequestBase httpRequest;
 
+	    public KS3ObjectInputStream(InputStream in) {
+	        this(in, null);
+	    }
+
+	    @Deprecated
+	    public KS3ObjectInputStream(InputStream in, HttpRequestBase httpRequest) {
+	        this(in, httpRequest, wrapWithByteCounting(in));
+	    }
+
+	    @Deprecated
+	    public KS3ObjectInputStream(
+	            InputStream in,
+	            HttpRequestBase httpRequest,
+	            boolean collectMetrics) {
+
+	        super(collectMetrics
+	                ? new MetricFilterInputStream(S3ServiceMetric.S3DownloadThroughput, in)
+	                : in);
+
+	        this.httpRequest = httpRequest;
+	    }
+
+	    /**
+	     * Returns true if we should wrap the given input stream with a byte
+	     * counting wrapper; false otherwise.
+	     */
+	    private static boolean wrapWithByteCounting(InputStream in) {
+//	        if (!AwsSdkMetrics.isMetricsEnabled())
+//	            return false; // metrics is disabled
+	        if (in instanceof MetricAware) {
+	            MetricAware aware = (MetricAware) in;
+	            // wrap only if not already wrapped in one of it's inner chain of
+	            // input stream
+	            return !aware.isMetricActivated();
+	        }
+	        return true; // this is a raw input stream so metric wrapping is
+	                     // necessary
+	    }
+
+	    /**
+	     * {@inheritDoc} Aborts the underlying http request without reading any more
+	     * data and closes the stream.
+	     * <p>
+	     * By default Apache {@link HttpClient} tries to reuse http connections by
+	     * reading to the end of an attached input stream on
+	     * {@link InputStream#close()}. This is efficient from a socket pool
+	     * management perspective, but for objects with large payloads can incur
+	     * significant overhead while bytes are read from s3 and discarded. It's up
+	     * to clients to decide when to take the performance hit implicit in not
+	     * reusing an http connection in order to not read unnecessary information
+	     * from S3.
+	     *
+	     * @see EofSensorInputStream
+	     */
+	    @Override
+	    public void abort() {
+	        try {
+	            close();
+	        } catch (IOException e) {
+	            // expected from some implementations because the stream is closed
+//	            LogFactory.getLog(getClass()).debug("FYI", e);
+	        }
+	    }
+
+	    /**
+	     * Returns the http request from which this input stream is derived.
+	     */
+	    @Deprecated
+	    public HttpRequestBase getHttpRequest() {
+	        return httpRequest;
+	    }
 }

@@ -78,6 +78,8 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
         // Get the object from S3
 //        S3Object retrieved = s3.getObject(req);
         handler.isCryptoMode = true;
+        handler.encryptionMaterialsProvider = encryptionMaterialsProvider;
+        handler.cryptoConfiguration = cryptoConfiguration;
         Ks3HttpRequest sendRequest = ks3DirectImpl.getObject(request, handler, true);
         return sendRequest;
         // If the caller has specified constraints, it's possible that

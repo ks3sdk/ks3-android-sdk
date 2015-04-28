@@ -27,9 +27,9 @@ public class Ks3CryptoModuleBase implements Ks3CryptoModule {
 	protected final CryptoConfiguration cryptoConfig = null;
 	protected final ContentCryptoScheme contentCryptoScheme = null;
 	protected Ks3DirectImpl ks3DirectImpl;
-	private EncryptionMaterialsProvider encryptionMaterialsProvider;
-	private CryptoConfiguration cryptoConfiguration;
-	private Context context;
+	protected EncryptionMaterialsProvider encryptionMaterialsProvider;
+	protected CryptoConfiguration cryptoConfiguration;
+	protected Context context;
 
 	public Ks3CryptoModuleBase(Ks3DirectImpl ks3DirectImpl,
 			EncryptionMaterialsProvider encryptionMaterialsProvider,

@@ -1,5 +1,7 @@
 package com.ksyun.ks3.model.crypto;
 
+import java.util.Map;
+
 
 public class StaticEncryptionMaterialsProvider implements
 		EncryptionMaterialsProvider {
@@ -19,6 +21,13 @@ public class StaticEncryptionMaterialsProvider implements
 	@Override
 	public void refresh() {
 		
+	}
+
+	@Override
+	public EncryptionMaterials getEncryptionMaterials(
+			Map<String, String> materialsDescription) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
