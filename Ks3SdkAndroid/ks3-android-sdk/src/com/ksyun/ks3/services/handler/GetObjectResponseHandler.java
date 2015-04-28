@@ -1,9 +1,7 @@
 package com.ksyun.ks3.services.handler;
 
 import java.io.File;
-
 import org.apache.http.Header;
-
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.ObjectMetadata;
