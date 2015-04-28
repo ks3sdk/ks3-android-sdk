@@ -85,50 +85,6 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
         // would return null, so we simply return null as well.
 	}
 	
-    private void decipher(Ks3HttpRequest sendRequest,
-            long[] desiredRange, long[] cryptoRange,
-            S3Object retrieved) {
-        S3ObjectWrapper wrapped = new S3ObjectWrapper(retrieved);
-        // Check if encryption info is in object metadata
-        if (wrapped.hasEncryptionInfo())
-            return decipherWithMetadata(desiredRange, cryptoRange, wrapped);
-        // Check if encrypted info is in an instruction file
-        S3ObjectWrapper instructionFile = fetchInstructionFile(req);
-        if (instructionFile != null) {
-            try {
-                if (instructionFile.isInstructionFile()) {
-                    return decipherWithInstructionFile(desiredRange, cryptoRange,
-                            wrapped, instructionFile);
-                }
-            } finally {
-                try {
-                    instructionFile.getObjectContent().close();
-                } catch (Exception ignore) {
-                }
-            }
-        }
-        if (isStrict()) {
-            try {
-                wrapped.close();
-            } catch (IOException ignore) {
-            }
-            throw new SecurityException("S3 object with bucket name: "
-                    + retrieved.getBucketName() + ", key: "
-                    + retrieved.getKey() + " is not encrypted");
-        }
-        // The object was not encrypted to begin with. Return the object
-        // without decrypting it.
-        log.warn(String.format(
-                "Unable to detect encryption information for object '%s' in bucket '%s'. "
-                        + "Returning object without decryption.",
-                retrieved.getKey(),
-                retrieved.getBucketName()));
-        // Adjust the output to the desired range of bytes.
-        S3ObjectWrapper adjusted = adjustToDesiredRange(wrapped, desiredRange, null);
-        return adjusted.getS3Object();
-    
-	
-	
 	private boolean isStrict() {
 		return false;
 	}

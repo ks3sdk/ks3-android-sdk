@@ -50,7 +50,9 @@ public abstract class GetObjectResponseHandler extends com.ksyun.ks3.asynchttpcl
 	
 	@Override
 	public final void onSuccess(int paramInt, Header[] paramArrayOfHeader,File paramFile) {
-		this.onTaskSuccess(paramInt, paramArrayOfHeader, parse(paramInt, paramArrayOfHeader, paramFile));
+		GetObjectResult reuslt =  parse(paramInt, paramArrayOfHeader, paramFile);
+		
+		this.onTaskSuccess(paramInt, paramArrayOfHeader,reuslt);
 	}
 
 
