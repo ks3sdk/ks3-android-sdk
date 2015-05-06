@@ -34,7 +34,7 @@ public class Ks3CryptoModuleBase implements Ks3CryptoModule {
 	protected EncryptionMaterialsProvider encryptionMaterialsProvider;
 	protected Context context;
 	/** Map of data about in progress encrypted multipart uploads. */
-    protected final Map<String, EncryptedUploadContext> multipartUploadContexts =
+    public static final Map<String, EncryptedUploadContext> multipartUploadContexts =
             Collections.synchronizedMap(new HashMap<String, EncryptedUploadContext>());
     
 	public Ks3CryptoModuleBase(Ks3DirectImpl ks3DirectImpl,

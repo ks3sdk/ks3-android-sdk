@@ -33,6 +33,7 @@ public class UploadPartRequest extends Ks3HttpRequest {
 	private CannedAccessControlList cannedAcl;
 	private AccessControlList acl = new AccessControlList();
 	private String redirectLocation;
+	public boolean isEncrypt = false;
 
 	public UploadPartRequest(String bucketName, String key, String uploadId,
 			File file, long offset, int partNumber, long partSize) {
@@ -58,22 +59,33 @@ public class UploadPartRequest extends Ks3HttpRequest {
 		this.addParams("uploadId", this.uploadId);
 		this.addParams("partNumber", String.valueOf(this.partNumber));
 		this.addHeader(HttpHeaders.ContentType, "binary/octet-stream");
-		MD5DigestCalculatingInputStream inputStream = null;
-		try {
-			inputStream = new MD5DigestCalculatingInputStream(
-					new InputSubStream(
-							new RepeatableFileInputStream(this.file),
-							this.fileOffset, contentLength, true));
-			Log.d(Constants.LOG_TAG, "bucketName :" + this.getBucketname()
-					+ ",objectkey :" + this.getObjectkey() + ",partNumber :"
-					+ this.partNumber + ",partSzie :" + partSize
-					+ ",conentLength:" + this.contentLength);
-		} catch (FileNotFoundException e) {
-			throw new Ks3ClientException(e);
+		if (isEncrypt) {
+			if (this.getRequestBody() != null) {
+				Log.d(Constants.LOG_TAG, "already have encrypted request body");
+			} else {
+				throw new Ks3ClientException(
+						"encrypt mode but requestbody is null");
+			}
+		} else {
+			MD5DigestCalculatingInputStream inputStream = null;
+			try {
+				inputStream = new MD5DigestCalculatingInputStream(
+						new InputSubStream(
+								new RepeatableFileInputStream(this.file),
+								this.fileOffset, contentLength, true));
+				Log.d(Constants.LOG_TAG, "bucketName :" + this.getBucketname()
+						+ ",objectkey :" + this.getObjectkey() + ",partNumber :"
+						+ this.partNumber + ",partSzie :" + partSize
+						+ ",conentLength:" + this.contentLength);
+				this.setRequestBody(inputStream);
+
+			} catch (FileNotFoundException e) {
+				throw new Ks3ClientException(e);
+			}
 		}
+	
 		this.addHeader(HttpHeaders.ContentLength,
 				String.valueOf(this.contentLength));
-		this.setRequestBody(inputStream);
 	}
 
 	public long getContentLength() {
@@ -84,6 +96,14 @@ public class UploadPartRequest extends Ks3HttpRequest {
 		this.contentLength = contentLength;
 	}
 
+	public boolean isEncrypt() {
+		return isEncrypt;
+	}
+
+	public void setEncrypt(boolean isEncrypt) {
+		this.isEncrypt = isEncrypt;
+	}
+	
 	@Override
 	protected void validateParams() throws Ks3ClientException {
 		if (ValidateUtil.validateBucketName(this.getBucketname()) == null)

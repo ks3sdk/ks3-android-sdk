@@ -12,6 +12,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.crypto.EncryptedUploadContext;
 import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
+import com.ksyun.ks3.services.crypto.Ks3CryptoModuleEO;
 
 public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResponceHandler {
 	
@@ -24,6 +25,7 @@ public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResp
 	@Override
 	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
 		InitiateMultipartUploadResult initialUploadResult = parseXml(responceHeaders, response);
+		Ks3CryptoModuleEO.multipartUploadContexts.put(initialUploadResult.getUploadId(),setEncryptedUploadContext);		
 		onSuccess(statesCode, responceHeaders, initialUploadResult);
 	}
 

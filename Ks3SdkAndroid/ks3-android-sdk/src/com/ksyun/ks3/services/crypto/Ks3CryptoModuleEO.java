@@ -115,6 +115,7 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 	public void completeMultipartUploadSecurely(
 			CompleteMultipartUploadRequest request,
 			CompleteMultipartUploadResponseHandler handler, boolean b) {
+		Log.d(Constants.LOG_TAG, "encryption completeMultipartUploadSecurely");
 	        String uploadId = request.getUploadId();
 	        EncryptedUploadContext encryptedUploadContext = multipartUploadContexts.get(uploadId);
 
@@ -163,6 +164,7 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 			InitiateMultipartUploadResponceHandler resultHandler, boolean b) {
 		// Generate a one-time use symmetric key and initialize a cipher to
 		// encrypt object data
+		Log.d(Constants.LOG_TAG, "encryption initiateMultipartUploadSecurely");
 		SecretKey envelopeSymmetricKey = EncryptionUtils
 				.generateOneTimeUseSymmetricKey();
 		Cipher symmetricCipher = EncryptionUtils.createSymmetricCipher(
@@ -207,8 +209,8 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 		resultHandler.setEncryptedUploadContext = encryptedUploadContext;
 		// move here
 		ks3DirectImpl.initiateMultipartUpload(request, resultHandler, true);
-		// multipartUploadContexts.put(result.getUploadId(),
-		// encryptedUploadContext);
+//		 multipartUploadContexts.put(result.getUploadId(),
+//		 encryptedUploadContext);
 
 		// return null;
 	}
@@ -216,6 +218,7 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 	@Override
 	public void uploadPartSecurely(UploadPartRequest request,
 			UploadPartResponceHandler resultHandler, boolean b) {
+		Log.d(Constants.LOG_TAG, "encryption uploadPartSecurely");
 
 		boolean isLastPart = request.isLastPart();
 		String uploadId = request.getUploadId();
@@ -236,6 +239,7 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 		// encrypt the object's data
 		EncryptedUploadContext encryptedUploadContext = multipartUploadContexts
 				.get(uploadId);
+		Log.d(Constants.LOG_TAG, "upload id = "+uploadId);
 		if (encryptedUploadContext == null)
 			Log.d(Constants.LOG_TAG,
 					"No client-side information available on upload ID "
@@ -250,7 +254,8 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 		// Create encrypted input stream
 		ByteRangeCapturingInputStream encryptedInputStream = EncryptionUtils
 				.getEncryptedInputStream(request, cipherFactory);
-		request.setInputStream(encryptedInputStream);
+		request.setRequestBody(encryptedInputStream);
+//		request.setInputStream(encryptedInputStream);
 
 		// The last part of the multipart upload will contain extra padding from
 		// the encryption process
@@ -273,9 +278,9 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 
 		// Treat all encryption requests as input stream upload requests, not as
 		// file upload requests.
-		request.setFile(null);
+//		request.setFile(null);
 		request.setFileOffset(0);
-
+		request.setEncrypt(true);
 		ks3DirectImpl.uploadPart(request, resultHandler, true);
 		encryptedUploadContext.setNextInitializationVector(encryptedInputStream
 				.getBlock());
