@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.crypto.Mac;
@@ -15,10 +16,12 @@ import javax.crypto.spec.SecretKeySpec;
 
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 
 import com.ksyun.ks3.model.acl.Authorization;
 import com.ksyun.ks3.services.request.Ks3HttpRequest;
 import com.ksyun.ks3.util.ByteUtil;
+import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.StringUtils;
 
 public class AuthUtils {
@@ -39,13 +42,14 @@ public class AuthUtils {
 		List<String> signList = new ArrayList<String>();
 		signList.addAll(Arrays.asList(new String[] { requestMethod, contentMd5,
 				contentType, _signDate }));
-		String _headers = CanonicalizedKSSHeaders(request);
+		String _headers = CanonicalizedKSSHeaders(request).trim();
 		if (_headers != null && !_headers.equals("")) {
 			signList.add(_headers);
 		}
 		signList.add(resource);
 		String signStr = StringUtils.join(signList.toArray(), "\n");
 		String serverSignature = calculateRFC2104HMAC(signStr, accessKeySecret);
+		Log.d(Constants.LOG_TAG, "signStr = "+signStr);
 		return serverSignature;
 	}
 
@@ -107,7 +111,7 @@ public class AuthUtils {
 		List<String> headList = new ArrayList<String>();
 
 		for (String _header : headers.keySet()) {
-			if (_header.toLowerCase().startsWith(prefix)) {
+			if (_header.toLowerCase(Locale.US).startsWith(prefix)) {
 				headList.add(_header);
 			}
 		}
@@ -125,6 +129,7 @@ public class AuthUtils {
 			if (i < (headList.size() - 1))
 				buffer.append("\n");
 		}
+		Log.d(Constants.LOG_TAG, "header signer str = "+buffer.toString());
 		return buffer.toString();
 	}
 

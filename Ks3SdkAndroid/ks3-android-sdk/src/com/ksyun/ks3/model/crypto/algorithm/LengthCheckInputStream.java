@@ -18,7 +18,10 @@ package com.ksyun.ks3.model.crypto.algorithm;
 import java.io.IOException;
 import java.io.InputStream;
 
+import android.util.Log;
+
 import com.ksyun.ks3.exception.Ks3ClientException;
+import com.ksyun.ks3.util.Constants;
 
 /**
  * Used to perform length check to ensure the number of bytes read from the
@@ -122,13 +125,13 @@ public class LengthCheckInputStream extends SdkFilterInputStream {
     private void checkLength(boolean eof) {
         if (eof) {
             if (dataLength != expectedLength) {
-//                throw new Ks3ClientException("Data read (" + dataLength
-//                        + ") has a different length than the expected ("
-//                        + expectedLength + ")");
+            	Log.d(Constants.LOG_TAG, "Data read (" + dataLength
+                        + ") has a different length than the expected ("
+                        + expectedLength + ")");
             }
         } else if (dataLength > expectedLength) {
-//            throw new Ks3ClientException("More data read (" + dataLength
-//                    + ") than expected (" + expectedLength + ")");
+        	Log.d(Constants.LOG_TAG,"More data read (" + dataLength
+                  + ") than expected (" + expectedLength + ")");
         }
     }
 

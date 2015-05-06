@@ -31,15 +31,15 @@ public enum HttpHeaders {
 	/*Call back */
 	XKssCallBackUrl("x-kss-callbackurl"),
 	XKssCallBackBody("x-kss-callbackbody"),
-	CRYPTO_KEY("x-amz-key"),
-	CRYPTO_KEY_V2("x-amz-key-v2"),
-	CRYPTO_IV("x-amz-iv"),
-	MATERIALS_DESCRIPTION("x-amz-matdesc"),
-	UNENCRYPTED_CONTENT_LENGTH("x-amz-unencrypted-content-length"),
-	UNENCRYPTED_CONTENT_MD5("UNENCRYPTED_CONTENT_MD5"),
-	CRYPTO_KEYWRAP_ALGORITHM("x-amz-wrap-alg"),
-	CRYPTO_CEK_ALGORITHM("x-amz-cek-alg"),
-	CRYPTO_TAG_LENGTH("x-amz-tag-len");
+	CRYPTO_KEY("x-kss-key"),
+	CRYPTO_KEY_V2("x-kss-key-v2"),
+	CRYPTO_IV("x-kss-iv"),
+	MATERIALS_DESCRIPTION("x-kss-matdesc"),
+	UNENCRYPTED_CONTENT_LENGTH("x-kss-unencrypted-content-length"),
+	UNENCRYPTED_CONTENT_MD5("x-kss-unencrypted-content-md5"),
+	CRYPTO_KEYWRAP_ALGORITHM("x-kss-wrap-alg"),
+	CRYPTO_CEK_ALGORITHM("x-kss-cek-alg"),
+	CRYPTO_TAG_LENGTH("x-kss-tag-len");
 	private String value;
 
 	HttpHeaders(String value) {

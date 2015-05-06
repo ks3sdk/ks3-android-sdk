@@ -3,12 +3,19 @@ package com.ks3.demo.main;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -46,10 +53,13 @@ import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.Ks3ObjectSummary;
 import com.ksyun.ks3.model.ObjectListing;
+import com.ksyun.ks3.model.crypto.CryptoConfiguration;
+import com.ksyun.ks3.model.crypto.EncryptionMaterials;
 import com.ksyun.ks3.model.result.GetObjectResult;
 import com.ksyun.ks3.services.AuthListener;
 import com.ksyun.ks3.services.Ks3Client;
 import com.ksyun.ks3.services.Ks3ClientConfiguration;
+import com.ksyun.ks3.services.crypto.Ks3EncryptionClient;
 import com.ksyun.ks3.services.handler.GetObjectResponseHandler;
 import com.ksyun.ks3.services.handler.ListObjectsResponseHandler;
 import com.ksyun.ks3.services.request.GetObjectRequest;
@@ -73,6 +83,7 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 	private File storeForder;
 	private myHandler mHandler = new myHandler();
 	private BucketInpuDialog bucketInpuDialog;
+	private Ks3EncryptionClient ks3EncryptionClient;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -158,17 +169,17 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 			public void onFailure(int statesCode, Ks3Error error,
 					Header[] responceHeaders, String response,
 					Throwable paramThrowable) {
-				
+
 			}
 		});
 	}
 
 	private void setUp() {
 		// Ks3Client初始化
-		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
-		client = new Ks3Client(Constants.ACCESS_KEY__ID,
-				Constants.ACCESS_KEY_SECRET, DownloadActivity.this);
-		client.setConfiguration(configuration);
+		 configuration = Ks3ClientConfiguration.getDefaultConfiguration();
+		 client = new Ks3Client(Constants.ACCESS_KEY__ID,
+		 Constants.ACCESS_KEY_SECRET, DownloadActivity.this);
+		 client.setConfiguration(configuration);
 
 		// AuthListener方式初始化
 		// client = new Ks3Client(new AuthListener() {
@@ -209,6 +220,42 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 		// return result.toString();
 		// }
 		// }, DownloadActivity.this);
+
+		// Encryption Set Up
+		// Symmertric Ways Key
+//		KeyGenerator symKeyGenerator = null;
+//		try {
+//			symKeyGenerator = KeyGenerator.getInstance("AES");
+//			symKeyGenerator.init(256);
+//		} catch (NoSuchAlgorithmException e) {
+//			e.printStackTrace();
+//		}
+//		SecretKey symKey = symKeyGenerator.generateKey();
+//		EncryptionMaterials symmertricEncryptionMaterials = new EncryptionMaterials(
+//				symKey);
+
+		// Asymetric Ways Key
+		// KeyPairGenerator keyGenerator;
+		// KeyPair keyPair = null;
+		// try {
+		// keyGenerator = KeyPairGenerator.getInstance("RSA");
+		// keyGenerator.initialize(1024, new SecureRandom());
+		// keyPair = keyGenerator.generateKeyPair();
+		// } catch (NoSuchAlgorithmException e) {
+		// e.printStackTrace();
+		// }
+		// EncryptionMaterials asymmertricEncryptionMaterials = new
+		// EncryptionMaterials(
+		// keyPair);
+
+		// Encryption Client
+//		ks3EncryptionClient = new Ks3EncryptionClient(Constants.ACCESS_KEY__ID,
+//				Constants.ACCESS_KEY_SECRET, symmertricEncryptionMaterials,
+//				new CryptoConfiguration().withCryptoProvider(symKeyGenerator
+//						.getProvider()), DownloadActivity.this);
+		 ks3EncryptionClient = Ks3EncryptionClient.getInstance();
+		// Encryption Use
+		// ks3EncryptionClient.putObject(request, handler);
 
 		// UI初始化
 		currentBucketTextView = (TextView) findViewById(R.id.current_bucket_tv);
@@ -397,69 +444,116 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 			String objectName = item.objectKey.substring(item.objectKey
 					.lastIndexOf("/") == -1 ? 0 : item.objectKey
 					.lastIndexOf("/"));
-//			request.setCallBack(callBackUrl, callBackBody, callBackHeaders);
+			// request.setCallBack(callBackUrl, callBackBody, callBackHeaders);
 			File file = new File(storeForder, objectName);
-			client.getObject(request, new GetObjectResponseHandler(file,
-					item.bucketName, item.objectKey) {
+			ks3EncryptionClient.getObject(request,
+					new GetObjectResponseHandler(file, item.bucketName,
+							item.objectKey) {
 
-				@Override
-				public void onTaskSuccess(int paramInt,
-						Header[] paramArrayOfHeader,
-						GetObjectResult getObjectResult) {
-					
-				}
+						@Override
+						public void onTaskProgress(double progress) {
+							// TODO Auto-generated method stub
 
-				@Override
-				public void onTaskStart() {
-					RemoteFile remoteFile = dataSource.get(item.objectKey);
-					remoteFile.status = RemoteFile.STATUS_STARTED;
-					remoteFile.progress = 0;
-					item.status = RemoteFile.STATUS_STARTED;
-					item.progress = 0;
-					mHandler.sendEmptyMessage(0);
+						}
 
-				}
+						@Override
+						public void onTaskStart() {
+							// TODO Auto-generated method stub
 
-				@Override
-				public void onTaskProgress(double progress) {
-//					if (progress > 50.0) {
-//						request.abort();
-//					}
-					RemoteFile remoteFile = dataSource.get(item.objectKey);
-					remoteFile.status = RemoteFile.STATUS_DOWNLOADING;
-					remoteFile.progress = (int) progress;
-					item.status = RemoteFile.STATUS_DOWNLOADING;
-					item.progress = (int) progress;
-					mHandler.sendEmptyMessage(0);
-				}
+						}
 
-				@Override
-				public void onTaskFinish() {
-					RemoteFile remoteFile = dataSource.get(item.objectKey);
-					remoteFile.status = RemoteFile.STATUS_FINISH;
-					remoteFile.progress = 100;
-					item.status = RemoteFile.STATUS_FINISH;
-					item.progress = 100;
-					mHandler.sendEmptyMessage(0);
-				}
+						@Override
+						public void onTaskFinish() {
+							// TODO Auto-generated method stub
 
-				@Override
-				public void onTaskCancel() {
-					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
-				}
+						}
 
-				@Override
-				public void onTaskFailure(int paramInt, Ks3Error ks3Error,
-						Header[] paramArrayOfHeader, Throwable paramThrowable,
-						File paramFile) {
-					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
-							paramInt+"failure: reason = " + paramThrowable.toString()+"/n"+"response:"+ks3Error.getErrorMessage());
-					RemoteFile remoteFile = dataSource.get(item.objectKey);
-					remoteFile.status = RemoteFile.STATUS_FAIL;
-					item.status = RemoteFile.STATUS_FAIL;
-					mHandler.sendEmptyMessage(0);					
-				}
-			});
+						@Override
+						public void onTaskCancel() {
+							// TODO Auto-generated method stub
+
+						}
+
+						@Override
+						public void onTaskSuccess(int paramInt,
+								Header[] paramArrayOfHeader,
+								GetObjectResult getObjectResult) {
+							Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+									"get object success");
+						}
+
+						@Override
+						public void onTaskFailure(int paramInt, Ks3Error error,
+								Header[] paramArrayOfHeader,
+								Throwable paramThrowable, File paramFile) {
+							Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+									"get object failed");
+
+						}
+					});
+
+			// client.getObject(request, new GetObjectResponseHandler(file,
+			// item.bucketName, item.objectKey) {
+			//
+			// @Override
+			// public void onTaskSuccess(int paramInt,
+			// Header[] paramArrayOfHeader,
+			// GetObjectResult getObjectResult) {
+			//
+			// }
+			//
+			// @Override
+			// public void onTaskStart() {
+			// RemoteFile remoteFile = dataSource.get(item.objectKey);
+			// remoteFile.status = RemoteFile.STATUS_STARTED;
+			// remoteFile.progress = 0;
+			// item.status = RemoteFile.STATUS_STARTED;
+			// item.progress = 0;
+			// mHandler.sendEmptyMessage(0);
+			//
+			// }
+			//
+			// @Override
+			// public void onTaskProgress(double progress) {
+			// // if (progress > 50.0) {
+			// // request.abort();
+			// // }
+			// RemoteFile remoteFile = dataSource.get(item.objectKey);
+			// remoteFile.status = RemoteFile.STATUS_DOWNLOADING;
+			// remoteFile.progress = (int) progress;
+			// item.status = RemoteFile.STATUS_DOWNLOADING;
+			// item.progress = (int) progress;
+			// mHandler.sendEmptyMessage(0);
+			// }
+			//
+			// @Override
+			// public void onTaskFinish() {
+			// RemoteFile remoteFile = dataSource.get(item.objectKey);
+			// remoteFile.status = RemoteFile.STATUS_FINISH;
+			// remoteFile.progress = 100;
+			// item.status = RemoteFile.STATUS_FINISH;
+			// item.progress = 100;
+			// mHandler.sendEmptyMessage(0);
+			// }
+			//
+			// @Override
+			// public void onTaskCancel() {
+			// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
+			// }
+			//
+			// @Override
+			// public void onTaskFailure(int paramInt, Ks3Error ks3Error,
+			// Header[] paramArrayOfHeader, Throwable paramThrowable,
+			// File paramFile) {
+			// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, paramInt
+			// + "failure: reason = " + paramThrowable.toString()
+			// + "/n" + "response:" + ks3Error.getErrorMessage());
+			// RemoteFile remoteFile = dataSource.get(item.objectKey);
+			// remoteFile.status = RemoteFile.STATUS_FAIL;
+			// item.status = RemoteFile.STATUS_FAIL;
+			// mHandler.sendEmptyMessage(0);
+			// }
+			// });
 		}
 
 	}

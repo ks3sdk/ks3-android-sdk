@@ -1,9 +1,14 @@
 package com.ksyun.ks3.services.crypto;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 
 import com.ksyun.ks3.model.Ks3CryptoModule;
 import com.ksyun.ks3.model.crypto.CryptoConfiguration;
+import com.ksyun.ks3.model.crypto.EncryptedUploadContext;
 import com.ksyun.ks3.model.crypto.EncryptionMaterialsProvider;
 import com.ksyun.ks3.model.crypto.algorithm.ContentCryptoScheme;
 import com.ksyun.ks3.services.crypto.Ks3EncryptionClient.Ks3DirectImpl;
@@ -23,20 +28,21 @@ import com.ksyun.ks3.services.request.UploadPartRequest;
 
 public class Ks3CryptoModuleBase implements Ks3CryptoModule {
 	protected static final int DEFAULT_BUFFER_SIZE = 1024 * 2; // 2K
-	protected final EncryptionMaterialsProvider kekMaterialsProvider = null;
-	protected final CryptoConfiguration cryptoConfig = null;
+	protected CryptoConfiguration cryptoConfig = null;
 	protected final ContentCryptoScheme contentCryptoScheme = null;
 	protected Ks3DirectImpl ks3DirectImpl;
 	protected EncryptionMaterialsProvider encryptionMaterialsProvider;
-	protected CryptoConfiguration cryptoConfiguration;
 	protected Context context;
-
+	/** Map of data about in progress encrypted multipart uploads. */
+    protected final Map<String, EncryptedUploadContext> multipartUploadContexts =
+            Collections.synchronizedMap(new HashMap<String, EncryptedUploadContext>());
+    
 	public Ks3CryptoModuleBase(Ks3DirectImpl ks3DirectImpl,
 			EncryptionMaterialsProvider encryptionMaterialsProvider,
 			CryptoConfiguration cryptoConfiguration, Context context) {
 		this.ks3DirectImpl = ks3DirectImpl;
 		this.encryptionMaterialsProvider = encryptionMaterialsProvider;
-		this.cryptoConfiguration = cryptoConfiguration;
+		this.cryptoConfig = cryptoConfiguration;
 		this.context = context;
 	}
 

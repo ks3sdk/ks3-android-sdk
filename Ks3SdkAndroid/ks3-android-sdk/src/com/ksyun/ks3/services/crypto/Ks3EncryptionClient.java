@@ -24,106 +24,101 @@ import com.ksyun.ks3.services.request.UploadPartRequest;
 import android.content.Context;
 
 public class Ks3EncryptionClient extends Ks3Client {
-	 private Ks3CryptoModule crypto;
+	private Ks3CryptoModule crypto;
+	private static Ks3EncryptionClient client;
+
+	public static Ks3EncryptionClient getInstance() {
+		return client;
+	}
 
 	// AK&SK
-	public Ks3EncryptionClient(String accesskeyid, String accesskeysecret,EncryptionMaterials encryptionMaterials,
-			Context context) {
-		this(accesskeyid,accesskeysecret,new StaticEncryptionMaterialsProvider(encryptionMaterials),null,context);
-	}
-	
-	public Ks3EncryptionClient(String accesskeyid, String accesskeysecret,EncryptionMaterials encryptionMaterials,
-			CryptoConfiguration cryptoConfiguration,Context context) {
-		this(accesskeyid,accesskeysecret,new StaticEncryptionMaterialsProvider(encryptionMaterials),cryptoConfiguration,context);
-	}
-	
-	public Ks3EncryptionClient(String accesskeyid, String accesskeysecret,EncryptionMaterialsProvider encryptionMaterialsProvider,
-			Context context) {
-		this(accesskeyid,accesskeysecret,encryptionMaterialsProvider,null,context);
 
+	public Ks3EncryptionClient(String accesskeyid, String accesskeysecret,
+			EncryptionMaterials encryptionMaterials,
+			CryptoConfiguration cryptoConfiguration, Context context) {
+		this(accesskeyid, accesskeysecret,
+				new StaticEncryptionMaterialsProvider(encryptionMaterials),
+				cryptoConfiguration, context);
 	}
-	
-	public Ks3EncryptionClient(String accesskeyid, String accesskeysecret,EncryptionMaterialsProvider encryptionMaterialsProvider,
-			CryptoConfiguration cryptoConfiguration,Context context) {
+
+	public Ks3EncryptionClient(String accesskeyid, String accesskeysecret,
+			EncryptionMaterialsProvider encryptionMaterialsProvider,
+			CryptoConfiguration cryptoConfiguration, Context context) {
 		super(accesskeyid, accesskeysecret, context);
-		crypto = new CryptoModuleDispatcher(new Ks3DirectImpl(),encryptionMaterialsProvider,cryptoConfiguration,context);
+		client = this;
+		crypto = new CryptoModuleDispatcher(new Ks3DirectImpl(),
+				encryptionMaterialsProvider, cryptoConfiguration, context);
+		
 	}
 
-	
 	// AuthListener
-	public Ks3EncryptionClient(AuthListener listener,EncryptionMaterials encryptionMaterials,
-			Context context) {
-		this(listener,new StaticEncryptionMaterialsProvider(encryptionMaterials),null,context);
-	}
-	
-	public Ks3EncryptionClient(AuthListener listener,EncryptionMaterials encryptionMaterials,
-			CryptoConfiguration cryptoConfiguration,Context context) {
-		this(listener,new StaticEncryptionMaterialsProvider(encryptionMaterials),cryptoConfiguration,context);
+
+	public Ks3EncryptionClient(AuthListener listener,
+			EncryptionMaterials encryptionMaterials,
+			CryptoConfiguration cryptoConfiguration, Context context) {
+		this(listener, new StaticEncryptionMaterialsProvider(
+				encryptionMaterials), cryptoConfiguration, context);
 
 	}
-	
-	public Ks3EncryptionClient(AuthListener listener,EncryptionMaterialsProvider encryptionMaterialsProvider,
-			Context context) {
-		this(listener,encryptionMaterialsProvider,null,context);
-	}
-	
-	public Ks3EncryptionClient(AuthListener listener,EncryptionMaterialsProvider encryptionMaterialsProvider,
-			CryptoConfiguration cryptoConfiguration,Context context) {
+
+	public Ks3EncryptionClient(AuthListener listener,
+			EncryptionMaterialsProvider encryptionMaterialsProvider,
+			CryptoConfiguration cryptoConfiguration, Context context) {
 		super(listener, context);
-		crypto = new CryptoModuleDispatcher(new Ks3DirectImpl(), encryptionMaterialsProvider,cryptoConfiguration,context);
+		crypto = new CryptoModuleDispatcher(new Ks3DirectImpl(),
+				encryptionMaterialsProvider, cryptoConfiguration, context);
 	}
-	
-	
+
 	// Replaceable Encryption Method
 	@Override
 	public Ks3HttpRequest putObject(PutObjectRequest request,
 			PutObjectResponseHandler handler) {
 		return crypto.putObjectSecurely(request, handler, true);
 	}
-	
+
 	@Override
 	public Ks3HttpRequest getObject(GetObjectRequest request,
 			GetObjectResponseHandler handler) {
 		return crypto.getObjectSecurely(request, handler, true);
 	}
-	
+
 	@Override
 	public void completeMultipartUpload(CompleteMultipartUploadRequest request,
 			CompleteMultipartUploadResponseHandler handler) {
 		crypto.completeMultipartUploadSecurely(request, handler, true);
 	}
-	
+
 	@Override
 	public void initiateMultipartUpload(InitiateMultipartUploadRequest request,
 			InitiateMultipartUploadResponceHandler resultHandler) {
 		crypto.initiateMultipartUploadSecurely(request, resultHandler, true);
 	}
-	
+
 	@Override
 	public void uploadPart(UploadPartRequest request,
 			UploadPartResponceHandler resultHandler) {
 		crypto.uploadPartSecurely(request, resultHandler, true);
 	}
-	
+
 	@Override
 	public void abortMultipartUpload(AbortMultipartUploadRequest request,
 			AbortMultipartUploadResponseHandler handler) {
 		crypto.abortMultipartUploadSecurely(request, handler, true);
 	}
-	
-	public final class Ks3DirectImpl extends Ks3Direct{
+
+	public final class Ks3DirectImpl extends Ks3Direct {
 
 		@Override
 		public Ks3HttpRequest putObject(PutObjectRequest request,
 				PutObjectResponseHandler handler, boolean b) {
-			
+
 			return Ks3EncryptionClient.super.putObject(request, handler);
 		}
 
 		@Override
 		public Ks3HttpRequest getObject(GetObjectRequest request,
 				GetObjectResponseHandler handler, boolean b) {
-			
+
 			return Ks3EncryptionClient.super.getObject(request, handler);
 		}
 
@@ -138,7 +133,8 @@ public class Ks3EncryptionClient extends Ks3Client {
 		public void initiateMultipartUpload(
 				InitiateMultipartUploadRequest request,
 				InitiateMultipartUploadResponceHandler resultHandler, boolean b) {
-			Ks3EncryptionClient.super.initiateMultipartUpload(request, resultHandler);
+			Ks3EncryptionClient.super.initiateMultipartUpload(request,
+					resultHandler);
 		}
 
 		@Override
@@ -152,9 +148,7 @@ public class Ks3EncryptionClient extends Ks3Client {
 				AbortMultipartUploadResponseHandler handler, boolean b) {
 			Ks3EncryptionClient.super.abortMultipartUpload(request, handler);
 		}
-		
+
 	}
 
-
-	
 }

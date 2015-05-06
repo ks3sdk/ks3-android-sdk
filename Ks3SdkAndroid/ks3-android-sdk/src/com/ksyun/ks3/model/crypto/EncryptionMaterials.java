@@ -34,4 +34,8 @@ public class EncryptionMaterials {
 	public Map<String, String> getMaterialsDescription() {
 		return new HashMap<String, String>();
 	}
+
+	public EncryptionMaterialsAccessor getAccessor() {
+		return null;
+	}
 }

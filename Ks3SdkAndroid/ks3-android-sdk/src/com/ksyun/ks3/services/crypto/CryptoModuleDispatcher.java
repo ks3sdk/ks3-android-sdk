@@ -67,7 +67,7 @@ public class CryptoModuleDispatcher implements Ks3CryptoModule {
 	public Ks3HttpRequest getObjectSecurely(GetObjectRequest request,
 			GetObjectResponseHandler handler, boolean isAsyncMode) {
 		// AE module can handle S3 objects encrypted in either AE or EO format
-		return ae.getObjectSecurely(request, handler, isAsyncMode);
+		return eo.getObjectSecurely(request, handler, isAsyncMode);
 	}
 
 	@Override

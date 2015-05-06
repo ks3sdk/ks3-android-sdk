@@ -39,7 +39,8 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 	private String redirectLocation;
 	private String callBackUrl;
 	private String callBackBody;
-	private Map<String,String> callBackHeaders;
+	private Map<String, String> callBackHeaders;
+	private boolean isEncrypt = false;
 
 	public PutObjectRequest(String bucketname, String key, File file) {
 		this.setBucketname(bucketname);
@@ -47,33 +48,62 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 		this.setFile(file);
 	}
 
-	public PutObjectRequest(String bucketname, String key,File file, ObjectMetadata metadata) {
-		this(bucketname,key,file);
-		this.setObjectMeta(metadata == null ? this.objectMeta : metadata);	
+	public PutObjectRequest(String bucketname, String key, File file,
+			ObjectMetadata metadata) {
+		this(bucketname, key, file);
+		this.setObjectMeta(metadata == null ? this.objectMeta : metadata);
 	}
-	
-	public void setCallBack(String callBackUrl, String callBackBody,Map<String,String> callBackHeaders){
+
+	public void setCallBack(String callBackUrl, String callBackBody,
+			Map<String, String> callBackHeaders) {
 		this.callBackUrl = callBackUrl;
 		this.callBackBody = callBackBody;
 		this.callBackHeaders = callBackHeaders;
 	}
-	
-	
+
+	public boolean isEncrypt() {
+		return isEncrypt;
+	}
+
+	public void setEncrypt(boolean isEncrypt) {
+		this.isEncrypt = isEncrypt;
+	}
+
 	@Override
 	protected void setupRequest() throws Ks3ClientException {
 		this.setContentType("binary/octet-stream");
-		try {
-			this.setRequestBody(new RepeatableFileInputStream(file));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			throw new Ks3ClientException(e);
+		if (isEncrypt) {
+			if (this.getRequestBody() != null) {
+				Log.d(Constants.LOG_TAG, "already have encrypted request body");
+			} else {
+				throw new Ks3ClientException(
+						"encrypt mode but requestbody is null");
+			}
+		} else {
+			try {
+				this.setRequestBody(new RepeatableFileInputStream(file));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				throw new Ks3ClientException(e);
+			}
 		}
+
 		objectMeta.setContentType(Mimetypes.getInstance().getMimetype(file));
 		objectMeta.setContentLength(String.valueOf(file.length()));
 		this.addHeader(HttpHeaders.ContentLength, String.valueOf(file.length()));
 		try {
-			String contentMd5_b64 = Md5Utils.md5AsBase64(file);
-			this.addHeader(HttpHeaders.ContentMD5.toString(), contentMd5_b64);
+			if (!isEncrypt) {
+				String contentMd5_b64 = Md5Utils.md5AsBase64(file);
+				this.addHeader(HttpHeaders.ContentMD5.toString(),
+						contentMd5_b64);
+			} else {
+				Log.d(Constants.LOG_TAG,
+						"don't add content-md5 because of encryption");
+//				String contentMd5_b64 = Md5Utils.md5AsBase64(file);
+//				this.addHeader(HttpHeaders.ContentMD5.toString(),
+//						contentMd5_b64);
+			}
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			throw new Ks3ClientException(e);
@@ -82,27 +112,34 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 			throw new Ks3ClientException(
 					"calculate file md5 error (" + e + ")", e);
 		}
-		if(!StringUtils.isBlank(this.callBackUrl) && !StringUtils.isBlank(this.callBackBody)){
+		if (!StringUtils.isBlank(this.callBackUrl)
+				&& !StringUtils.isBlank(this.callBackBody)) {
 			this.addHeader(HttpHeaders.XKssCallBackUrl, this.callBackUrl);
 			this.addHeader(HttpHeaders.XKssCallBackBody, this.callBackBody);
-			
-			if(this.callBackHeaders!= null && this.callBackHeaders.size() > 0){
-				for(Map.Entry<String, String> entry: this.callBackHeaders.entrySet()){
+
+			if (this.callBackHeaders != null && this.callBackHeaders.size() > 0) {
+				for (Map.Entry<String, String> entry : this.callBackHeaders
+						.entrySet()) {
 					String key = entry.getKey();
 					String val = entry.getValue();
-					if(!StringUtils.isBlank(key) && key.startsWith(Constants.CALL_BACK_CUSTOM_PREFIX) && !StringUtils.isBlank(val)){
+					if (!StringUtils.isBlank(key)
+							&& key.startsWith(Constants.CALL_BACK_CUSTOM_PREFIX)
+							&& !StringUtils.isBlank(val)) {
 						this.addHeader(key, val);
-					}else{
-						Log.e(Constants.LOG_TAG,"the header:"+key +"-"+val + " is not correct ,this head will be ignored");
+					} else {
+						Log.e(Constants.LOG_TAG, "the header:" + key + "-"
+								+ val
+								+ " is not correct ,this head will be ignored");
 					}
 				}
-			}else{
+			} else {
 				Log.d(Constants.LOG_TAG, "the callbackheaders is null");
 			}
-		}else{
-			Log.d(Constants.LOG_TAG, "the callbacurl or callbackbody is null , ignore set the callback");
+		} else {
+			Log.d(Constants.LOG_TAG,
+					"the callbacurl or callbackbody is null , ignore set the callback");
 		}
-		
+
 		for (Entry<Meta, String> entry : this.objectMeta.getMetadata()
 				.entrySet()) {
 			if (!entry.getKey().equals(Meta.ContentLength.toString())) {
@@ -234,7 +271,7 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 	public void setCallBackBody(String callBackBody) {
 		this.callBackBody = callBackBody;
 	}
-	
+
 	public Map<String, String> getCallBackHeaders() {
 		return callBackHeaders;
 	}
@@ -242,7 +279,7 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 	public void setCallBackHeaders(Map<String, String> callBackHeaders) {
 		this.callBackHeaders = callBackHeaders;
 	}
-	
+
 	public String getMd5() {
 		return Base64
 				.encodeToString(

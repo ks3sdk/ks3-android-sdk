@@ -15,19 +15,25 @@
 
 package com.ksyun.ks3.model.crypto.algorithm;
 
+import android.util.Log;
+
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.crypto.EncryptionMaterials;
 import com.ksyun.ks3.model.crypto.EncryptionMaterialsProvider;
 import com.ksyun.ks3.model.crypto.StaticEncryptionMaterialsProvider;
+import com.ksyun.ks3.model.crypto.json.JsonUtils;
 import com.ksyun.ks3.services.request.InitiateMultipartUploadRequest;
 import com.ksyun.ks3.services.request.PutObjectRequest;
 import com.ksyun.ks3.services.request.UploadPartRequest;
+import com.ksyun.ks3.util.Constants;
+import com.ksyun.ks3.util.Md5Utils;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.Ks3Object;
 import com.ksyun.ks3.model.Mimetypes;
 import com.ksyun.ks3.model.ObjectMetadata;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -676,10 +682,21 @@ public class EncryptionUtils {
 		}
 
 		// Record the original Content MD5, if present, for the unencrypted data
-		if (metadata.getContentMD5() != null) {
-			metadata.addOrEditUserMeta(
-					HttpHeaders.UNENCRYPTED_CONTENT_MD5.toString(),
-					metadata.getContentMD5());
+		if (request.getFile() != null) {
+			String contentMd5_b64 = null;
+			try {
+				contentMd5_b64 = Md5Utils.md5AsBase64(request.getFile());
+				metadata.addOrEditUserMeta(
+						HttpHeaders.UNENCRYPTED_CONTENT_MD5.toString(),
+						contentMd5_b64);
+			} catch (FileNotFoundException e) {
+				Log.d(Constants.LOG_TAG, "request file is not exist");
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+				Log.d(Constants.LOG_TAG, "request file is not exist");
+			}
+
 		}
 
 		// Removes the original content MD5 if present from the meta data.
@@ -710,7 +727,11 @@ public class EncryptionUtils {
 		// Treat all encryption requests as input stream upload requests, not as
 		// file upload requests.
 		// request.setFile(null);
-
+		if (request.getRequestBody() != null) {
+			request.setEncrypt(true);
+		} else {
+			request.setEncrypt(false);
+		}
 		return request;
 	}
 
@@ -720,13 +741,11 @@ public class EncryptionUtils {
 			return request.getFile().length();
 		} else
 			try {
-				if (request.getEntity().getContent() != null
+				if (request.getRequestBody() != null
 						&& metadata.getContentLength() != 0) {
 					return metadata.getContentLength();
 				}
 			} catch (IllegalStateException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
@@ -749,26 +768,28 @@ public class EncryptionUtils {
 	private static InputStream getEncryptedInputStream(
 			PutObjectRequest request, CipherFactory cipherFactory,
 			long plaintextLength) {
-		try {
-			InputStream is = request.getEntity().getContent();
-			if (request.getFile() != null) {
-				// Historically file takes precedence over the original input
-				// stream
+
+		InputStream is = null;
+		if (request.getFile() != null) {
+			// Historically file takes precedence over the original input
+			// stream
+			try {
 				is = new RepeatableFileInputStream(request.getFile());
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
 			}
-			if (plaintextLength > -1) {
-				// This ensures the plain-text read from the underlying data
-				// stream has the same length as the expected total
-				is = new LengthCheckInputStream(is, plaintextLength,
-						LengthCheckInputStream.EXCLUDE_SKIPPED_BYTES);
-			}
-			return new RepeatableCipherInputStream(is, cipherFactory);
-		} catch (Exception e) {
-			// throw new
-			// AmazonClientException("Unable to create cipher input stream: "
-			// + e.getMessage(), e);
-			return null;
 		}
+		if (plaintextLength > -1) {
+			// This ensures the plain-text read from the underlying data
+			// stream has the same length as the expected total
+			is = new LengthCheckInputStream(is, plaintextLength,
+					LengthCheckInputStream.EXCLUDE_SKIPPED_BYTES);
+		}
+		Log.d(Constants.LOG_TAG, "LengthCheckInputStream is ok ");
+		InputStream result = new RepeatableCipherInputStream(is, cipherFactory);
+		Log.d(Constants.LOG_TAG, "RepeatableCipherInputStream is ok ");
+		return result;
+
 	}
 
 	public static void updateMetadataWithEncryptionInstruction(
@@ -808,9 +829,11 @@ public class EncryptionUtils {
 				Base64.encodeAsString(symmetricCipher.getIV()));
 
 		// Put the materials description into the object metadata as JSON
+		materialsDescription.put("num", "0");
 		String description = JsonUtils.mapToString(materialsDescription);
 		metadata.addOrEditUserMeta(
 				HttpHeaders.MATERIALS_DESCRIPTION.toString(), description);
+		Log.d(Constants.LOG_TAG, "MATERIALS_DESCRIPTION = " + description);
 	}
 
 	public static long[] getAdjustedCryptoRange(long[] range) {
@@ -853,6 +876,19 @@ public class EncryptionUtils {
 		return rightmostBytePosition + offset + cipherBlockSize;
 	}
 
+	public static ObjectMetadata updateMetadataWithEncryptionInfo(
+			InitiateMultipartUploadRequest request,
+			byte[] keyBytesToStoreInMetadata, Cipher symmetricCipher,
+			Map<String, String> materialsDescription) {
+		ObjectMetadata metadata = request.getObjectMeta();
+		if (metadata == null)
+			metadata = new ObjectMetadata();
+
+		updateMetadata(metadata, keyBytesToStoreInMetadata, symmetricCipher,
+				materialsDescription);
+
+		return metadata;
+	}
 	/*
     *//**
 	 * Encrypts a symmetric key using the provided encryption materials and

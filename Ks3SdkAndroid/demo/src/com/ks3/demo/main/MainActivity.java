@@ -354,34 +354,34 @@ public class MainActivity extends Activity {
 		
 		// Encryption Set Up
 		// Symmertric Ways Key
-		KeyGenerator symKeyGenerator = null;
-		try {
-			symKeyGenerator = KeyGenerator.getInstance("AES");
-			symKeyGenerator.init(256);
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		SecretKey symKey = symKeyGenerator.generateKey();
-		EncryptionMaterials symmertricEncryptionMaterials = new EncryptionMaterials(
-				symKey);
-
-		// Asymetric Ways Key
-		KeyPairGenerator keyGenerator;
-		KeyPair keyPair = null;
-		try {
-			keyGenerator = KeyPairGenerator.getInstance("RSA");
-			keyGenerator.initialize(1024, new SecureRandom());
-			keyPair = keyGenerator.generateKeyPair();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		EncryptionMaterials asymmertricEncryptionMaterials = new EncryptionMaterials(
-				keyPair);
-		
-		// Encryption Client
-		Ks3EncryptionClient ks3EncryptionClient = new Ks3EncryptionClient(
-				Constants.ACCESS_KEY__ID, Constants.ACCESS_KEY_SECRET,
-				symmertricEncryptionMaterials, MainActivity.this);
+//		KeyGenerator symKeyGenerator = null;
+//		try {
+//			symKeyGenerator = KeyGenerator.getInstance("AES");
+//			symKeyGenerator.init(256);
+//		} catch (NoSuchAlgorithmException e) {
+//			e.printStackTrace();
+//		}
+//		SecretKey symKey = symKeyGenerator.generateKey();
+//		EncryptionMaterials symmertricEncryptionMaterials = new EncryptionMaterials(
+//				symKey);
+//
+//		// Asymetric Ways Key
+//		KeyPairGenerator keyGenerator;
+//		KeyPair keyPair = null;
+//		try {
+//			keyGenerator = KeyPairGenerator.getInstance("RSA");
+//			keyGenerator.initialize(1024, new SecureRandom());
+//			keyPair = keyGenerator.generateKeyPair();
+//		} catch (NoSuchAlgorithmException e) {
+//			e.printStackTrace();
+//		}
+//		EncryptionMaterials asymmertricEncryptionMaterials = new EncryptionMaterials(
+//				keyPair);
+//		
+//		// Encryption Client
+//		Ks3EncryptionClient ks3EncryptionClient = new Ks3EncryptionClient(
+//				Constants.ACCESS_KEY__ID, Constants.ACCESS_KEY_SECRET,
+//				symmertricEncryptionMaterials, MainActivity.this);
 		// Encryption Use
 		// ks3EncryptionClient.putObject(request, handler);
 	}

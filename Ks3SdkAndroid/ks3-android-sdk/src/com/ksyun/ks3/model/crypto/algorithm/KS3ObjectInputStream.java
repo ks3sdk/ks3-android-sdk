@@ -48,7 +48,6 @@ public class KS3ObjectInputStream extends SdkFilterInputStream {
 	        super(collectMetrics
 	                ? new MetricFilterInputStream(S3ServiceMetric.S3DownloadThroughput, in)
 	                : in);
-
 	        this.httpRequest = httpRequest;
 	    }
 

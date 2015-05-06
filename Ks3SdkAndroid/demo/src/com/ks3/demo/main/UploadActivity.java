@@ -4,10 +4,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -42,18 +50,22 @@ import android.widget.TextView;
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.PartETag;
+import com.ksyun.ks3.model.crypto.CryptoConfiguration;
+import com.ksyun.ks3.model.crypto.EncryptionMaterials;
 import com.ksyun.ks3.model.result.CompleteMultipartUploadResult;
 import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
 import com.ksyun.ks3.model.result.ListPartsResult;
 import com.ksyun.ks3.services.AuthListener;
 import com.ksyun.ks3.services.Ks3Client;
 import com.ksyun.ks3.services.Ks3ClientConfiguration;
+import com.ksyun.ks3.services.crypto.Ks3EncryptionClient;
 import com.ksyun.ks3.services.handler.CompleteMultipartUploadResponseHandler;
 import com.ksyun.ks3.services.handler.InitiateMultipartUploadResponceHandler;
 import com.ksyun.ks3.services.handler.ListPartsResponseHandler;
 import com.ksyun.ks3.services.handler.PutObjectResponseHandler;
 import com.ksyun.ks3.services.handler.UploadPartResponceHandler;
 import com.ksyun.ks3.services.request.CompleteMultipartUploadRequest;
+import com.ksyun.ks3.services.request.EncryptedInitiateMultipartUploadRequest;
 import com.ksyun.ks3.services.request.InitiateMultipartUploadRequest;
 import com.ksyun.ks3.services.request.ListPartsRequest;
 import com.ksyun.ks3.services.request.PutObjectRequest;
@@ -76,6 +88,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 	private final myHandler mHandler = new myHandler();
 	private BucketInpuDialog bucketInpuDialog;
 	private String mBucketName;
+	private Ks3EncryptionClient ks3EncryptionClient;
 
 	class ViewHolder {
 		ImageView fileIcon;
@@ -277,10 +290,10 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 	private void setUp() {
 		// 初始化Ks3Client
-		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
-		client = new Ks3Client(Constants.ACCESS_KEY__ID,
-				Constants.ACCESS_KEY_SECRET, UploadActivity.this);
-		client.setConfiguration(configuration);
+		// configuration = Ks3ClientConfiguration.getDefaultConfiguration();
+		// client = new Ks3Client(Constants.ACCESS_KEY__ID,
+		// Constants.ACCESS_KEY_SECRET, UploadActivity.this);
+		// client.setConfiguration(configuration);
 
 		// AuthListener方式初始化
 		// client = new Ks3Client(new AuthListener() {
@@ -322,6 +335,40 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 		// }
 		// }, UploadActivity.this);
 
+		// Encryption Set Up
+		// Symmertric Ways Key
+		KeyGenerator symKeyGenerator = null;
+		try {
+			symKeyGenerator = KeyGenerator.getInstance("AES");
+			symKeyGenerator.init(256);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		SecretKey symKey = symKeyGenerator.generateKey();
+		EncryptionMaterials symmertricEncryptionMaterials = new EncryptionMaterials(
+				symKey);
+
+		// Asymetric Ways Key
+		// KeyPairGenerator keyGenerator;
+		// KeyPair keyPair = null;
+		// try {
+		// keyGenerator = KeyPairGenerator.getInstance("RSA");
+		// keyGenerator.initialize(1024, new SecureRandom());
+		// keyPair = keyGenerator.generateKeyPair();
+		// } catch (NoSuchAlgorithmException e) {
+		// e.printStackTrace();
+		// }
+		// EncryptionMaterials asymmertricEncryptionMaterials = new
+		// EncryptionMaterials(
+		// keyPair);
+
+		// Encryption Client
+		ks3EncryptionClient = new Ks3EncryptionClient(Constants.ACCESS_KEY__ID,
+				Constants.ACCESS_KEY_SECRET, symmertricEncryptionMaterials,new CryptoConfiguration().withCryptoProvider(symKeyGenerator.getProvider()),
+				UploadActivity.this);
+		// Encryption Use
+		// ks3EncryptionClient.putObject(request, handler);
+
 		// 输入框确获取Bucket之后，允许选择文件，开始Upload操作
 		bucketInpuDialog = new BucketInpuDialog(UploadActivity.this);
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
@@ -336,7 +383,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 			}
 		});
 		bucketInpuDialog.show();
-		client.setConfiguration(configuration);
+		// client.setConfiguration(configuration);
 	}
 
 	private void switchDir(File dir) {
@@ -410,110 +457,155 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 	// 上传文件
 	private void doSingleUpload(final String bucketName, final UploadFile item) {
-		final PutObjectRequest request = new PutObjectRequest(bucketName+"2",
+		final PutObjectRequest request = new PutObjectRequest(bucketName,
 				item.file.getName(), item.file);
-//		Map<String,String> customParams = new HashMap<String, String>();
-		//自定义参数必须以kss-开头
-//		customParams.put("kss-location", "user_input_location");
-//		customParams.put("kss-name", "user_input_name");
-//		request.setCallBack("http://127.0.0.1:19091/kss/call_back", "objectKey=${key}&etag=${etag}&location=${kss-location}&name=${kss-name}", customParams);
-		client.putObject(request, new PutObjectResponseHandler() {
+		// Map<String,String> customParams = new HashMap<String, String>();
+		// 自定义参数必须以kss-开头
+		// customParams.put("kss-location", "user_input_location");
+		// customParams.put("kss-name", "user_input_name");
+		// request.setCallBack("http://127.0.0.1:19091/kss/call_back",
+		// "objectKey=${key}&etag=${etag}&location=${kss-location}&name=${kss-name}",
+		// customParams);
+		ks3EncryptionClient.putObject(request, new PutObjectResponseHandler() {
 
 			@Override
 			public void onTaskProgress(double progress) {
-				// if (progress > 50.0) {
-				// request.abort();
-				// }
-				List<UploadFile> uploadFiles = dataSource.get(currentDir
-						.getPath());
-				for (UploadFile file : uploadFiles) {
-					if (file.file.getPath().equalsIgnoreCase(
-							item.file.getPath())) {
-						file.status = UploadFile.STATUS_UPLOADING;
-						file.progress = (int) progress;
-						item.status = UploadFile.STATUS_UPLOADING;
-						item.progress = (int) progress;
-					}
-				}
-				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+				// TODO Auto-generated method stub
+
 			}
 
 			@Override
 			public void onTaskSuccess(int statesCode, Header[] responceHeaders) {
-				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "success");
+				// TODO Auto-generated method stub
+
 			}
 
 			@Override
 			public void onTaskStart() {
-				List<UploadFile> uploadFiles = dataSource.get(currentDir
-						.getPath());
-				for (UploadFile file : uploadFiles) {
-					if (file.file.getPath().equalsIgnoreCase(
-							item.file.getPath())) {
-						file.status = UploadFile.STATUS_STARTED;
-						file.progress = 0;
-						item.status = UploadFile.STATUS_STARTED;
-						item.progress = 0;
-					}
-				}
-				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+				// TODO Auto-generated method stub
+
 			}
 
 			@Override
 			public void onTaskFinish() {
-				List<UploadFile> uploadFiles = dataSource.get(currentDir
-						.getPath());
-				for (UploadFile file : uploadFiles) {
-					if (file.file.getPath().equalsIgnoreCase(
-							item.file.getPath())) {
-						file.status = UploadFile.STATUS_FINISH;
-						file.progress = 100;
-						item.status = UploadFile.STATUS_FINISH;
-						file.progress = 100;
-					}
-				}
-				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-			}
+				// TODO Auto-generated method stub
 
-			@Override
-			public void onTaskCancel() {
-				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
 			}
 
 			@Override
 			public void onTaskFailure(int statesCode, Ks3Error error,
 					Header[] responceHeaders, String response,
 					Throwable paramThrowable) {
-				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
-						paramThrowable.toString());
-				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
-						response);
-				List<UploadFile> uploadFiles = dataSource.get(currentDir
-						.getPath());
-				for (UploadFile file : uploadFiles) {
-					if (file.file.getPath().equalsIgnoreCase(
-							item.file.getPath())) {
-						file.status = UploadFile.STATUS_FAIL;
-						item.status = UploadFile.STATUS_FAIL;
-					}
-				}
-				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-				
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onTaskCancel() {
+				// TODO Auto-generated method stub
+
 			}
 		});
+
+		// client.putObject(request, new PutObjectResponseHandler() {
+		//
+		// @Override
+		// public void onTaskProgress(double progress) {
+		// // if (progress > 50.0) {
+		// // request.abort();
+		// // }
+		// List<UploadFile> uploadFiles = dataSource.get(currentDir
+		// .getPath());
+		// for (UploadFile file : uploadFiles) {
+		// if (file.file.getPath().equalsIgnoreCase(
+		// item.file.getPath())) {
+		// file.status = UploadFile.STATUS_UPLOADING;
+		// file.progress = (int) progress;
+		// item.status = UploadFile.STATUS_UPLOADING;
+		// item.progress = (int) progress;
+		// }
+		// }
+		// mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+		// }
+		//
+		// @Override
+		// public void onTaskSuccess(int statesCode, Header[] responceHeaders) {
+		// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "success");
+		// }
+		//
+		// @Override
+		// public void onTaskStart() {
+		// List<UploadFile> uploadFiles = dataSource.get(currentDir
+		// .getPath());
+		// for (UploadFile file : uploadFiles) {
+		// if (file.file.getPath().equalsIgnoreCase(
+		// item.file.getPath())) {
+		// file.status = UploadFile.STATUS_STARTED;
+		// file.progress = 0;
+		// item.status = UploadFile.STATUS_STARTED;
+		// item.progress = 0;
+		// }
+		// }
+		// mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+		// }
+		//
+		// @Override
+		// public void onTaskFinish() {
+		// List<UploadFile> uploadFiles = dataSource.get(currentDir
+		// .getPath());
+		// for (UploadFile file : uploadFiles) {
+		// if (file.file.getPath().equalsIgnoreCase(
+		// item.file.getPath())) {
+		// file.status = UploadFile.STATUS_FINISH;
+		// file.progress = 100;
+		// item.status = UploadFile.STATUS_FINISH;
+		// file.progress = 100;
+		// }
+		// }
+		// mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+		// }
+		//
+		// @Override
+		// public void onTaskCancel() {
+		// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
+		// }
+		//
+		// @Override
+		// public void onTaskFailure(int statesCode, Ks3Error error,
+		// Header[] responceHeaders, String response,
+		// Throwable paramThrowable) {
+		// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+		// paramThrowable.toString());
+		// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+		// response);
+		// List<UploadFile> uploadFiles = dataSource.get(currentDir
+		// .getPath());
+		// for (UploadFile file : uploadFiles) {
+		// if (file.file.getPath().equalsIgnoreCase(
+		// item.file.getPath())) {
+		// file.status = UploadFile.STATUS_FAIL;
+		// item.status = UploadFile.STATUS_FAIL;
+		// }
+		// }
+		// mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+		//
+		// }
+		// });
 	}
 
 	// 分快上传
 	private void doMultipartUpload(final String bucketName,
 			final UploadFile item) {
-		InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(
-				bucketName, item.file.getName());
-		initiateMultipartUpload(request, item);
+//		InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(
+//				bucketName, item.file.getName());
+//		initiateMultipartUpload(request, item);
+		EncryptedInitiateMultipartUploadRequest request = new EncryptedInitiateMultipartUploadRequest(bucketName, item.file.getName()); 
+		initiateMultipartUpload(request,item);
 	}
 
 	private void initiateMultipartUpload(
 			final InitiateMultipartUploadRequest request, final UploadFile item) {
-		client.initiateMultipartUpload(request,
+		ks3EncryptionClient.initiateMultipartUpload(request,
 				new InitiateMultipartUploadResponceHandler() {
 					@Override
 					public void onSuccess(int statesCode,
@@ -546,9 +638,45 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 								item.status = UploadFile.STATUS_INIT_FAIL;
 							}
 						}
-						mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);						
+						mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 					}
 				});
+//		client.initiateMultipartUpload(request,
+//				new InitiateMultipartUploadResponceHandler() {
+//					@Override
+//					public void onSuccess(int statesCode,
+//							Header[] responceHeaders,
+//							InitiateMultipartUploadResult result) {
+//						List<UploadFile> uploadFiles = dataSource
+//								.get(currentDir.getPath());
+//						for (UploadFile file : uploadFiles) {
+//							if (file.file.getPath().equalsIgnoreCase(
+//									item.file.getPath())) {
+//								file.status = UploadFile.STATUS_INIT;
+//								item.status = UploadFile.STATUS_INIT;
+//							}
+//						}
+//						mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+//
+//						beginMultiUpload(result, item);
+//					}
+//
+//					@Override
+//					public void onFailure(int statesCode, Ks3Error error,
+//							Header[] responceHeaders, String response,
+//							Throwable paramThrowable) {
+//						List<UploadFile> uploadFiles = dataSource
+//								.get(currentDir.getPath());
+//						for (UploadFile file : uploadFiles) {
+//							if (file.file.getPath().equalsIgnoreCase(
+//									item.file.getPath())) {
+//								file.status = UploadFile.STATUS_INIT_FAIL;
+//								item.status = UploadFile.STATUS_INIT_FAIL;
+//							}
+//						}
+//						mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+//					}
+//				});
 	}
 
 	private void beginMultiUpload(InitiateMultipartUploadResult initResult,
@@ -626,7 +754,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 							file.progress = (int) progressInFile;
 						}
 					}
-					mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);					
+					mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 				}
 			});
 		} else {
@@ -667,7 +795,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 						item.status = UploadFile.STATUS_LISTING_FAIL;
 					}
 				}
-				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);				
+				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 			}
 		});
 	}
@@ -707,7 +835,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 								item.progress = 100;
 							}
 						}
-						mHandler.sendEmptyMessage(0);						
+						mHandler.sendEmptyMessage(0);
 					}
 				});
 	}

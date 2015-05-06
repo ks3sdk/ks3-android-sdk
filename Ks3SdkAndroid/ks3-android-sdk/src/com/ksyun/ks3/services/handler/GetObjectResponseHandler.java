@@ -1,22 +1,31 @@
 package com.ksyun.ks3.services.handler;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.crypto.CipherInputStream;
 import org.apache.http.Header;
 import android.database.CursorJoiner.Result;
+import android.os.Environment;
+import android.util.Log;
+
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.ObjectMetadata;
 import com.ksyun.ks3.model.ObjectMetadata.Meta;
 import com.ksyun.ks3.model.crypto.CryptoConfiguration;
 import com.ksyun.ks3.model.crypto.EncryptionMaterialsProvider;
+import com.ksyun.ks3.model.crypto.algorithm.CipherLiteInputStream;
 import com.ksyun.ks3.model.crypto.algorithm.ContentCryptoMaterial;
 import com.ksyun.ks3.model.crypto.algorithm.KS3ObjectInputStream;
 import com.ksyun.ks3.model.result.GetObjectResult;
+import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.Md5Utils;
 
 public abstract class GetObjectResponseHandler extends
@@ -69,7 +78,7 @@ public abstract class GetObjectResponseHandler extends
 		if (hasEncryptionInfo(metadata)) {
 			decipherWithMetadata(metadata, result);
 		}
-		// this.onTaskSuccess(paramInt, paramArrayOfHeader,reuslt);
+		this.onTaskSuccess(paramInt, paramArrayOfHeader, result);
 	}
 
 	private boolean hasEncryptionInfo(ObjectMetadata metadata) {
@@ -88,17 +97,110 @@ public abstract class GetObjectResponseHandler extends
 			GetObjectResult result) {
 		try {
 			KS3ObjectInputStream objectContent = new KS3ObjectInputStream(
-					new FileInputStream(result.getObject().getFile()));
-			decryptContent(objectContent, cekMaterial);
-			
+					new BufferedInputStream(new FileInputStream(result
+							.getObject().getFile())));
+			decryptContent(objectContent, cekMaterial, result);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
 
 	private void decryptContent(KS3ObjectInputStream objectContent,
-			ContentCryptoMaterial cekMaterial) {
-		
+			ContentCryptoMaterial cekMaterial, GetObjectResult result) {
+		KS3ObjectInputStream inputStream = new KS3ObjectInputStream(
+				new CipherLiteInputStream(objectContent,
+						cekMaterial.getCipherLite(), DEFAULT_BUFFER_SIZE));
+		// inputstreamtofile(inputStream, result.getObject().getFile());
+		File file = result.getObject().getFile();
+		String filename = file.getAbsolutePath();
+		Log.d(Constants.LOG_TAG, "filename = " + filename);
+		file.delete();
+		Log.d(Constants.LOG_TAG, "file delete " );
+		File desFile = new File("/storage/emulated/0/ksyun_download/Ks3HttpRequest.java");
+		Log.d(Constants.LOG_TAG, "file create " );
+		inputstreamtofile(inputStream, desFile);
+		result.getObject().setFile(desFile);
+	}
+
+	public void inputstreamtofile(InputStream ins, File file) {
+		OutputStream os = null;
+		try {
+			os = new FileOutputStream(file);
+			int bytesRead = 0;
+			byte[] buffer = new byte[1024];
+			while ((bytesRead = ins.read(buffer, 0, 1024)) != -1) {
+				os.write(buffer, 0, bytesRead);
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (os != null) {
+					os.close();
+				}
+				if (ins != null) {
+					ins.close();
+				}
+
+			} catch (Exception e2) {
+
+			}
+
+		}
+
+	}
+
+	public static boolean isFileExist(String director) {
+		File file = new File(Environment.getExternalStorageDirectory()
+				+ File.separator + director);
+		return file.exists();
+	}
+
+	public static boolean createFile(String director) {
+		if (isFileExist(director)) {
+			return true;
+		} else {
+			File file = new File(Environment.getExternalStorageDirectory()
+					+ File.separator + director);
+			if (!file.mkdirs()) {
+				return false;
+			}
+			return true;
+		}
+	}
+
+	public File writeToSDCardFromInput(String directory, String fileName,
+			InputStream input) {
+		File file = null;
+		OutputStream os = null;
+		try {
+			if (createFile(directory)) {
+				return file;
+			}
+			file = new File(Environment.getExternalStorageDirectory()
+					+ File.separator + directory + fileName);
+			os = new FileOutputStream(file);
+			byte[] data = new byte[1024];
+			int length = -1;
+			while ((length = input.read(data)) != -1) {
+				os.write(data, 0, length);
+			}
+			// clear cache
+			os.flush();
+		} catch (Exception e) {
+			Log.e("FileUtil", "" + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				os.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return file;
 	}
 
 	@Override

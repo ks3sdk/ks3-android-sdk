@@ -15,11 +15,15 @@
 
 package com.ksyun.ks3.model.crypto.algorithm;
 
+import android.util.Log;
+
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.Ks3Object;
 import com.ksyun.ks3.model.ObjectMetadata;
 import com.ksyun.ks3.model.crypto.EncryptionMaterials;
 import com.ksyun.ks3.model.crypto.EncryptionMaterialsAccessor;
+import com.ksyun.ks3.model.crypto.json.JsonUtils;
+import com.ksyun.ks3.util.Constants;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -227,22 +231,33 @@ public final class ContentCryptoMaterial {
 			Provider securityProvider) {
 		// CEK and IV
 		Map<String, String> userMeta = metadata.getUserMetadata();
-		String b64key = userMeta.get(HttpHeaders.CRYPTO_KEY_V2);
+		String b64key = userMeta.get(ObjectMetadata.userMetaPrefix
+				+ HttpHeaders.CRYPTO_KEY_V2);
 		if (b64key == null) {
-			b64key = userMeta.get(HttpHeaders.CRYPTO_KEY);
+			b64key = userMeta.get(ObjectMetadata.userMetaPrefix
+					+ HttpHeaders.CRYPTO_KEY);
 			if (b64key == null) {
+				Log.d(Constants.LOG_TAG, "Content encrypting key not found");
 			}
 			// throw new
 			// AmazonClientException("Content encrypting key not found.");
 		}
 		byte[] cekWrapped = Base64.decode(b64key);
-		byte[] iv = Base64.decode(userMeta.get(HttpHeaders.CRYPTO_IV));
+		Log.d(Constants.LOG_TAG,
+				"cekWrapped = " + cekWrapped + ",iv = "
+						+ ObjectMetadata.userMetaPrefix
+						+ userMeta.get(HttpHeaders.CRYPTO_IV));
+
+		byte[] iv = Base64.decode(userMeta.get(ObjectMetadata.userMetaPrefix
+				+ HttpHeaders.CRYPTO_IV));
 		if (cekWrapped == null || iv == null) {
+			Log.d(Constants.LOG_TAG, "Content encrypting key or IV not found");
 			// throw new
 			// AmazonClientException("Content encrypting key or IV not found.");
 		}
 		// Material description
-		String matdescStr = userMeta.get(HttpHeaders.MATERIALS_DESCRIPTION);
+		String matdescStr = userMeta.get(ObjectMetadata.userMetaPrefix
+				+ HttpHeaders.MATERIALS_DESCRIPTION);
 		Map<String, String> matdesc = matdescFromJson(matdescStr);
 		EncryptionMaterials materials = kekMaterialAccessor == null ? null
 				: kekMaterialAccessor.getEncryptionMaterials(matdesc);
@@ -251,7 +266,9 @@ public final class ContentCryptoMaterial {
 			// "Unable to retrieve the client encryption materials");
 		}
 		// CEK algorithm
-		String cekAlgo = userMeta.get(HttpHeaders.CRYPTO_CEK_ALGORITHM);
+		// String cekAlgo = userMeta.get(ObjectMetadata.userMetaPrefix
+		// + HttpHeaders.CRYPTO_CEK_ALGORITHM);
+		String cekAlgo = "AES/CBC/PKCS5Padding";
 		// boolean isRangeGet = range != null;
 		boolean isRangeGet = false;
 
@@ -261,12 +278,13 @@ public final class ContentCryptoMaterial {
 				.fromCEKAlgo(cekAlgo, isRangeGet);
 		if (isRangeGet) {
 			// Adjust the IV as needed
-//			iv = contentCryptoScheme.adjustIV(iv, range[0]);
+			// iv = contentCryptoScheme.adjustIV(iv, range[0]);
 		} else {
 			// Validate the tag length supported
 			int tagLenExpected = contentCryptoScheme.getTagLengthInBits();
 			if (tagLenExpected > 0) {
-				String s = userMeta.get(HttpHeaders.CRYPTO_TAG_LENGTH);
+				String s = userMeta.get(ObjectMetadata.userMetaPrefix
+						+ HttpHeaders.CRYPTO_TAG_LENGTH);
 				int tagLenActual = Integer.parseInt(s);
 				if (tagLenExpected != tagLenActual) {
 					// throw new
@@ -276,7 +294,9 @@ public final class ContentCryptoMaterial {
 			}
 		}
 		// Unwrap or decrypt the CEK
-		String keyWrapAlgo = userMeta.get(HttpHeaders.CRYPTO_KEYWRAP_ALGORITHM);
+		// String keyWrapAlgo = userMeta.get(ObjectMetadata.userMetaPrefix
+		// + HttpHeaders.CRYPTO_KEYWRAP_ALGORITHM);
+		String keyWrapAlgo = null;
 		SecretKey cek = cek(cekWrapped, keyWrapAlgo, materials,
 				securityProvider);
 		return new ContentCryptoMaterial(matdesc, cekWrapped, keyWrapAlgo,
@@ -302,23 +322,27 @@ public final class ContentCryptoMaterial {
 			EncryptionMaterialsAccessor kekMaterialAccessor,
 			Provider securityProvider, long[] range) {
 		// CEK and IV
-		String b64key = map.get(HttpHeaders.CRYPTO_KEY_V2);
+		String b64key = map.get(ObjectMetadata.userMetaPrefix
+				+ HttpHeaders.CRYPTO_KEY_V2);
 		if (b64key == null) {
-			b64key = map.get(HttpHeaders.CRYPTO_KEY);
+			b64key = map.get(ObjectMetadata.userMetaPrefix
+					+ HttpHeaders.CRYPTO_KEY);
 			if (b64key == null) {
 			}
 			// throw new
 			// AmazonClientException("Content encrypting key not found.");
 		}
 		byte[] cekWrapped = Base64.decode(b64key);
-		byte[] iv = Base64.decode(map.get(HttpHeaders.CRYPTO_IV));
+		byte[] iv = Base64.decode(map.get(ObjectMetadata.userMetaPrefix
+				+ HttpHeaders.CRYPTO_IV));
 		if (cekWrapped == null || iv == null) {
 			// throw new AmazonClientException(
 			// "Necessary encryption info not found in the instruction file "
 			// + map);
 		}
 		// Material description
-		String matdescStr = map.get(HttpHeaders.MATERIALS_DESCRIPTION);
+		String matdescStr = map.get(ObjectMetadata.userMetaPrefix
+				+ HttpHeaders.MATERIALS_DESCRIPTION);
 		Map<String, String> matdesc = matdescFromJson(matdescStr);
 		EncryptionMaterials materials = kekMaterialAccessor == null ? null
 				: kekMaterialAccessor.getEncryptionMaterials(matdesc);
@@ -326,9 +350,12 @@ public final class ContentCryptoMaterial {
 			// throw new AmazonClientException(
 			// "Unable to retrieve the encryption materials that originally "
 			// + "encrypted object corresponding to instruction file " + map);
+			Log.d(Constants.LOG_TAG, "materials is null");
 		}
 		// CEK algorithm
-		String cekAlgo = map.get(HttpHeaders.CRYPTO_CEK_ALGORITHM);
+		// String cekAlgo = map.get(ObjectMetadata.userMetaPrefix
+		// + HttpHeaders.CRYPTO_CEK_ALGORITHM);
+		String cekAlgo = "AES";
 		boolean isRangeGet = range != null;
 		// The content crypto scheme may vary depending on whether
 		// it is a range get operation
@@ -341,7 +368,8 @@ public final class ContentCryptoMaterial {
 			// Validate the tag length supported
 			int tagLenExpected = contentCryptoScheme.getTagLengthInBits();
 			if (tagLenExpected > 0) {
-				String s = map.get(HttpHeaders.CRYPTO_TAG_LENGTH);
+				String s = map.get(ObjectMetadata.userMetaPrefix
+						+ HttpHeaders.CRYPTO_TAG_LENGTH);
 				int tagLenActual = Integer.parseInt(s);
 				if (tagLenExpected != tagLenActual) {
 					// throw new
@@ -351,7 +379,8 @@ public final class ContentCryptoMaterial {
 			}
 		}
 		// Unwrap or decrypt the CEK
-		String keyWrapAlgo = map.get(HttpHeaders.CRYPTO_KEYWRAP_ALGORITHM);
+		String keyWrapAlgo = map.get(ObjectMetadata.userMetaPrefix
+				+ HttpHeaders.CRYPTO_KEYWRAP_ALGORITHM);
 		SecretKey cek = cek(cekWrapped, keyWrapAlgo, materials,
 				securityProvider);
 		return new ContentCryptoMaterial(matdesc, cekWrapped, keyWrapAlgo,
