@@ -364,8 +364,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 		// Encryption Client
 		ks3EncryptionClient = new Ks3EncryptionClient(Constants.ACCESS_KEY__ID,
-				Constants.ACCESS_KEY_SECRET, symmertricEncryptionMaterials,new CryptoConfiguration().withCryptoProvider(symKeyGenerator.getProvider()),
-				UploadActivity.this);
+				Constants.ACCESS_KEY_SECRET, symmertricEncryptionMaterials,
+				new CryptoConfiguration().withCryptoProvider(symKeyGenerator
+						.getProvider()), UploadActivity.this);
 		// Encryption Use
 		// ks3EncryptionClient.putObject(request, handler);
 
@@ -470,137 +471,97 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 			@Override
 			public void onTaskProgress(double progress) {
-				// TODO Auto-generated method stub
-
+				// if (progress > 50.0) {
+				// request.abort();
+				// }
+				List<UploadFile> uploadFiles = dataSource.get(currentDir
+						.getPath());
+				for (UploadFile file : uploadFiles) {
+					if (file.file.getPath().equalsIgnoreCase(
+							item.file.getPath())) {
+						file.status = UploadFile.STATUS_UPLOADING;
+						file.progress = (int) progress;
+						item.status = UploadFile.STATUS_UPLOADING;
+						item.progress = (int) progress;
+					}
+				}
+				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 			}
 
 			@Override
 			public void onTaskSuccess(int statesCode, Header[] responceHeaders) {
-				// TODO Auto-generated method stub
-
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "success");
 			}
 
 			@Override
 			public void onTaskStart() {
-				// TODO Auto-generated method stub
-
+				List<UploadFile> uploadFiles = dataSource.get(currentDir
+						.getPath());
+				for (UploadFile file : uploadFiles) {
+					if (file.file.getPath().equalsIgnoreCase(
+							item.file.getPath())) {
+						file.status = UploadFile.STATUS_STARTED;
+						file.progress = 0;
+						item.status = UploadFile.STATUS_STARTED;
+						item.progress = 0;
+					}
+				}
+				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 			}
 
 			@Override
 			public void onTaskFinish() {
-				// TODO Auto-generated method stub
+				List<UploadFile> uploadFiles = dataSource.get(currentDir
+						.getPath());
+				for (UploadFile file : uploadFiles) {
+					if (file.file.getPath().equalsIgnoreCase(
+							item.file.getPath())) {
+						file.status = UploadFile.STATUS_FINISH;
+						file.progress = 100;
+						item.status = UploadFile.STATUS_FINISH;
+						file.progress = 100;
+					}
+				}
+				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+			}
 
+			@Override
+			public void onTaskCancel() {
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
 			}
 
 			@Override
 			public void onTaskFailure(int statesCode, Ks3Error error,
 					Header[] responceHeaders, String response,
 					Throwable paramThrowable) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void onTaskCancel() {
-				// TODO Auto-generated method stub
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+						paramThrowable.toString());
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, response);
+				List<UploadFile> uploadFiles = dataSource.get(currentDir
+						.getPath());
+				for (UploadFile file : uploadFiles) {
+					if (file.file.getPath().equalsIgnoreCase(
+							item.file.getPath())) {
+						file.status = UploadFile.STATUS_FAIL;
+						item.status = UploadFile.STATUS_FAIL;
+					}
+				}
+				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 
 			}
 		});
-
-		// client.putObject(request, new PutObjectResponseHandler() {
-		//
-		// @Override
-		// public void onTaskProgress(double progress) {
-		// // if (progress > 50.0) {
-		// // request.abort();
-		// // }
-		// List<UploadFile> uploadFiles = dataSource.get(currentDir
-		// .getPath());
-		// for (UploadFile file : uploadFiles) {
-		// if (file.file.getPath().equalsIgnoreCase(
-		// item.file.getPath())) {
-		// file.status = UploadFile.STATUS_UPLOADING;
-		// file.progress = (int) progress;
-		// item.status = UploadFile.STATUS_UPLOADING;
-		// item.progress = (int) progress;
-		// }
-		// }
-		// mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-		// }
-		//
-		// @Override
-		// public void onTaskSuccess(int statesCode, Header[] responceHeaders) {
-		// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "success");
-		// }
-		//
-		// @Override
-		// public void onTaskStart() {
-		// List<UploadFile> uploadFiles = dataSource.get(currentDir
-		// .getPath());
-		// for (UploadFile file : uploadFiles) {
-		// if (file.file.getPath().equalsIgnoreCase(
-		// item.file.getPath())) {
-		// file.status = UploadFile.STATUS_STARTED;
-		// file.progress = 0;
-		// item.status = UploadFile.STATUS_STARTED;
-		// item.progress = 0;
-		// }
-		// }
-		// mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-		// }
-		//
-		// @Override
-		// public void onTaskFinish() {
-		// List<UploadFile> uploadFiles = dataSource.get(currentDir
-		// .getPath());
-		// for (UploadFile file : uploadFiles) {
-		// if (file.file.getPath().equalsIgnoreCase(
-		// item.file.getPath())) {
-		// file.status = UploadFile.STATUS_FINISH;
-		// file.progress = 100;
-		// item.status = UploadFile.STATUS_FINISH;
-		// file.progress = 100;
-		// }
-		// }
-		// mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-		// }
-		//
-		// @Override
-		// public void onTaskCancel() {
-		// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
-		// }
-		//
-		// @Override
-		// public void onTaskFailure(int statesCode, Ks3Error error,
-		// Header[] responceHeaders, String response,
-		// Throwable paramThrowable) {
-		// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
-		// paramThrowable.toString());
-		// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
-		// response);
-		// List<UploadFile> uploadFiles = dataSource.get(currentDir
-		// .getPath());
-		// for (UploadFile file : uploadFiles) {
-		// if (file.file.getPath().equalsIgnoreCase(
-		// item.file.getPath())) {
-		// file.status = UploadFile.STATUS_FAIL;
-		// item.status = UploadFile.STATUS_FAIL;
-		// }
-		// }
-		// mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-		//
-		// }
-		// });
 	}
 
 	// 分快上传
 	private void doMultipartUpload(final String bucketName,
 			final UploadFile item) {
-//		InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(
-//				bucketName, item.file.getName());
-//		initiateMultipartUpload(request, item);
-		EncryptedInitiateMultipartUploadRequest request = new EncryptedInitiateMultipartUploadRequest(bucketName, item.file.getName()); 
-		initiateMultipartUpload(request,item);
+		// InitiateMultipartUploadRequest request = new
+		// InitiateMultipartUploadRequest(
+		// bucketName, item.file.getName());
+		// initiateMultipartUpload(request, item);
+		EncryptedInitiateMultipartUploadRequest request = new EncryptedInitiateMultipartUploadRequest(
+				bucketName, item.file.getName());
+		initiateMultipartUpload(request, item);
 	}
 
 	private void initiateMultipartUpload(
@@ -641,42 +602,42 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 						mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 					}
 				});
-//		client.initiateMultipartUpload(request,
-//				new InitiateMultipartUploadResponceHandler() {
-//					@Override
-//					public void onSuccess(int statesCode,
-//							Header[] responceHeaders,
-//							InitiateMultipartUploadResult result) {
-//						List<UploadFile> uploadFiles = dataSource
-//								.get(currentDir.getPath());
-//						for (UploadFile file : uploadFiles) {
-//							if (file.file.getPath().equalsIgnoreCase(
-//									item.file.getPath())) {
-//								file.status = UploadFile.STATUS_INIT;
-//								item.status = UploadFile.STATUS_INIT;
-//							}
-//						}
-//						mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-//
-//						beginMultiUpload(result, item);
-//					}
-//
-//					@Override
-//					public void onFailure(int statesCode, Ks3Error error,
-//							Header[] responceHeaders, String response,
-//							Throwable paramThrowable) {
-//						List<UploadFile> uploadFiles = dataSource
-//								.get(currentDir.getPath());
-//						for (UploadFile file : uploadFiles) {
-//							if (file.file.getPath().equalsIgnoreCase(
-//									item.file.getPath())) {
-//								file.status = UploadFile.STATUS_INIT_FAIL;
-//								item.status = UploadFile.STATUS_INIT_FAIL;
-//							}
-//						}
-//						mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-//					}
-//				});
+		// client.initiateMultipartUpload(request,
+		// new InitiateMultipartUploadResponceHandler() {
+		// @Override
+		// public void onSuccess(int statesCode,
+		// Header[] responceHeaders,
+		// InitiateMultipartUploadResult result) {
+		// List<UploadFile> uploadFiles = dataSource
+		// .get(currentDir.getPath());
+		// for (UploadFile file : uploadFiles) {
+		// if (file.file.getPath().equalsIgnoreCase(
+		// item.file.getPath())) {
+		// file.status = UploadFile.STATUS_INIT;
+		// item.status = UploadFile.STATUS_INIT;
+		// }
+		// }
+		// mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+		//
+		// beginMultiUpload(result, item);
+		// }
+		//
+		// @Override
+		// public void onFailure(int statesCode, Ks3Error error,
+		// Header[] responceHeaders, String response,
+		// Throwable paramThrowable) {
+		// List<UploadFile> uploadFiles = dataSource
+		// .get(currentDir.getPath());
+		// for (UploadFile file : uploadFiles) {
+		// if (file.file.getPath().equalsIgnoreCase(
+		// item.file.getPath())) {
+		// file.status = UploadFile.STATUS_INIT_FAIL;
+		// item.status = UploadFile.STATUS_INIT_FAIL;
+		// }
+		// }
+		// mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+		// }
+		// });
 	}
 
 	private void beginMultiUpload(InitiateMultipartUploadResult initResult,
@@ -698,65 +659,65 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 		if (requestFactory.hasMoreRequests()) {
 			final UploadPartRequest request = requestFactory
 					.getNextUploadPartRequest();
-			client.uploadPart(request, new UploadPartResponceHandler() {
-				double progressInFile = 0;
+			ks3EncryptionClient.uploadPart(request,
+					new UploadPartResponceHandler() {
+						double progressInFile = 0;
 
-				@Override
-				public void onTaskProgress(double progress) {
-					long uploadedInpart = (long) (progress / 100 * request.contentLength);
-					long uploadedInFile = uploadedInpart
-							+ requestFactory.getUploadedSize();
-					progressInFile = Double
-							.valueOf(request.getFile().length() > 0 ? uploadedInFile
-									* 1.0D
-									/ request.getFile().length()
-									* 100.0D
+						@Override
+						public void onTaskProgress(double progress) {
+							long uploadedInpart = (long) (progress / 100 * request.contentLength);
+							long uploadedInFile = uploadedInpart
+									+ requestFactory.getUploadedSize();
+							progressInFile = Double.valueOf(request.getFile()
+									.length() > 0 ? uploadedInFile * 1.0D
+									/ request.getFile().length() * 100.0D
 									: -1.0D);
 
-					List<UploadFile> uploadFiles = dataSource.get(currentDir
-							.getPath());
-					for (UploadFile file : uploadFiles) {
-						if (file.file.getPath().equalsIgnoreCase(
-								item.file.getPath())) {
-							file.status = UploadFile.STATUS_UPLOADPART;
-							file.progress = (int) progressInFile;
-							item.status = UploadFile.STATUS_UPLOADPART;
-							file.progress = (int) progressInFile;
+							List<UploadFile> uploadFiles = dataSource
+									.get(currentDir.getPath());
+							for (UploadFile file : uploadFiles) {
+								if (file.file.getPath().equalsIgnoreCase(
+										item.file.getPath())) {
+									file.status = UploadFile.STATUS_UPLOADPART;
+									file.progress = (int) progressInFile;
+									item.status = UploadFile.STATUS_UPLOADPART;
+									file.progress = (int) progressInFile;
+								}
+							}
+							mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 						}
-					}
-					mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-				}
 
-				@Override
-				public void onSuccess(int statesCode, Header[] responceHeaders,
-						PartETag result) {
-					Message message = mHandler.obtainMessage();
-					message.what = UPLOAD_NEXT_PART;
-					Bundle bundle = new Bundle();
-					bundle.putSerializable("requestFactory", requestFactory);
-					bundle.putSerializable("uploadFile", item);
-					message.setData(bundle);
-					mHandler.sendMessage(message);
-				}
-
-				@Override
-				public void onFailure(int statesCode, Ks3Error error,
-						Header[] responceHeaders, String response,
-						Throwable throwable) {
-					List<UploadFile> uploadFiles = dataSource.get(currentDir
-							.getPath());
-					for (UploadFile file : uploadFiles) {
-						if (file.file.getPath().equalsIgnoreCase(
-								item.file.getPath())) {
-							file.status = UploadFile.STATUS_UPLOADPART_FAIL;
-							file.progress = (int) progressInFile;
-							item.status = UploadFile.STATUS_UPLOADPART_FAIL;
-							file.progress = (int) progressInFile;
+						@Override
+						public void onSuccess(int statesCode,
+								Header[] responceHeaders, PartETag result) {
+							Message message = mHandler.obtainMessage();
+							message.what = UPLOAD_NEXT_PART;
+							Bundle bundle = new Bundle();
+							bundle.putSerializable("requestFactory",
+									requestFactory);
+							bundle.putSerializable("uploadFile", item);
+							message.setData(bundle);
+							mHandler.sendMessage(message);
 						}
-					}
-					mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-				}
-			});
+
+						@Override
+						public void onFailure(int statesCode, Ks3Error error,
+								Header[] responceHeaders, String response,
+								Throwable throwable) {
+							List<UploadFile> uploadFiles = dataSource
+									.get(currentDir.getPath());
+							for (UploadFile file : uploadFiles) {
+								if (file.file.getPath().equalsIgnoreCase(
+										item.file.getPath())) {
+									file.status = UploadFile.STATUS_UPLOADPART_FAIL;
+									file.progress = (int) progressInFile;
+									item.status = UploadFile.STATUS_UPLOADPART_FAIL;
+									file.progress = (int) progressInFile;
+								}
+							}
+							mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+						}
+					});
 		} else {
 			Message message = mHandler.obtainMessage();
 			message.what = UPLOAD_PART_FINISH;
@@ -802,7 +763,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 	private void completeUploadPart(
 			final CompleteMultipartUploadRequest request, final UploadFile item) {
-		client.completeMultipartUpload(request,
+		ks3EncryptionClient.completeMultipartUpload(request,
 				new CompleteMultipartUploadResponseHandler() {
 					@Override
 					public void onSuccess(int statesCode,

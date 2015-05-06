@@ -764,6 +764,24 @@ public class EncryptionUtils {
 		long offset = cipherBlockSize - (plaintextLength % cipherBlockSize);
 		return plaintextLength + offset;
 	}
+	
+	 public static long calculateCryptoContentLength(Cipher symmetricCipher,
+	            UploadPartRequest request) {
+	        long plaintextLength;
+	        if (request.getFile() != null) {
+	            if (request.getPartSize() > 0)
+	                plaintextLength = request.getPartSize();
+	            else
+	                plaintextLength = request.getFile().length();
+	        } else if (request.getInputStream() != null) {
+	            plaintextLength = request.getPartSize();
+	        } else {
+	            return -1;
+	        }
+	        long cipherBlockSize = symmetricCipher.getBlockSize();
+	        long offset = cipherBlockSize - (plaintextLength % cipherBlockSize);
+	        return plaintextLength + offset;
+	    }
 
 	private static InputStream getEncryptedInputStream(
 			PutObjectRequest request, CipherFactory cipherFactory,
@@ -790,6 +808,36 @@ public class EncryptionUtils {
 		Log.d(Constants.LOG_TAG, "RepeatableCipherInputStream is ok ");
 		return result;
 
+	}
+
+	public static ByteRangeCapturingInputStream getEncryptedInputStream(
+			UploadPartRequest request, CipherFactory cipherFactory) {
+		try {
+			InputStream originalInputStream = request.getInputStream();
+			if (request.getFile() != null) {
+				originalInputStream = new InputSubstream(
+						new RepeatableFileInputStream(request.getFile()),
+						request.getFileOffset(), request.getPartSize(),
+						request.isLastPart());
+			}
+
+			originalInputStream = new RepeatableCipherInputStream(
+					originalInputStream, cipherFactory);
+
+			if (request.isLastPart() == false) { // We want to prevent the final
+													// padding from being sent
+													// on the // stream...
+				originalInputStream = new InputSubstream(originalInputStream,
+						0, request.getPartSize(), false);
+			}
+			long partSize = request.getPartSize();
+			int cipherBlockSize = cipherFactory.createCipher().getBlockSize();
+			return new ByteRangeCapturingInputStream(originalInputStream,
+					partSize - cipherBlockSize, partSize);
+		} catch (Exception e) { // throw new
+			Log.d(Constants.LOG_TAG, "Unable to create cipher input stream: ");
+			return null;
+		}
 	}
 
 	public static void updateMetadataWithEncryptionInstruction(

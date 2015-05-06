@@ -4,6 +4,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.ObjectMetadata;
@@ -11,8 +12,12 @@ import com.ksyun.ks3.model.crypto.CryptoConfiguration;
 import com.ksyun.ks3.model.crypto.EncryptedUploadContext;
 import com.ksyun.ks3.model.crypto.EncryptionMaterials;
 import com.ksyun.ks3.model.crypto.EncryptionMaterialsProvider;
+import com.ksyun.ks3.model.crypto.algorithm.ByteRangeCapturingInputStream;
+import com.ksyun.ks3.model.crypto.algorithm.CipherFactory;
 import com.ksyun.ks3.model.crypto.algorithm.EncryptionInstruction;
 import com.ksyun.ks3.model.crypto.algorithm.EncryptionUtils;
+import com.ksyun.ks3.model.crypto.algorithm.JceEncryptionConstants;
+import com.ksyun.ks3.model.result.CompleteMultipartUploadResult;
 import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
 import com.ksyun.ks3.services.crypto.Ks3EncryptionClient.Ks3DirectImpl;
 import com.ksyun.ks3.services.handler.AbortMultipartUploadResponseHandler;
@@ -29,6 +34,7 @@ import com.ksyun.ks3.services.request.InitiateMultipartUploadRequest;
 import com.ksyun.ks3.services.request.Ks3HttpRequest;
 import com.ksyun.ks3.services.request.PutObjectRequest;
 import com.ksyun.ks3.services.request.UploadPartRequest;
+import com.ksyun.ks3.util.Constants;
 
 public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 
@@ -109,7 +115,46 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 	public void completeMultipartUploadSecurely(
 			CompleteMultipartUploadRequest request,
 			CompleteMultipartUploadResponseHandler handler, boolean b) {
+	        String uploadId = request.getUploadId();
+	        EncryptedUploadContext encryptedUploadContext = multipartUploadContexts.get(uploadId);
 
+	        if (encryptedUploadContext.hasFinalPartBeenSeen() == false) {
+	            Log.d(Constants.LOG_TAG, "Unable to complete an encrypted multipart upload without being told which part was the last.  "
+                        +
+                        "Without knowing which part was the last, the encrypted data in Amazon S3 is incomplete and corrupt.");
+	        }
+
+	        ks3DirectImpl.completeMultipartUpload(request,handler,true);
+	        // In InstructionFile mode, we want to write the instruction file only
+	        // after the whole upload has completed correctly.
+//	        if (cryptoConfig.getStorageMode() == CryptoStorageMode.InstructionFile) {
+//	            Cipher symmetricCipher = createSymmetricCipher(
+//	                    encryptedUploadContext.getEnvelopeEncryptionKey(),
+//	                    Cipher.ENCRYPT_MODE, cryptoConfig.getCryptoProvider(),
+//	                    encryptedUploadContext.getFirstInitializationVector());
+//
+//	            EncryptionMaterials encryptionMaterials;
+//	            if (encryptedUploadContext.getMaterialsDescription() != null) {
+//	                encryptionMaterials = kekMaterialsProvider
+//	                        .getEncryptionMaterials(encryptedUploadContext.getMaterialsDescription());
+//	            } else {
+//	                encryptionMaterials = kekMaterialsProvider.getEncryptionMaterials();
+//	            }
+//
+//	            // Encrypt the envelope symmetric key
+//	            byte[] encryptedEnvelopeSymmetricKey = getEncryptedSymmetricKey(
+//	                    encryptedUploadContext.getEnvelopeEncryptionKey(), encryptionMaterials,
+//	                    cryptoConfig.getCryptoProvider());
+//	            EncryptionInstruction instruction = new EncryptionInstruction(
+//	                    encryptionMaterials.getMaterialsDescription(), encryptedEnvelopeSymmetricKey,
+//	                    encryptedUploadContext.getEnvelopeEncryptionKey(), symmetricCipher);
+//
+//	            // Put the instruction file into S3
+//	            s3.putObject(EncryptionUtils.createInstructionPutRequest(
+//	                    encryptedUploadContext.getBucketName(), encryptedUploadContext.getKey(),
+//	                    instruction));
+//	        }
+	        multipartUploadContexts.remove(uploadId);
 	}
 
 	@Override
@@ -172,13 +217,75 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 	public void uploadPartSecurely(UploadPartRequest request,
 			UploadPartResponceHandler resultHandler, boolean b) {
 
+		boolean isLastPart = request.isLastPart();
+		String uploadId = request.getUploadId();
+
+		boolean partSizeMultipleOfCipherBlockSize = request.getPartSize()
+				% JceEncryptionConstants.SYMMETRIC_CIPHER_BLOCK_SIZE == 0;
+		if (!isLastPart && !partSizeMultipleOfCipherBlockSize) {
+			Log.d(Constants.LOG_TAG,
+					"Invalid part size: part sizes for encrypted multipart uploads must be multiples "
+							+ "of the cipher block size ("
+							+ JceEncryptionConstants.SYMMETRIC_CIPHER_BLOCK_SIZE
+							+ ") with the exception of the last part.  "
+							+ "Otherwise encryption adds extra padding that will corrupt the final object.");
+
+		}
+
+		// Generate the envelope symmetric key and initialize a cipher to
+		// encrypt the object's data
+		EncryptedUploadContext encryptedUploadContext = multipartUploadContexts
+				.get(uploadId);
+		if (encryptedUploadContext == null)
+			Log.d(Constants.LOG_TAG,
+					"No client-side information available on upload ID "
+							+ uploadId);
+
+		SecretKey envelopeSymmetricKey = encryptedUploadContext
+				.getEnvelopeEncryptionKey();
+		byte[] iv = encryptedUploadContext.getNextInitializationVector();
+		CipherFactory cipherFactory = new CipherFactory(envelopeSymmetricKey,
+				Cipher.ENCRYPT_MODE, iv, this.cryptoConfig.getCryptoProvider());
+
+		// Create encrypted input stream
+		ByteRangeCapturingInputStream encryptedInputStream = EncryptionUtils
+				.getEncryptedInputStream(request, cipherFactory);
+		request.setInputStream(encryptedInputStream);
+
+		// The last part of the multipart upload will contain extra padding from
+		// the encryption process
+		if (request.isLastPart()) {
+			// We only change the size of the last part
+			long cryptoContentLength = EncryptionUtils
+					.calculateCryptoContentLength(cipherFactory.createCipher(),
+							request);
+			if (cryptoContentLength > 0)
+				request.setPartSize(cryptoContentLength);
+
+			if (encryptedUploadContext.hasFinalPartBeenSeen()) {
+				Log.d(Constants.LOG_TAG,
+						"This part was specified as the last part in a multipart upload, but a previous part was already marked as the last part.  "
+								+ "Only the last part of the upload should be marked as the last part, otherwise it will cause the encrypted data to be corrupted.");
+			}
+
+			encryptedUploadContext.setHasFinalPartBeenSeen(true);
+		}
+
+		// Treat all encryption requests as input stream upload requests, not as
+		// file upload requests.
+		request.setFile(null);
+		request.setFileOffset(0);
+
+		ks3DirectImpl.uploadPart(request, resultHandler, true);
+		encryptedUploadContext.setNextInitializationVector(encryptedInputStream
+				.getBlock());
 	}
 
 	@Override
 	public void abortMultipartUploadSecurely(
 			AbortMultipartUploadRequest request,
 			AbortMultipartUploadResponseHandler handler, boolean b) {
-
+		ks3DirectImpl.abortMultipartUpload(request, handler, true);
 	}
 
 }
