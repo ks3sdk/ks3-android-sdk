@@ -403,8 +403,10 @@ public abstract class Ks3HttpRequest implements Serializable {
 			String signStr = sBuffer.toString();
 			Log.i(Constants.LOG_TAG, "the correct StringToSign should be :"
 					+ signStr);
-			Log.i(Constants.LOG_TAG, "the correct auth string is "
-					+ new DefaultSigner().calculate(authorization, this).trim());
+			if (authorization!=null) {
+				Log.i(Constants.LOG_TAG, "the correct auth string should be "
+						+ new DefaultSigner().calculate(authorization, this).trim());
+			}
 			authorizationStr = authListener.onCalculateAuth(this
 					.getHttpMethod().toString(), this.getContentType(), this
 					.getDate(), this.getContentMD5(), AuthUtils
