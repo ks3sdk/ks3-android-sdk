@@ -50,6 +50,7 @@ import android.widget.TextView;
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.PartETag;
+import com.ksyun.ks3.model.acl.CannedAccessControlList;
 import com.ksyun.ks3.model.crypto.CryptoConfiguration;
 import com.ksyun.ks3.model.crypto.EncryptionMaterials;
 import com.ksyun.ks3.model.result.CompleteMultipartUploadResult;
@@ -467,6 +468,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 		// request.setCallBack("http://127.0.0.1:19091/kss/call_back",
 		// "objectKey=${key}&etag=${etag}&location=${kss-location}&name=${kss-name}",
 		// customParams);
+		request.setCannedAcl(CannedAccessControlList.Private);
 		ks3EncryptionClient.putObject(request, new PutObjectResponseHandler() {
 
 			@Override
@@ -684,7 +686,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 									file.progress = (int) progressInFile;
 								}
 							}
-							mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+//							mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 						}
 
 						@Override

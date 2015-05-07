@@ -4,6 +4,8 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import com.ksyun.ks3.exception.Ks3ClientException;
@@ -37,7 +39,7 @@ import com.ksyun.ks3.services.request.UploadPartRequest;
 import com.ksyun.ks3.util.Constants;
 
 public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
-
+	
 	public Ks3CryptoModuleEO(Ks3DirectImpl ks3DirectImpl,
 			EncryptionMaterialsProvider encryptionMaterialsProvider,
 			CryptoConfiguration cryptoConfiguration, Context context) {

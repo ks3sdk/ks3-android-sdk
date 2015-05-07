@@ -116,7 +116,7 @@ public abstract class GetObjectResponseHandler extends
 		Log.d(Constants.LOG_TAG, "filename = " + filename);
 		file.delete();
 		Log.d(Constants.LOG_TAG, "file delete " );
-		File desFile = new File("/storage/emulated/0/ksyun_download/Ks3HttpRequest.java");
+		File desFile = new File("/storage/emulated/0/ksyun_download/liekkas1.java");
 		Log.d(Constants.LOG_TAG, "file create " );
 		inputstreamtofile(inputStream, desFile);
 		result.getObject().setFile(desFile);
