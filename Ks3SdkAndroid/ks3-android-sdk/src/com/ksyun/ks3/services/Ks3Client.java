@@ -68,7 +68,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 public class Ks3Client implements Ks3 {
 	private Ks3ClientConfiguration clientConfiguration;
 	private String endpoint;
-	private Authorization auth;
+	public Authorization auth;
 	private Ks3HttpExector client = new Ks3HttpExector();
 	private Context context = null;
 	public AuthListener authListener = null;
@@ -109,6 +109,14 @@ public class Ks3Client implements Ks3 {
 		this.clientConfiguration = clientConfiguration;
 		this.context = context;
 		init();
+	}
+
+	public Authorization getAuth() {
+		return auth;
+	}
+
+	public void setAuth(Authorization auth) {
+		this.auth = auth;
 	}
 
 	private void init() {
