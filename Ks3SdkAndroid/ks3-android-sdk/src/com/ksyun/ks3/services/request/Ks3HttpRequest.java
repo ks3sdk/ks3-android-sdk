@@ -68,7 +68,9 @@ public abstract class Ks3HttpRequest implements Serializable {
 	static {
 		StringBuilder pattern = new StringBuilder();
 
-		pattern.append(Pattern.quote("+")).append("|").append(Pattern.quote("*")).append("|").append(Pattern.quote("%7E")).append("|");
+		pattern.append(Pattern.quote("+")).append("|")
+				.append(Pattern.quote("*")).append("|")
+				.append(Pattern.quote("%7E")).append("|");
 
 		ENCODED_CHARACTERS_PATTERN = Pattern.compile(pattern.toString());
 	}
@@ -290,13 +292,15 @@ public abstract class Ks3HttpRequest implements Serializable {
 				AuthEvent event = new AuthEvent();
 				event.setCode(AuthEventCode.Success);
 				event.setContent(authorizationStr);
-				Log.d(Constants.LOG_TAG, "retrieve auth string success :" + authorizationStr);
+				Log.d(Constants.LOG_TAG, "retrieve auth string success :"
+						+ authorizationStr);
 				Log.d(Constants.LOG_TAG, "make requset complete");
 				ks3AuthHandler.onSuccess(event);
 			} else {
 				AuthEvent event = new AuthEvent();
 				event.setCode(AuthEventCode.Failure);
-				event.setContent("failure reason : authorizaion is not correct :" + authorizationStr);
+				event.setContent("failure reason : authorizaion is not correct :"
+						+ authorizationStr);
 				Log.d(Constants.LOG_TAG, "make requset failed");
 				ks3AuthHandler.onFailure(event);
 			}
@@ -327,8 +331,10 @@ public abstract class Ks3HttpRequest implements Serializable {
 						.getRequestBody()));
 		}
 		String encodedParams = encodeParams();
-		String encodedObjectKey = (StringUtils.isBlank(this.objectkey)) ? "" : URLEncoder.encode(this.objectkey);
-		url = new StringBuffer("http://").append(url).append("/").append(encodedObjectKey).toString();
+		String encodedObjectKey = (StringUtils.isBlank(this.objectkey)) ? ""
+				: URLEncoder.encode(this.objectkey);
+		url = new StringBuffer("http://").append(url).append("/")
+				.append(encodedObjectKey).toString();
 		url = urlEncode(url);
 		if (!TextUtils.isEmpty(encodedParams))
 			url += "?" + encodedParams;
@@ -381,7 +387,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 					+ this.getHttpMethod());
 		}
 
-		if (!StringUtils.isBlank(header.get(HttpHeaders.ContentLength.toString()))) {
+		if (!StringUtils.isBlank(header.get(HttpHeaders.ContentLength
+				.toString()))) {
 			header.remove(HttpHeaders.ContentLength.toString());
 		}
 		if (authListener != null) {
@@ -394,14 +401,17 @@ public abstract class Ks3HttpRequest implements Serializable {
 			sBuffer.append(AuthUtils.CanonicalizedKSSHeaders(this));
 			sBuffer.append(AuthUtils.CanonicalizedKSSResource(this));
 			String signStr = sBuffer.toString();
-			Log.i(Constants.LOG_TAG, "the correct StringToSign should be :" + signStr);
-
+			Log.i(Constants.LOG_TAG, "the correct StringToSign should be :"
+					+ signStr);
+			Log.i(Constants.LOG_TAG, "the correct auth string is "
+					+ new DefaultSigner().calculate(authorization, this).trim());
 			authorizationStr = authListener.onCalculateAuth(this
 					.getHttpMethod().toString(), this.getContentType(), this
 					.getDate(), this.getContentMD5(), AuthUtils
 					.CanonicalizedKSSResource(this), AuthUtils
 					.CanonicalizedKSSHeaders(this));
-			Log.i(Constants.LOG_TAG, "set auth string to header  :" + authorizationStr.trim());
+			Log.i(Constants.LOG_TAG, "app server return auth string is  :"
+					+ authorizationStr.trim());
 			this.addHeader(HttpHeaders.Authorization.toString(),
 					authorizationStr.trim());
 		} else {
@@ -479,7 +489,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 	public void setRequestHandler(RequestHandle handler) {
 
 		if (this.handler != null) {
-			Log.e(Constants.LOG_TAG, "method : setRequestHandler , is an internal method, and the handler is already set up , ingnore ! ");
+			Log.e(Constants.LOG_TAG,
+					"method : setRequestHandler , is an internal method, and the handler is already set up , ingnore ! ");
 			return;
 		}
 
@@ -491,7 +502,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 		if (this.handler != null) {
 			return this.handler.cancel(true);
 		} else {
-			Log.e(Constants.LOG_TAG, "the request is on RUNNING status , or the request is on sync mode , igonre abort request ! ");
+			Log.e(Constants.LOG_TAG,
+					"the request is on RUNNING status , or the request is on sync mode , igonre abort request ! ");
 			return false;
 		}
 	}

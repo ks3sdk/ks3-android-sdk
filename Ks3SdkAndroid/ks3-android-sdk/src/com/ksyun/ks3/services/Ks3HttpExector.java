@@ -116,6 +116,7 @@ public class Ks3HttpExector {
 		// For test
 		LogShow(request);
 		RequestHandle handler = null;
+		Log.d(Constants.LOG_TAG, "requset url = "+ request.getUrl());
 		switch (request.getHttpMethod()) {
 		case GET:
 			handler = client.get(context, request.getAsyncHttpRequestParam()

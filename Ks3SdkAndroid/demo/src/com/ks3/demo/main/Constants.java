@@ -15,7 +15,7 @@ public class Constants {
 	// "http://192.168.231.49:11911";
 	public static final String APP_SERTVER_HOST = "YOUR_APP_SERVER_HOST";
 	// 测试用AK&SK
-	public static final String ACCESS_KEY__ID = "GENJ6O5PQFVE37MEEMZA";
-	public static final String ACCESS_KEY_SECRET = "9Z6VbeYUJ0BiKcuwYe5x/j76TZvYe9VRh2OdH15m";
+	public static final String ACCESS_KEY__ID = "lMQTr0hNlMpB0iOk/i+x";
+	public static final String ACCESS_KEY_SECRET = "D4CsYLs75JcWEjbiI22zR3P7kJ/+5B1qdEje7A7I";
 	public static final long MULTI_UPLOAD_THREADHOLD = 16 * 1024 * 1024;
 }
