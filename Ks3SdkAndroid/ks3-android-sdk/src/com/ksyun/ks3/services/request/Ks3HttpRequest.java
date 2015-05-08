@@ -314,6 +314,7 @@ public abstract class Ks3HttpRequest implements Serializable {
 				Map<String, String> headrs = this.getHeader();
 				String length = headrs
 						.get(HttpHeaders.ContentLength.toString());
+				Log.d(Constants.LOG_TAG, "ks3httprequest entity length is "+ length);
 				if (length == null)
 					throw new Ks3ClientException(
 							"content-length can not be null when put request");

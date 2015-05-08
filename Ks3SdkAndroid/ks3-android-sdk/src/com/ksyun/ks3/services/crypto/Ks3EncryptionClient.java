@@ -1,5 +1,6 @@
 package com.ksyun.ks3.services.crypto;
 
+import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.Ks3CryptoModule;
 import com.ksyun.ks3.model.crypto.CryptoConfiguration;
 import com.ksyun.ks3.model.crypto.EncryptionMaterials;
@@ -20,14 +21,33 @@ import com.ksyun.ks3.services.request.InitiateMultipartUploadRequest;
 import com.ksyun.ks3.services.request.Ks3HttpRequest;
 import com.ksyun.ks3.services.request.PutObjectRequest;
 import com.ksyun.ks3.services.request.UploadPartRequest;
-
 import android.content.Context;
 
 public class Ks3EncryptionClient extends Ks3Client {
 	private Ks3CryptoModule crypto;
 	private static Ks3EncryptionClient client;
 
-	public static Ks3EncryptionClient getInstance() {
+	public static Ks3EncryptionClient getInstance() throws Ks3ClientException {
+		if (client == null) {
+			throw new Ks3ClientException(
+					"Client first setup must use another getInstance() method with init params");
+		}
+		return client;
+	}
+
+	public static Ks3EncryptionClient getInstance(String accesskeyid,
+			String accesskeysecret, EncryptionMaterials encryptionMaterials,
+			CryptoConfiguration cryptoConfiguration, Context context) {
+		client = new Ks3EncryptionClient(accesskeyid, accesskeysecret,
+				encryptionMaterials, cryptoConfiguration, context);
+		return client;
+	}
+
+	public static Ks3EncryptionClient getInstance(AuthListener listener,
+			EncryptionMaterials encryptionMaterials,
+			CryptoConfiguration cryptoConfiguration, Context context) {
+		client = new Ks3EncryptionClient(listener, encryptionMaterials,
+				cryptoConfiguration, context);
 		return client;
 	}
 
@@ -48,7 +68,7 @@ public class Ks3EncryptionClient extends Ks3Client {
 		client = this;
 		crypto = new CryptoModuleDispatcher(new Ks3DirectImpl(),
 				encryptionMaterialsProvider, cryptoConfiguration, context);
-		
+
 	}
 
 	// AuthListener

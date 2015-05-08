@@ -8,13 +8,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import javax.crypto.CipherInputStream;
+import java.util.Map;
 import org.apache.http.Header;
-import android.database.CursorJoiner.Result;
 import android.os.Environment;
 import android.util.Log;
-
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.ObjectMetadata;
@@ -32,7 +29,6 @@ public abstract class GetObjectResponseHandler extends
 		com.ksyun.ks3.asynchttpclient.FileAsyncHttpResponseHandler {
 	private String mBucketName;
 	private String mObjectKey;
-	public boolean isCryptoMode;
 	public EncryptionMaterialsProvider encryptionMaterialsProvider;
 	public CryptoConfiguration cryptoConfiguration;
 	protected static final int DEFAULT_BUFFER_SIZE = 1024 * 2;
@@ -82,7 +78,16 @@ public abstract class GetObjectResponseHandler extends
 	}
 
 	private boolean hasEncryptionInfo(ObjectMetadata metadata) {
-		return true;
+		
+		  Map<String, String> userMeta = metadata.getUserMetadata();
+		 return userMeta != null
+	                && userMeta.containsKey(ObjectMetadata.userMetaPrefix
+	    					+ HttpHeaders.CRYPTO_IV.toString())
+	                && (userMeta.containsKey(ObjectMetadata.userMetaPrefix
+	    					+ HttpHeaders.CRYPTO_KEY_V2.toString())
+	                || userMeta.containsKey(ObjectMetadata.userMetaPrefix
+	    					+ HttpHeaders.CRYPTO_KEY.toString()));
+//		  return false;
 	}
 
 	private void decipherWithMetadata(ObjectMetadata metadata,
@@ -99,6 +104,12 @@ public abstract class GetObjectResponseHandler extends
 			KS3ObjectInputStream objectContent = new KS3ObjectInputStream(
 					new BufferedInputStream(new FileInputStream(result
 							.getObject().getFile())));
+			try {
+				Log.d(Constants.LOG_TAG, "get object encrypted length="
+						+ objectContent.available());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			decryptContent(objectContent, cekMaterial, result);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -110,16 +121,30 @@ public abstract class GetObjectResponseHandler extends
 		KS3ObjectInputStream inputStream = new KS3ObjectInputStream(
 				new CipherLiteInputStream(objectContent,
 						cekMaterial.getCipherLite(), DEFAULT_BUFFER_SIZE));
-		// inputstreamtofile(inputStream, result.getObject().getFile());
+		try {
+			Log.d(Constants.LOG_TAG,
+					"decrypted length=" + inputStream.available());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+//		 inputstreamtofile(inputStream, new File(
+//					"/storage/emulated/0/eflake_sdcard.java"));
 		File file = result.getObject().getFile();
-		String filename = file.getAbsolutePath();
-		Log.d(Constants.LOG_TAG, "filename = " + filename);
-		file.delete();
-		Log.d(Constants.LOG_TAG, "file delete " );
-		File desFile = new File("/storage/emulated/0/ksyun_download/liekkas1.java");
-		Log.d(Constants.LOG_TAG, "file create " );
+		String filenameWithTempPath = file.getAbsolutePath();
+		Log.d(Constants.LOG_TAG, "filename = " + filenameWithTempPath);
+		String originFilePath = removeTempPrefix(filenameWithTempPath);
+		Log.d(Constants.LOG_TAG, "originFileName = " + originFilePath);
+		Log.d(Constants.LOG_TAG, "file delete ");
+		File desFile = new File(originFilePath);
+		Log.d(Constants.LOG_TAG, "file create ");
 		inputstreamtofile(inputStream, desFile);
 		result.getObject().setFile(desFile);
+		file.delete();
+	}
+
+	private String removeTempPrefix(String filenameWithTemp) {
+		
+		return filenameWithTemp.substring(0, filenameWithTemp.lastIndexOf("."));
 	}
 
 	public void inputstreamtofile(InputStream ins, File file) {

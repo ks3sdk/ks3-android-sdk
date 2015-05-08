@@ -39,7 +39,7 @@ import com.ksyun.ks3.services.request.UploadPartRequest;
 import com.ksyun.ks3.util.Constants;
 
 public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
-	
+
 	public Ks3CryptoModuleEO(Ks3DirectImpl ks3DirectImpl,
 			EncryptionMaterialsProvider encryptionMaterialsProvider,
 			CryptoConfiguration cryptoConfiguration, Context context) {
@@ -64,8 +64,8 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 				.encryptRequestUsingInstruction(request, instruction);
 
 		// Update the meta data
-		EncryptionUtils.updateMetadataWithEncryptionInstruction(request,
-				instruction);
+		EncryptionUtils.updateMetadataWithEncryptionInstruction(
+				encryptedObjectRequest, instruction);
 
 		// Put the encrypted object into S3
 		return ks3DirectImpl.putObject(encryptedObjectRequest, handler, true);
@@ -101,6 +101,11 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 		handler.isCryptoMode = true;
 		handler.encryptionMaterialsProvider = encryptionMaterialsProvider;
 		handler.cryptoConfiguration = cryptoConfig;
+		// change the name
+//		String originName = request.getObjectkey();
+//		StringBuffer buffer = new StringBuffer();
+//		buffer.append(originName).append(".temp");
+//		request.setObjectkey(buffer.toString());
 		Ks3HttpRequest sendRequest = ks3DirectImpl.getObject(request, handler,
 				true);
 		return sendRequest;
@@ -118,46 +123,51 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 			CompleteMultipartUploadRequest request,
 			CompleteMultipartUploadResponseHandler handler, boolean b) {
 		Log.d(Constants.LOG_TAG, "encryption completeMultipartUploadSecurely");
-	        String uploadId = request.getUploadId();
-	        EncryptedUploadContext encryptedUploadContext = multipartUploadContexts.get(uploadId);
+		String uploadId = request.getUploadId();
+		EncryptedUploadContext encryptedUploadContext = multipartUploadContexts
+				.get(uploadId);
 
-	        if (encryptedUploadContext.hasFinalPartBeenSeen() == false) {
-	            Log.d(Constants.LOG_TAG, "Unable to complete an encrypted multipart upload without being told which part was the last.  "
-                        +
-                        "Without knowing which part was the last, the encrypted data in Amazon S3 is incomplete and corrupt.");
-	        }
+		if (encryptedUploadContext.hasFinalPartBeenSeen() == false) {
+			Log.d(Constants.LOG_TAG,
+					"Unable to complete an encrypted multipart upload without being told which part was the last.  "
+							+ "Without knowing which part was the last, the encrypted data in Amazon S3 is incomplete and corrupt.");
+		}
 
-	        ks3DirectImpl.completeMultipartUpload(request,handler,true);
-	        // In InstructionFile mode, we want to write the instruction file only
-	        // after the whole upload has completed correctly.
-//	        if (cryptoConfig.getStorageMode() == CryptoStorageMode.InstructionFile) {
-//	            Cipher symmetricCipher = createSymmetricCipher(
-//	                    encryptedUploadContext.getEnvelopeEncryptionKey(),
-//	                    Cipher.ENCRYPT_MODE, cryptoConfig.getCryptoProvider(),
-//	                    encryptedUploadContext.getFirstInitializationVector());
-//
-//	            EncryptionMaterials encryptionMaterials;
-//	            if (encryptedUploadContext.getMaterialsDescription() != null) {
-//	                encryptionMaterials = kekMaterialsProvider
-//	                        .getEncryptionMaterials(encryptedUploadContext.getMaterialsDescription());
-//	            } else {
-//	                encryptionMaterials = kekMaterialsProvider.getEncryptionMaterials();
-//	            }
-//
-//	            // Encrypt the envelope symmetric key
-//	            byte[] encryptedEnvelopeSymmetricKey = getEncryptedSymmetricKey(
-//	                    encryptedUploadContext.getEnvelopeEncryptionKey(), encryptionMaterials,
-//	                    cryptoConfig.getCryptoProvider());
-//	            EncryptionInstruction instruction = new EncryptionInstruction(
-//	                    encryptionMaterials.getMaterialsDescription(), encryptedEnvelopeSymmetricKey,
-//	                    encryptedUploadContext.getEnvelopeEncryptionKey(), symmetricCipher);
-//
-//	            // Put the instruction file into S3
-//	            s3.putObject(EncryptionUtils.createInstructionPutRequest(
-//	                    encryptedUploadContext.getBucketName(), encryptedUploadContext.getKey(),
-//	                    instruction));
-//	        }
-	        multipartUploadContexts.remove(uploadId);
+		ks3DirectImpl.completeMultipartUpload(request, handler, true);
+		// In InstructionFile mode, we want to write the instruction file only
+		// after the whole upload has completed correctly.
+		// if (cryptoConfig.getStorageMode() ==
+		// CryptoStorageMode.InstructionFile) {
+		// Cipher symmetricCipher = createSymmetricCipher(
+		// encryptedUploadContext.getEnvelopeEncryptionKey(),
+		// Cipher.ENCRYPT_MODE, cryptoConfig.getCryptoProvider(),
+		// encryptedUploadContext.getFirstInitializationVector());
+		//
+		// EncryptionMaterials encryptionMaterials;
+		// if (encryptedUploadContext.getMaterialsDescription() != null) {
+		// encryptionMaterials = kekMaterialsProvider
+		// .getEncryptionMaterials(encryptedUploadContext.getMaterialsDescription());
+		// } else {
+		// encryptionMaterials = kekMaterialsProvider.getEncryptionMaterials();
+		// }
+		//
+		// // Encrypt the envelope symmetric key
+		// byte[] encryptedEnvelopeSymmetricKey = getEncryptedSymmetricKey(
+		// encryptedUploadContext.getEnvelopeEncryptionKey(),
+		// encryptionMaterials,
+		// cryptoConfig.getCryptoProvider());
+		// EncryptionInstruction instruction = new EncryptionInstruction(
+		// encryptionMaterials.getMaterialsDescription(),
+		// encryptedEnvelopeSymmetricKey,
+		// encryptedUploadContext.getEnvelopeEncryptionKey(), symmetricCipher);
+		//
+		// // Put the instruction file into S3
+		// s3.putObject(EncryptionUtils.createInstructionPutRequest(
+		// encryptedUploadContext.getBucketName(),
+		// encryptedUploadContext.getKey(),
+		// instruction));
+		// }
+		multipartUploadContexts.remove(uploadId);
 	}
 
 	@Override
@@ -211,8 +221,8 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 		resultHandler.setEncryptedUploadContext = encryptedUploadContext;
 		// move here
 		ks3DirectImpl.initiateMultipartUpload(request, resultHandler, true);
-//		 multipartUploadContexts.put(result.getUploadId(),
-//		 encryptedUploadContext);
+		// multipartUploadContexts.put(result.getUploadId(),
+		// encryptedUploadContext);
 
 		// return null;
 	}
@@ -241,7 +251,7 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 		// encrypt the object's data
 		EncryptedUploadContext encryptedUploadContext = multipartUploadContexts
 				.get(uploadId);
-		Log.d(Constants.LOG_TAG, "upload id = "+uploadId);
+		Log.d(Constants.LOG_TAG, "upload id = " + uploadId);
 		if (encryptedUploadContext == null)
 			Log.d(Constants.LOG_TAG,
 					"No client-side information available on upload ID "
@@ -257,7 +267,7 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 		ByteRangeCapturingInputStream encryptedInputStream = EncryptionUtils
 				.getEncryptedInputStream(request, cipherFactory);
 		request.setRequestBody(encryptedInputStream);
-//		request.setInputStream(encryptedInputStream);
+		// request.setInputStream(encryptedInputStream);
 
 		// The last part of the multipart upload will contain extra padding from
 		// the encryption process
@@ -280,7 +290,7 @@ public class Ks3CryptoModuleEO extends Ks3CryptoModuleBase {
 
 		// Treat all encryption requests as input stream upload requests, not as
 		// file upload requests.
-//		request.setFile(null);
+		// request.setFile(null);
 		request.setFileOffset(0);
 		request.setEncrypt(true);
 		ks3DirectImpl.uploadPart(request, resultHandler, true);

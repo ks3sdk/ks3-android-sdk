@@ -89,8 +89,18 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 		}
 
 		objectMeta.setContentType(Mimetypes.getInstance().getMimetype(file));
-		objectMeta.setContentLength(String.valueOf(file.length()));
-		this.addHeader(HttpHeaders.ContentLength, String.valueOf(file.length()));
+		// objectMeta.setContentLength(String.valueOf(file.length()));
+		if (isEncrypt) {
+			Log.d(Constants.LOG_TAG, "already have ContentLength");
+//			if (getObjectMeta().getContentLength() != 0) {
+//				this.addHeader(HttpHeaders.ContentLength,
+//						String.valueOf(getObjectMeta().getContentLength()));
+//			}
+			
+		} else {
+			this.addHeader(HttpHeaders.ContentLength,
+					String.valueOf(file.length()));
+		}
 		try {
 			if (!isEncrypt) {
 				String contentMd5_b64 = Md5Utils.md5AsBase64(file);
@@ -99,9 +109,9 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 			} else {
 				Log.d(Constants.LOG_TAG,
 						"don't add content-md5 because of encryption");
-//				String contentMd5_b64 = Md5Utils.md5AsBase64(file);
-//				this.addHeader(HttpHeaders.ContentMD5.toString(),
-//						contentMd5_b64);
+				// String contentMd5_b64 = Md5Utils.md5AsBase64(file);
+				// this.addHeader(HttpHeaders.ContentMD5.toString(),
+				// contentMd5_b64);
 			}
 
 		} catch (FileNotFoundException e) {

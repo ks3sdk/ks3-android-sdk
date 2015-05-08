@@ -119,13 +119,4 @@ public class ObjectMetadata {
 		return userMetadata;
 	}
 
-	public void setContentLength(long length) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public Object getContentType() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

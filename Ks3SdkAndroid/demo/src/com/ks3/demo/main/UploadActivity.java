@@ -48,6 +48,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
+import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.PartETag;
 import com.ksyun.ks3.model.acl.CannedAccessControlList;
@@ -364,10 +365,15 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 		// keyPair);
 
 		// Encryption Client
-		ks3EncryptionClient = new Ks3EncryptionClient(Constants.ACCESS_KEY__ID,
-				Constants.ACCESS_KEY_SECRET, symmertricEncryptionMaterials,
-				new CryptoConfiguration().withCryptoProvider(symKeyGenerator
-						.getProvider()), UploadActivity.this);
+//		ks3EncryptionClient = new Ks3EncryptionClient(Constants.ACCESS_KEY__ID,
+//				Constants.ACCESS_KEY_SECRET, symmertricEncryptionMaterials,
+//				new CryptoConfiguration().withCryptoProvider(symKeyGenerator
+//						.getProvider()), UploadActivity.this);
+		try {
+			ks3EncryptionClient = Ks3EncryptionClient.getInstance();
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		// Encryption Use
 		// ks3EncryptionClient.putObject(request, handler);
 

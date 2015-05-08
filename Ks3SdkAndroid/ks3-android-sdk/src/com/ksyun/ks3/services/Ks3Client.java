@@ -72,7 +72,7 @@ public class Ks3Client implements Ks3 {
 	private Ks3HttpExector client = new Ks3HttpExector();
 	private Context context = null;
 	public AuthListener authListener = null;
-
+	
 	public Ks3Client(String accesskeyid, String accesskeysecret, Context context) {
 		this(accesskeyid, accesskeysecret, Ks3ClientConfiguration
 				.getDefaultConfiguration(), context);
@@ -110,6 +110,8 @@ public class Ks3Client implements Ks3 {
 		this.context = context;
 		init();
 	}
+
+
 
 	private void init() {
 		setEndpoint(Constants.ClientConfig_END_POINT);

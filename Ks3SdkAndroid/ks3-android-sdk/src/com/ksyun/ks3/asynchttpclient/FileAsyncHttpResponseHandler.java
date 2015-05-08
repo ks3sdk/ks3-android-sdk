@@ -16,20 +16,29 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 
 public abstract class FileAsyncHttpResponseHandler extends
 		AsyncHttpResponseHandler {
-	protected final File mFile;
+	protected File mFile;
+	protected final File mTempFile = null;
+
 	protected final boolean append;
 	private static final String LOG_TAG = "FileAsyncHttpResponseHandler";
+	public boolean isCryptoMode;
 
 	public FileAsyncHttpResponseHandler(File file) {
 		this(file, false);
 	}
 
 	public FileAsyncHttpResponseHandler(File file, boolean append) {
-//		AssertUtils
-//				.asserts(file != null,
-//						"File passed into FileAsyncHttpResponseHandler constructor must not be null");
+		// AssertUtils
+		// .asserts(file != null,
+		// "File passed into FileAsyncHttpResponseHandler constructor must not be null");
 		this.mFile = file;
+		this.mFile = new File(appendPrefix(file.getAbsolutePath()));
 		this.append = append;
+	}
+
+	private String appendPrefix(String absolutePath) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public FileAsyncHttpResponseHandler(Context context) {
@@ -42,8 +51,8 @@ public abstract class FileAsyncHttpResponseHandler extends
 	}
 
 	protected File getTemporaryFile(Context context) {
-//		AssertUtils.asserts(context != null,
-//				"Tried creating temporary file without having Context");
+		// AssertUtils.asserts(context != null,
+		// "Tried creating temporary file without having Context");
 		try {
 			assert (context != null);
 			return File.createTempFile("temp_", "_handled",
@@ -62,7 +71,8 @@ public abstract class FileAsyncHttpResponseHandler extends
 
 	public final void onFailure(int statusCode, Header[] headers,
 			byte[] responseBytes, Throwable throwable) {
-		onFailure(statusCode, headers, throwable, responseBytes,getTargetFile());
+		onFailure(statusCode, headers, throwable, responseBytes,
+				getTargetFile());
 	}
 
 	public abstract void onFailure(int paramInt, Header[] paramArrayOfHeader,
@@ -80,8 +90,13 @@ public abstract class FileAsyncHttpResponseHandler extends
 		if (entity != null) {
 			InputStream instream = entity.getContent();
 			long contentLength = entity.getContentLength();
-			FileOutputStream buffer = new FileOutputStream(getTargetFile(),
-					this.append);
+			FileOutputStream buffer = null;
+			if (isCryptoMode) {
+				buffer = new FileOutputStream(getTargetFile(), this.append);
+			} else {
+				buffer = new FileOutputStream(getTargetFile(), this.append);
+			}
+
 			if (instream != null) {
 				try {
 					byte[] tmp = new byte[4096];

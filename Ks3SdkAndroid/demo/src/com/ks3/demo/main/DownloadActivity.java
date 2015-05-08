@@ -253,7 +253,11 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 //				Constants.ACCESS_KEY_SECRET, symmertricEncryptionMaterials,
 //				new CryptoConfiguration().withCryptoProvider(symKeyGenerator
 //						.getProvider()), DownloadActivity.this);
-		 ks3EncryptionClient = Ks3EncryptionClient.getInstance();
+		 try {
+			ks3EncryptionClient = Ks3EncryptionClient.getInstance();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		// Encryption Use
 		// ks3EncryptionClient.putObject(request, handler);
 

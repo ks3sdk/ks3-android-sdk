@@ -711,19 +711,27 @@ public class EncryptionUtils {
 					HttpHeaders.UNENCRYPTED_CONTENT_LENGTH.toString(),
 					Long.toString(plaintextLength));
 		}
+		Log.d(Constants.LOG_TAG, "put object origin send length is:"+plaintextLength);
 
 		// Put the calculated length of the encrypted contents in the metadata
 		long cryptoContentLength = calculateCryptoContentLength(
 				instruction.getSymmetricCipher(), request, metadata);
 		if (cryptoContentLength >= 0) {
-			metadata.setContentLength(cryptoContentLength);
+			metadata.setContentLength(String.valueOf(cryptoContentLength));
 		}
-
+		Log.d(Constants.LOG_TAG, "put object calculated send length is:"+cryptoContentLength);
 		// request.setMetadata(metadata);
 
+		InputStream stream =  getEncryptedInputStream(request,
+				instruction.getCipherFactory(), plaintextLength);
+		try {
+			Log.d(Constants.LOG_TAG, "put object truely send length is:"+stream.available());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		// Create encrypted input stream
-		request.setRequestBody(getEncryptedInputStream(request,
-				instruction.getCipherFactory(), plaintextLength));
+		request.setRequestBody(stream);
 		// Treat all encryption requests as input stream upload requests, not as
 		// file upload requests.
 		// request.setFile(null);
