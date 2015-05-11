@@ -11,13 +11,14 @@ import org.apache.http.HttpEntity;
 import android.content.Context;
 import android.util.Log;
 
+import com.ksyun.ks3.util.Constants;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
 public abstract class FileAsyncHttpResponseHandler extends
 		AsyncHttpResponseHandler {
 	protected File mFile;
-	protected final File mTempFile = null;
+	protected File mTempFile = null;
 
 	protected final boolean append;
 	private static final String LOG_TAG = "FileAsyncHttpResponseHandler";
@@ -32,13 +33,15 @@ public abstract class FileAsyncHttpResponseHandler extends
 		// .asserts(file != null,
 		// "File passed into FileAsyncHttpResponseHandler constructor must not be null");
 		this.mFile = file;
-		this.mFile = new File(appendPrefix(file.getAbsolutePath()));
+		this.mTempFile = new File(appendPrefix(file.getAbsolutePath()));
 		this.append = append;
 	}
 
 	private String appendPrefix(String absolutePath) {
-		// TODO Auto-generated method stub
-		return null;
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(absolutePath);
+		buffer.append(".temp");
+		return buffer.toString();
 	}
 
 	public FileAsyncHttpResponseHandler(Context context) {
@@ -65,8 +68,13 @@ public abstract class FileAsyncHttpResponseHandler extends
 	}
 
 	protected File getTargetFile() {
-		assert (this.mFile != null);
-		return this.mFile;
+		if (isCryptoMode) {
+			assert (this.mTempFile != null);
+			return this.mTempFile;
+		} else {
+			assert (this.mFile != null);
+			return this.mFile;
+		}
 	}
 
 	public final void onFailure(int statusCode, Header[] headers,
@@ -80,6 +88,7 @@ public abstract class FileAsyncHttpResponseHandler extends
 
 	public final void onSuccess(int statusCode, Header[] headers,
 			byte[] responseBytes) {
+		Log.d(Constants.LOG_TAG, getTargetFile().getAbsolutePath());
 		onSuccess(statusCode, headers, getTargetFile());
 	}
 

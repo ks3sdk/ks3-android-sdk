@@ -1,5 +1,15 @@
 package com.ksyun.ks3.services;
 
+import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URLDecoder;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
+
+import org.apache.http.conn.util.InetAddressUtils;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -14,6 +24,7 @@ import com.loopj.android.http.RequestHandle;
 
 public class Ks3HttpExector {
 	private AsyncHttpClient client;
+	private InetAddress x;
 
 	public void invoke(Authorization auth, final Ks3HttpRequest request,
 			final AsyncHttpResponseHandler resultHandler,
@@ -115,6 +126,8 @@ public class Ks3HttpExector {
 			AsyncHttpResponseHandler resultHandler) {
 		// For test
 		LogShow(request);
+		ShowTargetIp(request.getEndpoint());
+		Log.d(Constants.LOG_TAG, getLocalHostIp());
 		RequestHandle handler = null;
 		switch (request.getHttpMethod()) {
 		case GET:
@@ -150,6 +163,69 @@ public class Ks3HttpExector {
 		}
 		request.setRequestHandler(handler);
 	}
+
+	private void ShowTargetIp(final String url) {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+//					String hostUrl = url.substring(0, url.lastIndexOf("/"));
+//					try {
+//						Log.d(Constants.LOG_TAG, "target host is =" + URLDecoder.decode(hostUrl,"utf-8"));
+//					} catch (UnsupportedEncodingException e) {
+//						e.printStackTrace();
+//					}
+
+//						x = java.net.InetAddress.getByName(URLDecoder.decode(url,"utf-8"));
+						x = java.net.InetAddress.getByName(url);
+
+					String ip = x.getHostAddress();// 得到字符串形式的ip地址
+					Log.d(Constants.LOG_TAG, "target ip is =" + ip);
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+					Log.d(Constants.LOG_TAG, "error is " + e.getMessage());
+				}
+			}
+		}).start();
+
+	}
+	
+	  public String getLocalHostIp()
+	    {
+	        String ipaddress = "";
+	        try
+	        {
+	            Enumeration<NetworkInterface> en = NetworkInterface
+	                    .getNetworkInterfaces();
+	            // 遍历所用的网络接口
+	            while (en.hasMoreElements())
+	            {
+	                NetworkInterface nif = en.nextElement();// 得到每一个网络接口绑定的所有ip
+	                Enumeration<InetAddress> inet = nif.getInetAddresses();
+	                // 遍历每一个接口绑定的所有ip
+	                while (inet.hasMoreElements())
+	                {
+	                    InetAddress ip = inet.nextElement();
+	                    if (!ip.isLoopbackAddress()
+	                            && InetAddressUtils.isIPv4Address(ip
+	                                    .getHostAddress()))
+	                    {
+	                        return ipaddress = "本机的ip是" + "：" + ip.getHostAddress();
+	                    }
+	                }
+
+	            }
+	        }
+	        catch (SocketException e)
+	        {
+	            Log.e("feige", "获取本地ip地址失败");
+	            e.printStackTrace();
+	        }
+	        return ipaddress;
+
+	    }
+
 
 	private void setUpRequsetInBackground(final Ks3HttpRequest request,
 			final Ks3AuthHandler ks3AuthHandler,

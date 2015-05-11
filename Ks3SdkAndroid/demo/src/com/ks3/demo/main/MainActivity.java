@@ -362,49 +362,53 @@ public class MainActivity extends Activity {
 //			e.printStackTrace();
 //		}
 //		SecretKey symKey = symKeyGenerator.generateKey();
+//		EncryptionMaterials symmertricEncryptionMaterials = new EncryptionMaterials(
+//				symKey);
+		
 		// Here we use a simple static key
-		SecretKey symKey = new SecretKey() {
-			
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public String getFormat() {
-				return "RAW";
-			}
-			
-			@Override
-			public byte[] getEncoded() {
-				return new byte[]{84, 118, 100, 68, 0, -54, 94, -124, -11, -92, 84, 116, 60, 42, -4, -32, 28, -31, 94, -63, 125, -33, -98, 114, -128, -117, 106, -21, 117, 78, -18, -110};
-			}
-			
-			@Override
-			public String getAlgorithm() {
-				return "AES";
-			}
-		};
-
-		Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, ""+symKey.getAlgorithm()+":"+symKey.getFormat()+":"+symKey.getEncoded());
-		EncryptionMaterials symmertricEncryptionMaterials = new EncryptionMaterials(
-				symKey);
-		//
+//		SecretKey symKey = new SecretKey() {
+//			
+//			private static final long serialVersionUID = 1L;
+//
+//			@Override
+//			public String getFormat() {
+//				return "RAW";
+//			}
+//			
+//			@Override
+//			public byte[] getEncoded() {
+//				return new byte[]{84, 118, 100, 68, 0, -54, 94, -124, -11, -92, 84, 116, 60, 42, -4, -32, 28, -31, 94, -63, 125, -33, -98, 114, -128, -117, 106, -21, 117, 78, -18, -110};
+//			}
+//			
+//			@Override
+//			public String getAlgorithm() {
+//				return "AES";
+//			}
+//		};
+//		Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, ""+symKey.getAlgorithm()+":"+symKey.getFormat()+":"+symKey.getEncoded());
+//		EncryptionMaterials symmertricEncryptionMaterials = new EncryptionMaterials(
+//				symKey);
+		
+		
 		// // Asymetric Ways Key
-		// KeyPairGenerator keyGenerator;
-		// KeyPair keyPair = null;
-		// try {
-		// keyGenerator = KeyPairGenerator.getInstance("RSA");
-		// keyGenerator.initialize(1024, new SecureRandom());
-		// keyPair = keyGenerator.generateKeyPair();
-		// } catch (NoSuchAlgorithmException e) {
-		// e.printStackTrace();
-		// }
-		// EncryptionMaterials asymmertricEncryptionMaterials = new
-		// EncryptionMaterials(
-		// keyPair);
-		//
+		 KeyPairGenerator keyGenerator;
+		 KeyPair keyPair = null;
+		 try {
+		 keyGenerator = KeyPairGenerator.getInstance("RSA");
+		 keyGenerator.initialize(1024, new SecureRandom());
+		 keyPair = keyGenerator.generateKeyPair();
+		 Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "key pair");
+		 } catch (NoSuchAlgorithmException e) {
+		 e.printStackTrace();
+		 }
+		 EncryptionMaterials asymmertricEncryptionMaterials = new
+		 EncryptionMaterials(
+		 keyPair);
+		
 		// // Encryption Client
 		ks3EncryptionClient = Ks3EncryptionClient.getInstance(
 				Constants.ACCESS_KEY__ID, Constants.ACCESS_KEY_SECRET,
-				symmertricEncryptionMaterials, new CryptoConfiguration(),
+				asymmertricEncryptionMaterials, new CryptoConfiguration(),
 				MainActivity.this);
 //		ks3EncryptionClient = Ks3EncryptionClient.getInstance(
 //				Constants.ACCESS_KEY__ID, Constants.ACCESS_KEY_SECRET,

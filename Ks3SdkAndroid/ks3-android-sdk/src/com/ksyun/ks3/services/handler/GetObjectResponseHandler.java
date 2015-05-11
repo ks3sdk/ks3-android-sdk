@@ -129,12 +129,13 @@ public abstract class GetObjectResponseHandler extends
 		}
 //		 inputstreamtofile(inputStream, new File(
 //					"/storage/emulated/0/eflake_sdcard.java"));
+		// if encrypted,here we get temp file path
 		File file = result.getObject().getFile();
 		String filenameWithTempPath = file.getAbsolutePath();
-		Log.d(Constants.LOG_TAG, "filename = " + filenameWithTempPath);
+		Log.d(Constants.LOG_TAG, "temp file name = " + filenameWithTempPath);
 		String originFilePath = removeTempPrefix(filenameWithTempPath);
 		Log.d(Constants.LOG_TAG, "originFileName = " + originFilePath);
-		Log.d(Constants.LOG_TAG, "file delete ");
+//		Log.d(Constants.LOG_TAG, "file delete ");
 		File desFile = new File(originFilePath);
 		Log.d(Constants.LOG_TAG, "file create ");
 		inputstreamtofile(inputStream, desFile);
@@ -257,8 +258,13 @@ public abstract class GetObjectResponseHandler extends
 
 	@Override
 	protected final File getTargetFile() {
-		assert (this.mFile != null);
-		return this.mFile;
+		if (isCryptoMode) {
+			assert (this.mTempFile != null);
+			return this.mTempFile;
+		} else {
+			assert (this.mFile != null);
+			return this.mFile;
+		}
 	}
 
 	private GetObjectResult parse(int statesCode, Header[] responceHeaders,
