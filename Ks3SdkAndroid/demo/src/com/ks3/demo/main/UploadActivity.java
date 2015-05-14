@@ -410,7 +410,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 	// 上传文件
 	private void doSingleUpload(final String bucketName, final UploadFile item) {
-		final PutObjectRequest request = new PutObjectRequest(bucketName+"2",
+		final PutObjectRequest request = new PutObjectRequest(bucketName,
 				item.file.getName(), item.file);
 //		Map<String,String> customParams = new HashMap<String, String>();
 		//自定义参数必须以kss-开头
