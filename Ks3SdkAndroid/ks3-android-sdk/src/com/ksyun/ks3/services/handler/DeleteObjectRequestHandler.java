@@ -2,9 +2,11 @@ package com.ksyun.ks3.services.handler;
 
 import org.apache.http.Header;
 
+import com.ksyun.ks3.exception.Ks3Error;
+
 public abstract class DeleteObjectRequestHandler extends Ks3HttpResponceHandler{
 
-	public abstract void onFailure(int statesCode, Header[] responceHeaders,String response, Throwable paramThrowable);
+	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable paramThrowable);
 
 	public abstract void onSuccess(int statesCode, Header[] responceHeaders);
 	
@@ -15,7 +17,8 @@ public abstract class DeleteObjectRequestHandler extends Ks3HttpResponceHandler{
 
 	@Override
 	public final void onFailure(int statesCode, Header[] responceHeaders,byte[] response, Throwable throwable) {
-		onFailure(statesCode, responceHeaders, "", throwable);
+		Ks3Error error = new Ks3Error(statesCode, response, throwable);
+		onFailure(statesCode, error,responceHeaders, "", throwable);
 	}
 
 	@Override

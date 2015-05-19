@@ -74,9 +74,7 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 		objectMeta.setContentLength(String.valueOf(file.length()));
 		this.addHeader(HttpHeaders.ContentLength, String.valueOf(file.length()));
 		try {
-			long time = System.currentTimeMillis();
 			String contentMd5_b64 = Md5Utils.md5AsBase64(file);
-			Log.i("guoli","coast :" + (System.currentTimeMillis() - time) + ", md5 :" + contentMd5_b64);
 			this.addHeader(HttpHeaders.ContentMD5.toString(), contentMd5_b64);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -98,13 +96,8 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 				for(Map.Entry<String, String> entry: this.callBackHeaders.entrySet()){
 					String key = entry.getKey();
 					String val = entry.getValue();
-					if(!StringUtils.isBlank(key) && key.startsWith("kss:") && !StringUtils.isBlank(val)){
-						try {
-							this.addHeader(key, URLEncoder.encode(val, "UTF-8"));
-						} catch (UnsupportedEncodingException e) {
-							e.printStackTrace();
-							throw new Ks3ClientException(e);
-						}
+					if(!StringUtils.isBlank(key) && key.startsWith(Constants.CALL_BACK_CUSTOM_PREFIX) && !StringUtils.isBlank(val)){
+						this.addHeader(key, val);
 					}else{
 						Log.e(Constants.LOG_TAG,"the header:"+key +"-"+val + " is not correct ,this head will be ignored");
 					}

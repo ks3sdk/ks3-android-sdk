@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.Ks3ObjectSummary;
 import com.ksyun.ks3.model.ObjectListing;
 import com.ksyun.ks3.model.result.GetObjectResult;
@@ -153,11 +154,13 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 				adapter.fillDatas();
 			}
 
-			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
 
+			@Override
+			public void onFailure(int statesCode, Ks3Error error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				Log.e(com.ksyun.ks3.util.Constants.LOG_TAG, "failed :" + statesCode + ",  reponse :" + response);
+				
 			}
 		});
 
@@ -513,7 +516,13 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 				}
 
 				@Override
-				public void onTaskFailure(int paramInt,
+				public void onTaskCancel() {
+
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
+				}
+
+				@Override
+				public void onTaskFailure(int paramInt, Ks3Error error,
 						Header[] paramArrayOfHeader, Throwable paramThrowable,
 						File paramFile) {
 
@@ -522,13 +531,7 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 					RemoteFile remoteFile = dataSource.get(item.objectKey);
 					remoteFile.status = RemoteFile.STATUS_FAIL;
 					item.status = RemoteFile.STATUS_FAIL;
-					mHandler.sendEmptyMessage(0);
-				}
-
-				@Override
-				public void onTaskCancel() {
-
-					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
+					mHandler.sendEmptyMessage(0);					
 				}
 			});
 		}

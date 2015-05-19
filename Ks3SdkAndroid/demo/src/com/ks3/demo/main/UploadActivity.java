@@ -33,6 +33,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.PartETag;
 import com.ksyun.ks3.model.result.CompleteMultipartUploadResult;
 import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
@@ -501,10 +502,17 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 			}
 
-			@Override
-			public void onTaskFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
 
+			@Override
+			public void onTaskCancel() {
+
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
+			}
+
+			@Override
+			public void onTaskFailure(int statesCode, Ks3Error error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
 						paramThrowable.toString());
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
@@ -516,14 +524,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 						item.status = UploadFile.STATUS_FAIL;
 					}
 				}
-				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
-
-			}
-
-			@Override
-			public void onTaskCancel() {
-
-				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
+				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);				
 			}
 		});
 	}
@@ -563,10 +564,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 					}
 
 					@Override
-					public void onFailure(int statesCode,
+					public void onFailure(int statesCode, Ks3Error error,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
-
 						List<UploadFile> uploadFiles = dataSource
 								.get(currentDir.getPath());
 						for (UploadFile file : uploadFiles) {
@@ -576,7 +576,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 								item.status = UploadFile.STATUS_INIT_FAIL;
 							}
 						}
-						mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+						mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);						
 					}
 				});
 	}
@@ -647,9 +647,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 				}
 
 				@Override
-				public void onFailure(int statesCode, Header[] responceHeaders,
-						String response, Throwable throwable) {
-
+				public void onFailure(int statesCode, Ks3Error error,
+						Header[] responceHeaders, String response,
+						Throwable throwable) {
 					List<UploadFile> uploadFiles = dataSource.get(currentDir
 							.getPath());
 					for (UploadFile file : uploadFiles) {
@@ -661,7 +661,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 							file.progress = (int) progressInFile;
 						}
 					}
-					mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+					mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);					
 				}
 			});
 		} else {
@@ -693,9 +693,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
-
+			public void onFailure(int statesCode, Ks3Error error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
 				for (UploadFile file : uploadFiles) {
@@ -705,7 +705,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 						item.status = UploadFile.STATUS_LISTING_FAIL;
 					}
 				}
-				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);				
 			}
 		});
 	}
@@ -734,10 +734,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 					}
 
 					@Override
-					public void onFailure(int statesCode,
+					public void onFailure(int statesCode, Ks3Error error,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
-
 						List<UploadFile> uploadFiles = dataSource
 								.get(currentDir.getPath());
 						for (UploadFile file : uploadFiles) {
@@ -749,7 +748,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 								item.progress = 100;
 							}
 						}
-						mHandler.sendEmptyMessage(0);
+						mHandler.sendEmptyMessage(0);						
 					}
 				});
 	}

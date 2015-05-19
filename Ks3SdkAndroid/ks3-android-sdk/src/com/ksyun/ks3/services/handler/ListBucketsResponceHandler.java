@@ -10,6 +10,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.Bucket;
 import com.ksyun.ks3.model.Owner;
 import com.ksyun.ks3.util.DateUtil;
@@ -21,34 +22,43 @@ public abstract class ListBucketsResponceHandler extends Ks3HttpResponceHandler 
 	private Owner owner;
 	private Bucket bucket;
 
-	public abstract void onFailure(int statesCode, Header[] responceHeaders,String response, Throwable paramThrowable);
+	public abstract void onFailure(int statesCode, Ks3Error error,
+			Header[] responceHeaders, String response, Throwable paramThrowable);
 
-	public abstract void onSuccess(int statesCode, Header[] responceHeaders,ArrayList<Bucket> resultList);
+	public abstract void onSuccess(int statesCode, Header[] responceHeaders,
+			ArrayList<Bucket> resultList);
 
 	@Override
-	public final void onFailure(int statesCode, Header[] responceHeaders,byte[] response, Throwable throwable) {
-		onFailure(statesCode, responceHeaders, response == null ? "" :new String(response), throwable);
+	public final void onFailure(int statesCode, Header[] responceHeaders,
+			byte[] response, Throwable throwable) {
+		Ks3Error error = new Ks3Error(statesCode, response, throwable);
+		onFailure(statesCode, error, responceHeaders, response == null ? ""
+				: new String(response), throwable);
 	}
-	
+
 	@Override
-	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
+	public final void onSuccess(int statesCode, Header[] responceHeaders,
+			byte[] response) {
 		ArrayList<Bucket> buckets = parseXml(responceHeaders, response);
 		onSuccess(statesCode, responceHeaders, buckets);
 	}
 
 	@Override
-	public final void onProgress(int bytesWritten, int totalSize) {}
+	public final void onProgress(int bytesWritten, int totalSize) {
+	}
 
 	@Override
-	public final void onStart() {}
+	public final void onStart() {
+	}
 
 	@Override
-	public final void onFinish() {}
-	
+	public final void onFinish() {
+	}
+
 	@Override
-	public final void onCancel() {}
-	
-	
+	public final void onCancel() {
+	}
+
 	private ArrayList<Bucket> parseXml(Header[] responceHeaders, byte[] response) {
 		XmlPullParserFactory factory;
 		try {
@@ -84,8 +94,9 @@ public abstract class ListBucketsResponceHandler extends Ks3HttpResponceHandler 
 					}
 					if (nodeName.equalsIgnoreCase("CreationDate")) {
 						String dateStr = parse.nextText();
-						if(!StringUtils.isBlank(dateStr))
-							bucket.setCreationDate(DateUtil.ConverToDate(dateStr));
+						if (!StringUtils.isBlank(dateStr))
+							bucket.setCreationDate(DateUtil
+									.ConverToDate(dateStr));
 					}
 					break;
 				case XmlPullParser.END_TAG:

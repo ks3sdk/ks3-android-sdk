@@ -8,6 +8,7 @@ import org.apache.http.Header;
 
 import android.content.Context;
 
+import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.Bucket;
 import com.ksyun.ks3.model.ObjectListing;
 import com.ksyun.ks3.model.ObjectMetadata;
@@ -608,12 +609,13 @@ public class Ks3Client implements Ks3 {
 				list.addAll(resultList);
 			}
 
-			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
-				error.initCause(paramThrowable);
-			}
-		},false);
+					@Override
+					public void onFailure(int statesCode, Ks3Error ks3Error,
+							Header[] responceHeaders, String response,
+							Throwable paramThrowable) {
+						error.initCause(paramThrowable);
+					}
+				}, false);
 		if (error.getCause() != null) {
 			throw error;
 		}
@@ -646,8 +648,9 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error kseError,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
 
 			}
@@ -684,9 +687,10 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
-				error.initCause(paramThrowable);
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
+				error.initCause(paramThrowable);	
 			}
 		},false);
 		if (error.getCause() != null) {
@@ -720,8 +724,9 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
 
 			}
@@ -757,10 +762,10 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
-				error.initCause(paramThrowable);
-
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
+				error.initCause(paramThrowable);				
 			}
 		},false);
 		if (error.getCause() != null) {
@@ -787,8 +792,9 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
 
 			}
@@ -830,8 +836,9 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
 
 			}
@@ -859,8 +866,9 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
 
 			}
@@ -906,8 +914,9 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
 
 			}
@@ -937,10 +946,10 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
-				error.initCause(paramThrowable);
-
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
+				error.initCause(paramThrowable);				
 			}
 		},false);
 		if (error.getCause() != null) {
@@ -973,8 +982,9 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
 
 			}
@@ -1026,8 +1036,9 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
 
 			}
@@ -1065,7 +1076,7 @@ public class Ks3Client implements Ks3 {
 					}
 
 					@Override
-					public void onFailure(int statesCode,
+					public void onFailure(int statesCode, Ks3Error ks3Error,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						error.initCause(paramThrowable);
@@ -1116,7 +1127,7 @@ public class Ks3Client implements Ks3 {
 					}
 
 					@Override
-					public void onFailure(int statesCode,
+					public void onFailure(int statesCode, Ks3Error ks3Error,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						error.initCause(paramThrowable);
@@ -1144,7 +1155,7 @@ public class Ks3Client implements Ks3 {
 					}
 
 					@Override
-					public void onFailure(int statesCode,
+					public void onFailure(int statesCode, Ks3Error ks3Error,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
 						error.initCause(paramThrowable);
@@ -1210,8 +1221,9 @@ public class Ks3Client implements Ks3 {
 			}
 
 			@Override
-			public void onFailure(int statesCode, Header[] responceHeaders,
-					String response, Throwable paramThrowable) {
+			public void onFailure(int statesCode, Ks3Error ks3Error,
+					Header[] responceHeaders, String response,
+					Throwable paramThrowable) {
 				error.initCause(paramThrowable);
 			}
 		},false);
