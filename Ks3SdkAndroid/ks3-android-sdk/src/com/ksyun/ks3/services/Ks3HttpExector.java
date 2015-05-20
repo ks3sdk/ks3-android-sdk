@@ -21,18 +21,10 @@ public class Ks3HttpExector {
 			String endpoint, AuthListener authListener, Boolean isUseAsyncMode) {
 		/* Configure AsyncHttpClient */
 		if (clientConfiguration != null) {
-			if (isUseAsyncMode) {
-				client = AsyncHttpClientFactory
-						.getInstance(clientConfiguration);
-			} else {
-				client = SyncHttpClientFactory.getInstance(clientConfiguration);
-			}
+			client = AsyncHttpClientFactory.getInstance(clientConfiguration);
+
 		} else {
-			if (isUseAsyncMode) {
-				client = AsyncHttpClientFactory.getInstance();
-			} else {
-				client = SyncHttpClientFactory.getInstance();
-			}
+			client = AsyncHttpClientFactory.getInstance();
 		}
 		request.setAuthorization(auth);
 		if (request.getBucketname() != null) {
@@ -116,8 +108,9 @@ public class Ks3HttpExector {
 		// For test
 		LogShow(request);
 		RequestHandle handler = null;
-		Log.d(Constants.LOG_TAG, "requset url => "+ request.getUrl()+"\nmethod => "+request.getClass().getName());
-		
+		Log.d(Constants.LOG_TAG, "requset url => " + request.getUrl()
+				+ "\nmethod => " + request.getClass().getName());
+
 		switch (request.getHttpMethod()) {
 		case GET:
 			handler = client.get(context, request.getAsyncHttpRequestParam()

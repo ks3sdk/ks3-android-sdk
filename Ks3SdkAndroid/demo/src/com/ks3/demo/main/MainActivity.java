@@ -48,23 +48,10 @@ import com.ksyun.ks3.model.result.ListPartsResult;
 import com.ksyun.ks3.services.AuthListener;
 import com.ksyun.ks3.services.Ks3Client;
 import com.ksyun.ks3.services.Ks3ClientConfiguration;
-import com.ksyun.ks3.services.handler.CreateBucketResponceHandler;
-import com.ksyun.ks3.services.handler.DeleteBucketResponceHandler;
-import com.ksyun.ks3.services.handler.DeleteObjectRequestHandler;
-import com.ksyun.ks3.services.handler.GetBucketACLResponceHandler;
-import com.ksyun.ks3.services.handler.GetObjectACLResponseHandler;
-import com.ksyun.ks3.services.handler.HeadBucketResponseHandler;
-import com.ksyun.ks3.services.handler.HeadObjectResponseHandler;
-import com.ksyun.ks3.services.handler.ListBucketsResponceHandler;
 import com.ksyun.ks3.services.handler.ListObjectsResponseHandler;
 import com.ksyun.ks3.services.handler.ListPartsResponseHandler;
-import com.ksyun.ks3.services.handler.PutBucketACLResponseHandler;
-import com.ksyun.ks3.services.handler.PutObjectACLResponseHandler;
 import com.ksyun.ks3.services.handler.PutObjectResponseHandler;
-import com.ksyun.ks3.services.request.DeleteObjectRequest;
 import com.ksyun.ks3.services.request.ListObjectsRequest;
-import com.ksyun.ks3.services.request.PutBucketACLRequest;
-import com.ksyun.ks3.services.request.PutObjectACLRequest;
 
 /**
  * 
@@ -352,7 +339,7 @@ public class MainActivity extends Activity {
 				.setOnBucketObjectDialogListener(new OnBucketObjectDialogListener() {
 					@Override
 					public void confirmBucketAndObject(String name, String key) {
-						client.headObject(name, key,
+					/*	client.headObject(name, key,
 								new HeadObjectResponseHandler() {
 									@Override
 									public void onSuccess(int statesCode,
@@ -411,7 +398,7 @@ public class MainActivity extends Activity {
 										intent.putExtras(data);
 										startActivity(intent);										
 									}
-								});
+								});*/
 
 					}
 				});
@@ -423,7 +410,7 @@ public class MainActivity extends Activity {
 				.setOnBucketObjectDialogListener(new OnBucketObjectDialogListener() {
 					@Override
 					public void confirmBucketAndObject(String name, String key) {
-						client.getObjectACL(name, key,
+						/*client.getObjectACL(name, key,
 								new GetObjectACLResponseHandler() {
 
 									@Override
@@ -493,7 +480,7 @@ public class MainActivity extends Activity {
 										startActivity(intent);
 										
 									}
-								});
+								});*/
 
 					}
 				});
@@ -504,7 +491,7 @@ public class MainActivity extends Activity {
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
 			@Override
 			public void confirmBucket(String name) {
-				client.deleteBucket(name, new DeleteBucketResponceHandler() {
+			/*	client.deleteBucket(name, new DeleteBucketResponceHandler() {
 
 					@Override
 					public void onSuccess(int statesCode,
@@ -537,11 +524,11 @@ public class MainActivity extends Activity {
 						data.putString(API, "Delete Bucket Result");
 						intent.putExtras(data);
 						startActivity(intent);						
-					}
-				});
+					}*/
+//				});
 			}
 		});
-		bucketInpuDialog.show();
+//		bucketInpuDialog.show();
 	}
 
 	private void putObjectACL() {
@@ -549,7 +536,7 @@ public class MainActivity extends Activity {
 				.setOnBucketObjectDialogListener(new OnBucketObjectDialogListener() {
 					@Override
 					public void confirmBucketAndObject(String name, String key) {
-						PutObjectACLRequest request = new PutObjectACLRequest(
+						/*PutObjectACLRequest request = new PutObjectACLRequest(
 								name, key);
 						CannedAccessControlList cannedList = CannedAccessControlList.PublicRead;
 						// AccessControlList acList = new AccessControlList();
@@ -614,7 +601,7 @@ public class MainActivity extends Activity {
 										startActivity(intent);
 										
 									}
-								});
+								});*/
 					}
 				});
 		bucketObjectInpuDialog.show();
@@ -624,7 +611,7 @@ public class MainActivity extends Activity {
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
 			@Override
 			public void confirmBucket(String name) {
-				client.headBucket(name, new HeadBucketResponseHandler() {
+				/*client.headBucket(name, new HeadBucketResponseHandler() {
 					@Override
 					public void onSuccess(int statesCode,
 							Header[] responceHeaders) {
@@ -659,7 +646,7 @@ public class MainActivity extends Activity {
 						intent.putExtras(data);
 						startActivity(intent);						
 					}
-				});
+				});*/
 			}
 		});
 		bucketInpuDialog.show();
@@ -669,7 +656,7 @@ public class MainActivity extends Activity {
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
 			@Override
 			public void confirmBucket(String name) {
-				PutBucketACLRequest request = new PutBucketACLRequest(name);
+			/*	PutBucketACLRequest request = new PutBucketACLRequest(name);
 				// AccessControlList acl = new AccessControlList();
 				// // GranteeUri urigrantee = GranteeUri.AllUsers;
 				// // Permission permission = Permission.Read;
@@ -737,7 +724,7 @@ public class MainActivity extends Activity {
 						intent.putExtras(data);
 						startActivity(intent);						
 					}
-				});
+				});*/
 			}
 		});
 		bucketInpuDialog.show();
@@ -748,7 +735,7 @@ public class MainActivity extends Activity {
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
 			@Override
 			public void confirmBucket(String name) {
-				client.getBucketACL(name, new GetBucketACLResponceHandler() {
+				/*client.getBucketACL(name, new GetBucketACLResponceHandler() {
 
 					@Override
 					public void onSuccess(int statesCode,
@@ -797,7 +784,7 @@ public class MainActivity extends Activity {
 						intent.putExtras(data);
 						startActivity(intent);						
 					}
-				});
+				});*/
 			}
 		});
 		bucketInpuDialog.show();
@@ -809,7 +796,7 @@ public class MainActivity extends Activity {
 				.setOnBucketObjectDialogListener(new OnBucketObjectDialogListener() {
 					@Override
 					public void confirmBucketAndObject(String name, String key) {
-						DeleteObjectRequest request = new DeleteObjectRequest(
+					/*	DeleteObjectRequest request = new DeleteObjectRequest(
 								name, key);
 						client.deleteObject(request,
 								new DeleteObjectRequestHandler() {
@@ -857,7 +844,7 @@ public class MainActivity extends Activity {
 										intent.putExtras(data);
 										startActivity(intent);										
 									}
-								});
+								});*/
 					}
 				});
 		bucketObjectInpuDialog.show();
@@ -963,7 +950,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void listBuckets() {
-		client.listBuckets(new ListBucketsResponceHandler() {
+		/*client.listBuckets(new ListBucketsResponceHandler() {
 			@Override
 			public void onSuccess(int paramInt, Header[] paramArrayOfHeader,
 					ArrayList<Bucket> resultList) {
@@ -1001,14 +988,14 @@ public class MainActivity extends Activity {
 				intent.putExtras(data);
 				startActivity(intent);				
 			}
-		});
+		});*/
 	}
 
 	private void createBucket() {
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
 			@Override
 			public void confirmBucket(String name) {
-				client.createBucket(name, new CreateBucketResponceHandler() {
+				/*client.createBucket(name, new CreateBucketResponceHandler() {
 					@Override
 					public void onSuccess(int statesCode,
 							Header[] responceHeaders) {
@@ -1039,7 +1026,7 @@ public class MainActivity extends Activity {
 						intent.putExtras(data);
 						startActivity(intent);						
 					}
-				});
+				});*/
 			}
 		});
 		bucketInpuDialog.show();
