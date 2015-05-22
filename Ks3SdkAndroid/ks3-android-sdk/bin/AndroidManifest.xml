@@ -15,31 +15,11 @@
 
     <application
         android:allowBackup="true"
+        android:name="com.ksyun.ks3.services.Ks3Application"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <activity
-            android:name="com.ksyun.ks3.MainActivity"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name="com.ksyun.ks3.UploadActivity"
-            android:label="@string/app_name" >
-        </activity>
-        <activity
-            android:name="com.ksyun.ks3.DownloadActivity"
-            android:label="@string/app_name" >
-        </activity>
-        <activity
-            android:name="com.ksyun.ks3.RESTAPITestResult"
-            android:label="@string/title_activity_main" >
-        </activity>
-        <service android:name="com.ksyun.ks3.TransferService" android:exported="false"/>
+      
     </application>
 
 </manifest>

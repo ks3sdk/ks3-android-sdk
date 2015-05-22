@@ -939,7 +939,6 @@ public class MainActivity extends Activity {
 					public void onFailure(int statesCode, Ks3Error error,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
-						// TODO Auto-generated method stub
 						
 					}
 				});

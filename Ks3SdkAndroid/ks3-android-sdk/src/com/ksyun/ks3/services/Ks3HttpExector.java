@@ -1,5 +1,13 @@
 package com.ksyun.ks3.services;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
+
+import org.apache.http.conn.util.InetAddressUtils;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -8,6 +16,7 @@ import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.acl.Authorization;
 import com.ksyun.ks3.services.request.Ks3HttpRequest;
 import com.ksyun.ks3.util.Constants;
+import com.ksyun.ks3.util.PhoneInfoUtils;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestHandle;
@@ -22,7 +31,6 @@ public class Ks3HttpExector {
 		/* Configure AsyncHttpClient */
 		if (clientConfiguration != null) {
 			client = AsyncHttpClientFactory.getInstance(clientConfiguration);
-
 		} else {
 			client = AsyncHttpClientFactory.getInstance();
 		}
@@ -107,7 +115,10 @@ public class Ks3HttpExector {
 			AsyncHttpResponseHandler resultHandler) {
 		// For test
 		LogShow(request);
+		ShowTargetIp(request.getEndpoint());
+		Log.d(Constants.LOG_TAG, getLocalHostIp());
 		RequestHandle handler = null;
+		Log.d(Constants.LOG_TAG, PhoneInfoUtils.getPhoneInfo(context));
 		Log.d(Constants.LOG_TAG, "requset url => " + request.getUrl()
 				+ "\nmethod => " + request.getClass().getName());
 
@@ -145,7 +156,61 @@ public class Ks3HttpExector {
 		}
 		request.setRequestHandler(handler);
 	}
+	private void ShowTargetIp(final String url) {
+		new Thread(new Runnable() {
 
+			private InetAddress x;
+
+			@Override
+			public void run() {
+				try {
+						x = java.net.InetAddress.getByName(url);
+					String ip = x.getHostAddress();// 得到字符串形式的ip地址
+					Log.d(Constants.LOG_TAG, "target ip is =" + ip);
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+					Log.d(Constants.LOG_TAG, "error is " + e.getMessage());
+				}
+			}
+		}).start();
+	}
+	
+	 public String getLocalHostIp()
+	    {
+	        String ipaddress = "";
+	        try
+	        {
+	            Enumeration<NetworkInterface> en = NetworkInterface
+	                    .getNetworkInterfaces();
+	            // 遍历所用的网络接口
+	            while (en.hasMoreElements())
+	            {
+	                NetworkInterface nif = en.nextElement();// 得到每一个网络接口绑定的所有ip
+	                Enumeration<InetAddress> inet = nif.getInetAddresses();
+	                // 遍历每一个接口绑定的所有ip
+	                while (inet.hasMoreElements())
+	                {
+	                    InetAddress ip = inet.nextElement();
+	                    if (!ip.isLoopbackAddress()
+	                            && InetAddressUtils.isIPv4Address(ip
+	                                    .getHostAddress()))
+	                    {
+	                        return ipaddress = "本机的ip是" + "：" + ip.getHostAddress();
+	                    }
+	                }
+
+	            }
+	        }
+	        catch (SocketException e)
+	        {
+	            Log.e("feige", "获取本地ip地址失败");
+	            e.printStackTrace();
+	        }
+	        return ipaddress;
+
+	    }
+
+	 
 	private void setUpRequsetInBackground(final Ks3HttpRequest request,
 			final Ks3AuthHandler ks3AuthHandler,
 			final AsyncHttpResponseHandler resultHandler) {

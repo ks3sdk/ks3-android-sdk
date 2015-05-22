@@ -114,8 +114,7 @@ public class AsyncHttpClient {
 			boolean fixNoHttpResponseException, int httpPort, int httpsPort) {
 
 		if (fixNoHttpResponseException) {
-			Log
-					.d("AsyncHttpClient",
+			Log.d("AsyncHttpClient",
 							"Beware! Using the fix is insecure, as it doesn't verify SSL certificates.");
 		}
 
@@ -260,7 +259,7 @@ public class AsyncHttpClient {
 
 				}, 0);
 
-		this.httpClient.setHttpRequestRetryHandler(new RetryHandler(5,
+		this.httpClient.setHttpRequestRetryHandler(new RetryHandler(1,
 				1500));
 	}
 
@@ -425,9 +424,9 @@ public class AsyncHttpClient {
 	}
 
 	public void setMaxRetriesAndTimeout(int retries, int timeout) {
-
+		// for ip retry, we just retry once here
 		this.httpClient.setHttpRequestRetryHandler(new RetryHandler(
-				retries, timeout));
+				1, timeout));
 	}
 
 	public void removeAllHeaders() {
@@ -789,8 +788,7 @@ public class AsyncHttpClient {
 		if (contentType != null) {
 			if (((uriRequest instanceof HttpEntityEnclosingRequestBase))
 					&& (((HttpEntityEnclosingRequestBase) uriRequest).getEntity() != null))
-				Log
-						.w("AsyncHttpClient",
+				Log.w("AsyncHttpClient",
 								"Passed contentType will be ignored because HttpEntity sets content type");
 			else {
 				uriRequest.setHeader("Content-Type", contentType);

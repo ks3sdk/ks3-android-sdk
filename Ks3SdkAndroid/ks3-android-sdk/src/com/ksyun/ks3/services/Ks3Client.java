@@ -78,6 +78,7 @@ public class Ks3Client implements Ks3 {
 
 	private void init() {
 		setEndpoint(Constants.ClientConfig_END_POINT);
+		SafetyIpClient.setUpSafetyModel();
 	}
 
 	public void setConfiguration(Ks3ClientConfiguration clientConfiguration) {

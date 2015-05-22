@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -103,7 +104,7 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 
 	private void listObjects(String bucketName, final String prefix) {
 		final ListObjectsRequest request = new ListObjectsRequest(bucketName);
-		if (!StringUtils.isBlank(prefix))
+		if (!TextUtils.isEmpty(prefix))
 			request.setPrefix(prefix);
 		request.setDelimiter("/");
 		client.listObjects(request, new ListObjectsResponseHandler() {
@@ -165,10 +166,10 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 
 	private void setUp() {
 		// Ks3Client初始化
-		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
+//		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
 		client = new Ks3Client(Constants.ACCESS_KEY__ID,
 				Constants.ACCESS_KEY_SECRET, DownloadActivity.this);
-		client.setConfiguration(configuration);
+//		client.setConfiguration(configuration);
 
 		// AuthListener方式初始化
 		// client = new Ks3Client(new AuthListener() {

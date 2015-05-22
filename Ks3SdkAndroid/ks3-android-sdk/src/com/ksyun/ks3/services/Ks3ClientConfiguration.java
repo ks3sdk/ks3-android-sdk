@@ -39,7 +39,8 @@ public class Ks3ClientConfiguration {
 			instantce.setProxyUsername(null);
 			instantce.setProxyPassword(null);
 			instantce.setProxyPort(-1);
-			instantce.setMaxRetrytime(0);
+//			instantce.setMaxRetrytime(0);
+			instantce.setMaxRetrytime(1);
 			instantce.setRetryTimeOut(5000);
 			instantce.setUserAgent(DEFAULT_USER_AGENT);
 			instantce.setThreadPool(Executors.newCachedThreadPool());
