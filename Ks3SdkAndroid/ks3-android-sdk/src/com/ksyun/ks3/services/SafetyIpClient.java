@@ -64,7 +64,7 @@ public class SafetyIpClient {
 			String ct_array = object.getString("ct");
 
 			ipModel = new IpModel(ct_array.substring(0, ct_array.indexOf(",")),
-					ct_array.substring(ct_array.indexOf(",")),
+					ct_array.substring(ct_array.indexOf(",")+1),
 					ct_array.substring(0, ct_array.indexOf(",")));
 		} catch (JSONException e) {
 			e.printStackTrace();

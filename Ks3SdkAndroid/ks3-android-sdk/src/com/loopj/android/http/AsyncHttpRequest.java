@@ -186,11 +186,11 @@ public class AsyncHttpRequest implements Runnable {
 							break;
 						case PhoneInfoUtils.TYPE_CHINA_UNICOM:
 							ipStr = SafetyIpClient.ipModel
-									.getCHINA_MOBILE_SERVER_IP();
+									.getCHINA_UNICOM_SERVER_IP();
 							break;
 						case PhoneInfoUtils.TYPE_CHINA_TELCOM:
 							ipStr = SafetyIpClient.ipModel
-									.getCHINA_TELECOM_SERVER_IP();
+									.getCHINA_MOBILE_SERVER_IP();
 							break;
 						default:
 							break;
@@ -199,14 +199,8 @@ public class AsyncHttpRequest implements Runnable {
 						String ipUrl = SafetyIpClient.VhostToPath(originUrl,
 								ipStr, true);
 						URI ipUri = new URI(ipUrl);
-						// String vhostUrl =
-						// SafetyIpClient.PathToVhost(originUrl,
-						// "192.168.1.1", true);
-						 Log.i(Constants.LOG_TAG, ipUrl);
+						Log.i(Constants.LOG_TAG, ipUrl);
 						cause = e;
-						// cause = new
-						// IOException("UnknownHostException exception: " +
-						// e.getMessage());
 						// modify request
 						HttpRequestBase base = (HttpRequestBase) this.request;
 						base.setHeader(HttpHeaders.Host.toString(),
@@ -215,8 +209,8 @@ public class AsyncHttpRequest implements Runnable {
 
 						base.setURI(URIUtils.createURI(base.getURI()
 								.getScheme(), ipUri.getHost(), base.getURI()
-								.getPort(), pathStr, base.getURI()
-								.getQuery(), base.getURI().getFragment()));
+								.getPort(), pathStr, base.getURI().getQuery(),
+								base.getURI().getFragment()));
 						// set resend request
 						Log.i(Constants.LOG_TAG, "dns failed, changed url = "
 								+ base.getURI().toString() + ", host = "
