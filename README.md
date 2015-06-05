@@ -15,6 +15,8 @@
 
 * [android-async-http:1.4.6](https://github.com/loopj/android-async-http)
 
+> 注意： V.1.1.0版后，android-async-http.jar已经被集成进SDK中，不再需要单独添加
+
 ###SDK使用准备
 
 - 申请AccessKeyID、AccessKeySecret
