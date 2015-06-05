@@ -113,10 +113,10 @@ public class CompleteMultipartUploadRequest extends Ks3HttpRequest {
 						}
 					}
 				}else{
-					Log.d(Constants.LOG_TAG, "the callbackheaders is null");
+//					Log.d(Constants.LOG_TAG, "the callbackheaders is null");
 				}
 			}else{
-				Log.d(Constants.LOG_TAG, "the callbacurl or callbackbody is null , ignore set the callback");
+//				Log.d(Constants.LOG_TAG, "the callbacurl or callbackbody is null , ignore set the callback");
 			}
 		} catch (IllegalStateException e) {
 			throw new Ks3ClientException(e);
