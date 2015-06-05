@@ -23,6 +23,7 @@ public class GetObjectRequest extends Ks3HttpRequest {
 		setObjectkey(key);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void setupRequest() throws Ks3ClientException {
 		this.setHttpMethod(HttpMethod.GET);

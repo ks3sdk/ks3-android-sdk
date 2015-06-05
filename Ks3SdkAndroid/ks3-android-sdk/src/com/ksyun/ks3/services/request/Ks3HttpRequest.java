@@ -14,15 +14,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.StringEntity;
-
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.ksyun.ks3.auth.AuthEvent;
 import com.ksyun.ks3.auth.AuthEventCode;
 import com.ksyun.ks3.auth.AuthUtils;
@@ -37,7 +34,6 @@ import com.ksyun.ks3.model.transfer.MD5DigestCalculatingInputStream;
 import com.ksyun.ks3.model.transfer.RequestProgressListener;
 import com.ksyun.ks3.services.AuthListener;
 import com.ksyun.ks3.services.AuthResult;
-import com.ksyun.ks3.services.Ks3AuthHandler;
 import com.ksyun.ks3.util.ByteUtil;
 import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.DateUtil;
@@ -70,7 +66,9 @@ public abstract class Ks3HttpRequest implements Serializable {
 	static {
 		StringBuilder pattern = new StringBuilder();
 
-		pattern.append(Pattern.quote("+")).append("|").append(Pattern.quote("*")).append("|").append(Pattern.quote("%7E")).append("|");
+		pattern.append(Pattern.quote("+")).append("|")
+				.append(Pattern.quote("*")).append("|")
+				.append(Pattern.quote("%7E")).append("|");
 
 		ENCODED_CHARACTERS_PATTERN = Pattern.compile(pattern.toString());
 	}
@@ -275,7 +273,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 	/**
 	 * Important, Should call it when completed a request
 	 */
-	public void completeRequset(AsyncHttpResponseHandler handler) throws Ks3ClientException {
+	public void completeRequset(AsyncHttpResponseHandler handler)
+			throws Ks3ClientException {
 
 		this.validateParams();
 		setupRequestDefault();
@@ -284,12 +283,13 @@ public abstract class Ks3HttpRequest implements Serializable {
 			this.progressListener = (RequestProgressListener) handler;
 		}
 		this.asyncHttpRequestParam = finishHttpRequest();
-		if (authListener != null  ) {
-			if (authResult != null && authResult.validateAuth() && authResult.validateDate()) {
+		if (authListener != null) {
+			if (authResult != null && authResult.validateAuth()
+					&& authResult.validateDate()) {
 				AuthEvent event = new AuthEvent();
 				event.setCode(AuthEventCode.Success);
-				event.setContent("auth :" + authResult.getAuthStr() + ",date :" + authResult.getDateStr());
-				Log.d(Constants.LOG_TAG, "make requset success,"+event.getContent());
+				event.setContent("auth :" + authResult.getAuthStr() + ",date :"
+						+ authResult.getDateStr());
 			} else {
 				AuthEvent event = new AuthEvent();
 				event.setCode(AuthEventCode.Failure);
@@ -299,17 +299,17 @@ public abstract class Ks3HttpRequest implements Serializable {
 				else if (!authResult.validateAuth())
 					failReason = "retrieve auth str is null";
 				else if (!authResult.validateDate()) {
-					failReason = "retrieve auth date is not correct , date :" + authResult.getDateStr();
+					failReason = "retrieve auth date is not correct , date :"
+							+ authResult.getDateStr();
 				}
 				event.setContent("failure reason :" + failReason);
-				Log.e(Constants.LOG_TAG, "make requset failed, "+event.getContent());
+				Log.e(Constants.LOG_TAG,
+						"AppServer Response failed, " + event.getContent());
 			}
 		}
-		Log.d(Constants.LOG_TAG, "make requset complete");
 	}
 
 	private void setupRequestDefault() {
-
 		url = getEndpoint().toString();
 		if (url.startsWith("http://") || url.startsWith("https://"))
 			url = url.replace("http://", "").replace("https://", "");
@@ -318,7 +318,6 @@ public abstract class Ks3HttpRequest implements Serializable {
 		this.addHeader(HttpHeaders.UserAgent, Constants.KS3_SDK_USER_AGENT);
 		this.setContentType("text/plain");
 		this.setDate(DateUtil.GetUTCTime());
-
 	}
 
 	@SuppressWarnings("deprecation")
@@ -331,7 +330,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 						.getRequestBody()));
 		}
 		String encodedParams = encodeParams();
-		String encodedObjectKey = (StringUtils.isBlank(this.objectkey)) ? "" : URLEncoder.encode(this.objectkey);
+		String encodedObjectKey = (StringUtils.isBlank(this.objectkey)) ? ""
+				: URLEncoder.encode(this.objectkey);
 		url = new StringBuffer("http://").append(url).append("/")
 				.append(encodedObjectKey).toString();
 		url = urlEncode(url);
@@ -344,17 +344,20 @@ public abstract class Ks3HttpRequest implements Serializable {
 				try {
 					setEntity(new StringEntity(encodedParams));
 				} catch (UnsupportedEncodingException e) {
-					throw new Ks3ClientException("Unable to create HTTP entity:" + e, e);
+					throw new Ks3ClientException(
+							"Unable to create HTTP entity:" + e, e);
 				}
 			} else {
-				String length = this.getHeader().get(HttpHeaders.ContentLength.toString());
+				String length = this.getHeader().get(
+						HttpHeaders.ContentLength.toString());
 				HttpEntity entity = new RepeatableInputStreamRequestEntity(
 						requestBody, length);
 				try {
 					entity = new BufferedHttpEntity(entity);
 				} catch (IOException e) {
 					e.printStackTrace();
-					throw new Ks3ClientException("init http request error(" + e + ")", e);
+					throw new Ks3ClientException("init http request error(" + e
+							+ ")", e);
 				}
 				// Set entity
 				setEntity(entity);
@@ -363,10 +366,13 @@ public abstract class Ks3HttpRequest implements Serializable {
 		} else if (this.getHttpMethod() == HttpMethod.PUT) {
 			if (requestBody != null) {
 				Map<String, String> headrs = this.getHeader();
-				String length = headrs.get(HttpHeaders.ContentLength.toString());
+				String length = headrs
+						.get(HttpHeaders.ContentLength.toString());
 				if (length == null)
-					throw new Ks3ClientException("content-length can not be null when put request");
-				RepeatableInputStreamRequestEntity entity = new RepeatableInputStreamRequestEntity(requestBody, length);
+					throw new Ks3ClientException(
+							"content-length can not be null when put request");
+				RepeatableInputStreamRequestEntity entity = new RepeatableInputStreamRequestEntity(
+						requestBody, length);
 				entity.setProgressLisener(this.progressListener);
 				setEntity(entity);
 			}
@@ -375,7 +381,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 		} else if (this.getHttpMethod() == HttpMethod.HEAD) {
 
 		} else {
-			throw new Ks3ClientException("Unknow http method : " + this.getHttpMethod());
+			throw new Ks3ClientException("Unknow http method : "
+					+ this.getHttpMethod());
 		}
 
 		if (!StringUtils.isBlank(header.get(HttpHeaders.ContentLength
@@ -383,25 +390,28 @@ public abstract class Ks3HttpRequest implements Serializable {
 			header.remove(HttpHeaders.ContentLength.toString());
 		}
 		if (authListener != null) {
-
-			authResult = authListener.onCalculateAuth(this
-					.getHttpMethod().toString(), this.getContentType(), this
-					.getDate(), this.getContentMD5(), AuthUtils
-					.CanonicalizedKSSResource(this), AuthUtils
-					.CanonicalizedKSSHeaders(this));
+			authResult = authListener.onCalculateAuth(this.getHttpMethod()
+					.toString(), this.getContentType(), this.getDate(), this
+					.getContentMD5(), AuthUtils.CanonicalizedKSSResource(this),
+					AuthUtils.CanonicalizedKSSHeaders(this));
 			if (authResult != null) {
-				this.addHeader(HttpHeaders.Authorization.toString(), authResult.getAuthStr().trim());
+				this.addHeader(HttpHeaders.Authorization.toString(), authResult
+						.getAuthStr().trim());
 				if (!StringUtils.isBlank(authResult.getDateStr())) {
 					this.setDate(authResult.getDateStr());
 				}
-
+				Log.i(Constants.LOG_TAG, "AppServer response token is = "
+						+ authResult.getAuthStr().trim() + ",Date is ="
+						+ authResult.getDateStr());
 			}
 
 		} else {
-			this.addHeader(HttpHeaders.Authorization.toString(), new DefaultSigner().calculate(authorization, this).trim());
+			this.addHeader(HttpHeaders.Authorization.toString(),
+					new DefaultSigner().calculate(authorization, this).trim());
 		}
 		if (entity != null) {
-			return new AsyncHttpRequsetParam(url, getContentType(), header, params, entity);
+			return new AsyncHttpRequsetParam(url, getContentType(), header,
+					params, entity);
 		} else {
 			return new AsyncHttpRequsetParam(url, header, params);
 		}
@@ -428,7 +438,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 		List<String> list = new ArrayList<String>();
 		for (Entry<String, String> entry : arrayList) {
 			String value = null;
-			String key = entry.getKey().replace(String.valueOf((char) 8203), "");
+			String key = entry.getKey()
+					.replace(String.valueOf((char) 8203), "");
 			if (!StringUtils.isBlank(entry.getValue()))
 				value = URLEncoder.encode(entry.getValue());
 			if (RequestUtils.subResource.contains(entry.getKey())) {
@@ -469,7 +480,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 	public void setRequestHandler(RequestHandle handler) {
 
 		if (this.handler != null) {
-			Log.e(Constants.LOG_TAG, "method : setRequestHandler , is an internal method, and the handler is already set up , ingnore ! ");
+			Log.e(Constants.LOG_TAG,
+					"method : setRequestHandler , is an internal method, and the handler is already set up , ingnore ! ");
 			return;
 		}
 
@@ -481,7 +493,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 		if (this.handler != null) {
 			return this.handler.cancel(true);
 		} else {
-			Log.e(Constants.LOG_TAG, "the request is on RUNNING status , or the request is on sync mode , igonre abort request ! ");
+			Log.e(Constants.LOG_TAG,
+					"the request is on RUNNING status , or the request is on sync mode , igonre abort request ! ");
 			return false;
 		}
 	}

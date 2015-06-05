@@ -41,7 +41,7 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 	private String redirectLocation;
 	private String callBackUrl;
 	private String callBackBody;
-	private Map<String,String> callBackHeaders;
+	private Map<String, String> callBackHeaders;
 
 	public PutObjectRequest(String bucketname, String key, File file) {
 		this.setBucketname(bucketname);
@@ -49,18 +49,19 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 		this.setFile(file);
 	}
 
-	public PutObjectRequest(String bucketname, String key,File file, ObjectMetadata metadata) {
-		this(bucketname,key,file);
-		this.setObjectMeta(metadata == null ? this.objectMeta : metadata);	
+	public PutObjectRequest(String bucketname, String key, File file,
+			ObjectMetadata metadata) {
+		this(bucketname, key, file);
+		this.setObjectMeta(metadata == null ? this.objectMeta : metadata);
 	}
-	
-	public void setCallBack(String callBackUrl, String callBackBody,Map<String,String> callBackHeaders){
+
+	public void setCallBack(String callBackUrl, String callBackBody,
+			Map<String, String> callBackHeaders) {
 		this.callBackUrl = callBackUrl;
 		this.callBackBody = callBackBody;
 		this.callBackHeaders = callBackHeaders;
 	}
-	
-	
+
 	@Override
 	protected void setupRequest() throws Ks3ClientException {
 		this.setContentType("binary/octet-stream");
@@ -70,7 +71,6 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 			e.printStackTrace();
 			throw new Ks3ClientException(e);
 		}
-		objectMeta.setContentType(Mimetypes.getInstance().getMimetype(file));
 		objectMeta.setContentLength(String.valueOf(file.length()));
 		this.addHeader(HttpHeaders.ContentLength, String.valueOf(file.length()));
 		try {
@@ -84,31 +84,39 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 			throw new Ks3ClientException(
 					"calculate file md5 error (" + e + ")", e);
 		}
-		if(!StringUtils.isBlank(this.callBackUrl) && !StringUtils.isBlank(this.callBackBody)){
+		if (!StringUtils.isBlank(this.callBackUrl)
+				&& !StringUtils.isBlank(this.callBackBody)) {
 			try {
 				this.addHeader(HttpHeaders.XKssCallBackUrl, this.callBackUrl);
-				this.addHeader(HttpHeaders.XKssCallBackBody, URLEncoder.encode(this.callBackBody, "UTF-8"));
+				this.addHeader(HttpHeaders.XKssCallBackBody,
+						URLEncoder.encode(this.callBackBody, "UTF-8"));
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 				throw new Ks3ClientException(e);
 			}
-			if(this.callBackHeaders!= null && this.callBackHeaders.size() > 0){
-				for(Map.Entry<String, String> entry: this.callBackHeaders.entrySet()){
+			if (this.callBackHeaders != null && this.callBackHeaders.size() > 0) {
+				for (Map.Entry<String, String> entry : this.callBackHeaders
+						.entrySet()) {
 					String key = entry.getKey();
 					String val = entry.getValue();
-					if(!StringUtils.isBlank(key) && key.startsWith(Constants.CALL_BACK_CUSTOM_PREFIX) && !StringUtils.isBlank(val)){
+					if (!StringUtils.isBlank(key)
+							&& key.startsWith(Constants.CALL_BACK_CUSTOM_PREFIX)
+							&& !StringUtils.isBlank(val)) {
 						this.addHeader(key, val);
-					}else{
-						Log.e(Constants.LOG_TAG,"the header:"+key +"-"+val + " is not correct ,this head will be ignored");
+					} else {
+						Log.e(Constants.LOG_TAG, "the header:" + key + "-"
+								+ val
+								+ " is not correct ,this head will be ignored");
 					}
 				}
-			}else{
-				Log.d(Constants.LOG_TAG, "the callbackheaders is null");
+			} else {
+				// Log.i(Constants.LOG_TAG, "the callbackheaders is null");
 			}
-		}else{
-			Log.d(Constants.LOG_TAG, "the callbacurl or callbackbody is null , ignore set the callback");
+		} else {
+			// Log.i(Constants.LOG_TAG,
+			// "the callbacurl or callbackbody is null , ignore set the callback");
 		}
-		
+
 		for (Entry<Meta, String> entry : this.objectMeta.getMetadata()
 				.entrySet()) {
 			if (!entry.getKey().equals(Meta.ContentLength.toString())) {
@@ -240,7 +248,7 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 	public void setCallBackBody(String callBackBody) {
 		this.callBackBody = callBackBody;
 	}
-	
+
 	public Map<String, String> getCallBackHeaders() {
 		return callBackHeaders;
 	}
@@ -248,7 +256,7 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 	public void setCallBackHeaders(Map<String, String> callBackHeaders) {
 		this.callBackHeaders = callBackHeaders;
 	}
-	
+
 	public String getMd5() {
 		return Base64
 				.encodeToString(

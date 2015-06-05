@@ -64,7 +64,7 @@ public class UploadPartRequest extends Ks3HttpRequest {
 					new InputSubStream(
 							new RepeatableFileInputStream(this.file),
 							this.fileOffset, contentLength, true));
-			Log.d(Constants.LOG_TAG, "bucketName :" + this.getBucketname()
+			Log.i(Constants.LOG_TAG, "UploadPart Request==> bucketName :" + this.getBucketname()
 					+ ",objectkey :" + this.getObjectkey() + ",partNumber :"
 					+ this.partNumber + ",partSzie :" + partSize
 					+ ",conentLength:" + this.contentLength);
@@ -88,7 +88,7 @@ public class UploadPartRequest extends Ks3HttpRequest {
 	protected void validateParams() throws Ks3ClientException {
 		if (ValidateUtil.validateBucketName(this.getBucketname()) == null)
 			throw new Ks3ClientException("bucket name is not correct");
-		
+
 		if (StringUtils.isBlank(this.getObjectkey())) {
 			throw new Ks3ClientException("object key can not be null");
 		}

@@ -150,6 +150,4 @@ public class SafetyIpClient {
 		return result;
 	}
 
-	// Request IpModel
-
 }

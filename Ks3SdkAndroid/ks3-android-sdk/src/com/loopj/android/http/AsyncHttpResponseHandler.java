@@ -18,7 +18,6 @@ import com.ksyun.ks3.model.LogRecord;
 
 public abstract class AsyncHttpResponseHandler implements
 		ResponseHandlerInterface {
-	private static final String LOG_TAG = "AsyncHttpResponseHandler";
 	protected static final int SUCCESS_MESSAGE = 0;
 	protected static final int FAILURE_MESSAGE = 1;
 	protected static final int START_MESSAGE = 2;

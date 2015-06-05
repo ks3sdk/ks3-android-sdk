@@ -18,6 +18,7 @@ public abstract class CompleteMultipartUploadResponseHandler extends
 	
 	@Override
 	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
+		Log.i(Constants.LOG_TAG, "CompleteMultipartUpload Request Success");
 		LogUtil.setSuccessLog(statesCode, response,responceHeaders,record);
 		LogClient.getInstance().insertAndSendLog(record);
 		this.onSuccess(statesCode, responceHeaders, new CompleteMultipartUploadResult());
@@ -26,7 +27,7 @@ public abstract class CompleteMultipartUploadResponseHandler extends
 	@Override
 	public final void onFailure(int statesCode, Header[] responceHeaders,byte[] response, Throwable throwable) {
 		Ks3Error error = new Ks3Error(statesCode, response, throwable);
-		Log.i(Constants.LOG_TAG, "error code: "+error.getErrorCode()+",error message:"+error.getErrorMessage());
+		Log.e(Constants.LOG_TAG, "CompleteMultipartUpload Request Failed, Error Code: "+error.getErrorCode()+",Error Message:"+error.getErrorMessage());
 		LogUtil.setFailureLog(statesCode, response, throwable, error,record);
 		LogClient.getInstance().insertAndSendLog(record);
 		this.onFailure(statesCode, error,responceHeaders, response==null?"":new String(response), throwable);

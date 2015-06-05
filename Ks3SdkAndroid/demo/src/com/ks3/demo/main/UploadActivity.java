@@ -461,7 +461,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 			@Override
 			public void onTaskSuccess(int statesCode, Header[] responceHeaders) {
-				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "success,header = "+responceHeaders.toString());
+//				Log.i(com.ksyun.ks3.util.Constants.LOG_TAG, "success,header = "+responceHeaders.toString());
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
 				for (UploadFile file : uploadFiles) {

@@ -1,14 +1,9 @@
 package com.loopj.android.http;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.net.UnknownHostException;
-import java.security.spec.EncodedKeySpec;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpRequestRetryHandler;
@@ -18,16 +13,12 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.protocol.HttpContext;
-
 import android.util.Log;
-
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.services.SafetyIpClient;
-import com.ksyun.ks3.services.request.ListObjectsRequest;
 import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.PhoneInfoUtils;
-import com.ksyun.ks3.util.StringUtils;
 
 public class AsyncHttpRequest implements Runnable {
 
@@ -97,19 +88,19 @@ public class AsyncHttpRequest implements Runnable {
 			}
 		} finally {
 			// modified , fixed steam close problem
-//			if (this.request != null
-//					&& this.request instanceof HttpEntityEnclosingRequestBase) {
-//				try {
-//					HttpEntity entity = ((HttpEntityEnclosingRequestBase) this.request)
-//							.getEntity();
-//					if (entity != null && entity.isStreaming())
-//						entity.consumeContent();
-//				} catch (IOException e) {
-//					Log.e(Constants.LOG_TAG,
-//							"consume stream entity failed , cause exception :"
-//									+ e);
-//				}
-//			}
+			if (this.request != null
+					&& this.request instanceof HttpEntityEnclosingRequestBase) {
+				try {
+					HttpEntity entity = ((HttpEntityEnclosingRequestBase) this.request)
+							.getEntity();
+					if (entity != null && entity.isStreaming())
+						entity.consumeContent();
+				} catch (IOException e) {
+					Log.e(Constants.LOG_TAG,
+							"consume stream entity failed , cause exception :"
+									+ e);
+				}
+			}
 		}
 
 		if (isCancelled()) {
@@ -211,7 +202,7 @@ public class AsyncHttpRequest implements Runnable {
 						// String vhostUrl =
 						// SafetyIpClient.PathToVhost(originUrl,
 						// "192.168.1.1", true);
-						 Log.d(Constants.LOG_TAG, ipUrl);
+						 Log.i(Constants.LOG_TAG, ipUrl);
 						cause = e;
 						// cause = new
 						// IOException("UnknownHostException exception: " +
@@ -227,14 +218,14 @@ public class AsyncHttpRequest implements Runnable {
 								.getPort(), pathStr, base.getURI()
 								.getQuery(), base.getURI().getFragment()));
 						// set resend request
-						Log.d(Constants.LOG_TAG, "dns failed, changed url = "
+						Log.i(Constants.LOG_TAG, "dns failed, changed url = "
 								+ base.getURI().toString() + ", host = "
 								+ "kss.ksyun.com");
 						this.context.setAttribute("http.request", base);
 						retry = retryHandler.retryRequest(cause,
 								++this.executionCount, this.context);
 					} else {
-						Log.d(Constants.LOG_TAG, "ip list is null");
+						Log.i(Constants.LOG_TAG, "ip list is null");
 						retry = false;
 						return;
 					}

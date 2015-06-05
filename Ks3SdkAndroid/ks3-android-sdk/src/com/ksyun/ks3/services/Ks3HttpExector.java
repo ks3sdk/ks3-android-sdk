@@ -53,7 +53,6 @@ public class Ks3HttpExector {
 					resultHandler.onFailure(0, null, null, e);
 					return;
 				}
-
 				doRequset(request, context, resultHandler, record);
 			}
 		}
@@ -85,8 +84,7 @@ public class Ks3HttpExector {
 		RequestHandle handler = null;
 		PhoneInfo info = PhoneInfoUtils.getPhoneInfo(context);
 		info.makeBasicRecord(record);
-		Log.i(Constants.LOG_TAG, "requset url => " + request.getUrl()
-				+ "\nmethod => " + request.getClass().getName());
+
 		switch (request.getHttpMethod()) {
 		case GET:
 			handler = client.get(context, request.getAsyncHttpRequestParam()
@@ -135,16 +133,22 @@ public class Ks3HttpExector {
 		request.getAsyncHttpRequestParam().getHeader();
 		request.getAsyncHttpRequestParam().getParams();
 		StringBuffer sb = new StringBuffer();
-		sb.append("**url** " + request.getAsyncHttpRequestParam().getUrl())
+		String className = request.getClass().getName();
+		sb.append(
+				"Method ==> "
+						+ className.substring(className.lastIndexOf(".") + 1))
 				.append("\n");
-		sb.append("**heads**").append("\n");
+		sb.append("Requset Url ==> " + request.getUrl()).append("\n");
+		sb.append("Heads Begin ==> ").append("\n");
 		for (int i = 0; i < request.getAsyncHttpRequestParam().getHeader().length; i++) {
-			sb.append(
-					request.getAsyncHttpRequestParam().getHeader()[i].getName())
+			sb.append("    ")
+					.append(request.getAsyncHttpRequestParam().getHeader()[i]
+							.getName())
 					.append("=>")
 					.append(request.getAsyncHttpRequestParam().getHeader()[i]
 							.getValue()).append("\n");
 		}
+		sb.append("Heads End ==> ").append("\n");
 		Log.i(Constants.LOG_TAG, sb.toString());
 	}
 

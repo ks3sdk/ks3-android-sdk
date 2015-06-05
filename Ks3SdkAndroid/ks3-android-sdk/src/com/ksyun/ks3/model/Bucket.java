@@ -6,7 +6,6 @@ public class Bucket {
 	private String name = null;
 	private Owner owner = null;
 	private Date creationDate = null;
-	private static final long serialVersionUID = -8646831898339939580L;
 
 	public Bucket() {
 	}
