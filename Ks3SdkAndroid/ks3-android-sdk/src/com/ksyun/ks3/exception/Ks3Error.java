@@ -11,6 +11,7 @@ import com.ksyun.ks3.util.Constants;
 import android.util.Log;
 
 public class Ks3Error {
+	public static final int ERROR_CODE_CLIENT_ERROR = 100;
 	public static final int ERROR_CODE_UNKNOWN_ERROR = -1;
 	public static final int ERROR_CODE_BAD_DIGEST = 0;
 	public static final int ERROR_CODE_INVALID_ACL_STR = 1;
@@ -55,16 +56,20 @@ public class Ks3Error {
 	private Ks3ServerError ks3ServerError;
 
 	public Ks3Error(int statesCode, byte[] response, Throwable throwable) {
-		if (response!=null) {
-			Log.e(Constants.LOG_TAG, new String(response));
+		if (response != null) {
+			Log.e(Constants.LOG_TAG, "received responce = \n"
+					+ new String(response));
 		} else {
-			Log.e(Constants.LOG_TAG, "response string is null");
+			Log.e(Constants.LOG_TAG, "received response is null");
 		}
 		if (parseServerError(response)) {
+			Log.e(Constants.LOG_TAG, "received server response error");
 			this.errorCode = judgeErrorCode(statesCode, throwable);
 			this.errorMessage = ks3ServerError.getServerErrorMessage();
 		} else {
-			Log.e(Constants.LOG_TAG, "Parse Ks3Error Failed");
+			Log.e(Constants.LOG_TAG, "received client error");
+			this.errorCode = Ks3Error.ERROR_CODE_CLIENT_ERROR;
+			this.errorMessage = throwable.toString();
 		}
 	}
 
@@ -72,9 +77,6 @@ public class Ks3Error {
 		String serverErrorCode = ks3ServerError.getServerErrorCode();
 		if (serverErrorCode != null) {
 			switch (statesCode) {
-			case 0:
-				
-				break;
 			case 400:
 				if (serverErrorCode.equals("BadDigest")) {
 					return Ks3Error.ERROR_CODE_BAD_DIGEST;

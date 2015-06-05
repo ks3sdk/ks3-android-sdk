@@ -274,11 +274,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 
 	/**
 	 * Important, Should call it when completed a request
-	 * 
-	 * @param ks3AuthHandler
 	 */
-	public void completeRequset(Ks3AuthHandler ks3AuthHandler,
-			AsyncHttpResponseHandler handler) throws Ks3ClientException {
+	public void completeRequset(AsyncHttpResponseHandler handler) throws Ks3ClientException {
 
 		this.validateParams();
 		setupRequestDefault();
@@ -286,14 +283,13 @@ public abstract class Ks3HttpRequest implements Serializable {
 		if (handler instanceof RequestProgressListener) {
 			this.progressListener = (RequestProgressListener) handler;
 		}
-		this.asyncHttpRequestParam = finishHttpRequest(ks3AuthHandler);
-		if (authListener != null && ks3AuthHandler.isNeedCalculateAuth) {
+		this.asyncHttpRequestParam = finishHttpRequest();
+		if (authListener != null  ) {
 			if (authResult != null && authResult.validateAuth() && authResult.validateDate()) {
 				AuthEvent event = new AuthEvent();
 				event.setCode(AuthEventCode.Success);
 				event.setContent("auth :" + authResult.getAuthStr() + ",date :" + authResult.getDateStr());
-				Log.d(Constants.LOG_TAG, "make requset complete");
-				ks3AuthHandler.onSuccess(event);
+				Log.d(Constants.LOG_TAG, "make requset success,"+event.getContent());
 			} else {
 				AuthEvent event = new AuthEvent();
 				event.setCode(AuthEventCode.Failure);
@@ -305,10 +301,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 				else if (!authResult.validateDate()) {
 					failReason = "retrieve auth date is not correct , date :" + authResult.getDateStr();
 				}
-
 				event.setContent("failure reason :" + failReason);
-				Log.e(Constants.LOG_TAG, "make requset failed");
-				ks3AuthHandler.onFailure(event);
+				Log.e(Constants.LOG_TAG, "make requset failed, "+event.getContent());
 			}
 		}
 		Log.d(Constants.LOG_TAG, "make requset complete");
@@ -324,11 +318,11 @@ public abstract class Ks3HttpRequest implements Serializable {
 		this.addHeader(HttpHeaders.UserAgent, Constants.KS3_SDK_USER_AGENT);
 		this.setContentType("text/plain");
 		this.setDate(DateUtil.GetUTCTime());
+
 	}
 
 	@SuppressWarnings("deprecation")
-	private AsyncHttpRequsetParam finishHttpRequest(
-			Ks3AuthHandler ks3AuthHandler) throws Ks3ClientException {
+	private AsyncHttpRequsetParam finishHttpRequest() throws Ks3ClientException {
 
 		// Prepare md5 if need
 		if (this instanceof MD5CalculateAble && this.getRequestBody() != null) {

@@ -1,7 +1,6 @@
 package com.ksyun.ks3.util;
 
 public class Constants {
-
 	/* Global log tag */
 	public final static String KS3_SDK_USER_AGENT = "ks3-kss-android-sdk";
 	public final static String LOG_TAG = "ks3_android_sdk";
@@ -28,18 +27,19 @@ public class Constants {
 	public static final String ClientConfig_PROXY_WORKSTATION = null;
 	public static final String ClientConfig_IS_PREEMPTIVE_BASIC_PROXY_AUTH = "false";
 	public static final String ClientConfig_END_POINT = "kss.ksyun.com";
-//	public static final String ClientConfig_END_POINT = "mofsa.czxcxzc.com";
-
+	// for unknowing host test
+	// public static final String ClientConfig_END_POINT = "mofsa.czxcxzc.com";
+	public static final String Client_SATEFY_IP_URL_NORMAL = "http://120.131.2.241/kssiplist";
+	public static final String Client_SATEFY_IP_URL_UNNORMAL = "http://123.59.35.94/kssiplist";
 	public static final String ClientConfig_CLIENT_SIGNER = "com.ksyun.ks3.signer.DefaultSigner";
 	// uploadPart
 	public static final int minPartNumber = 1;
 	public static final int maxPartNumber = 10000;
-	public static final int minPartSize = 0 ;
+	public static final int minPartSize = 0;
 	public static final int maxPartSize = 5 * 1024 * 1024 * 1024;
 	public static final int EXCEPTION = 0;
-	
-	// call back 
+	// call back
 	public static final String CALL_BACK_CUSTOM_PREFIX = "kss-";
-	
-	
+	public static final String LOG_SERVER_URL = "http://mlog.ksyun.com";
+
 }

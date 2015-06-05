@@ -32,14 +32,13 @@ public class Ks3ClientConfiguration {
 	public static Ks3ClientConfiguration getDefaultConfiguration() {
 		if (instantce == null) {
 			instantce = new Ks3ClientConfiguration();
-			instantce.setConnectionTimeout(20000);
-			instantce.setSocketTimeout(50000);
+			instantce.setConnectionTimeout(60000);
+			instantce.setSocketTimeout(60000);
 			instantce.setMaxConnections(10);
 			instantce.setProxyHost(null);
 			instantce.setProxyUsername(null);
 			instantce.setProxyPassword(null);
 			instantce.setProxyPort(-1);
-//			instantce.setMaxRetrytime(0);
 			instantce.setMaxRetrytime(1);
 			instantce.setRetryTimeOut(5000);
 			instantce.setUserAgent(DEFAULT_USER_AGENT);

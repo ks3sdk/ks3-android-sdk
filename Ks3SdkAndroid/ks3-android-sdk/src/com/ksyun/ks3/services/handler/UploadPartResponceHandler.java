@@ -1,11 +1,14 @@
 package com.ksyun.ks3.services.handler;
 
 import org.apache.http.Header;
-
+import android.util.Log;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.PartETag;
 import com.ksyun.ks3.model.transfer.RequestProgressListener;
+import com.ksyun.ks3.services.LogClient;
+import com.ksyun.ks3.services.LogUtil;
+import com.ksyun.ks3.util.Constants;
 
 public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler implements RequestProgressListener{
 
@@ -15,12 +18,17 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 
 	@Override
 	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
+		LogUtil.setSuccessLog(statesCode, response,responceHeaders,record);
+		LogClient.getInstance().insertAndSendLog(record);
 		onSuccess(statesCode, responceHeaders, parse(responceHeaders));
 	}
 
 	@Override
 	public final void onFailure(int statesCode, Header[] responceHeaders,byte[] response, Throwable throwable) {
 		Ks3Error error = new Ks3Error(statesCode, response, throwable);
+		Log.i(Constants.LOG_TAG, "error code: "+error.getErrorCode()+",error message:"+error.getErrorMessage());
+		LogUtil.setFailureLog(statesCode, response, throwable, error,record);
+		LogClient.getInstance().insertAndSendLog(record);
 		onFailure(statesCode,error, responceHeaders, response == null?"":new String(response), throwable);
 	}
 	
@@ -47,9 +55,5 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 		}
 		return result;
 	}	
-
-	
-	
-	
 	
 }

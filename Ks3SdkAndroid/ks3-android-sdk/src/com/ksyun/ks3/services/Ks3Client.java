@@ -2,9 +2,8 @@ package com.ksyun.ks3.services;
 
 import java.io.File;
 import java.util.List;
-
 import android.content.Context;
-
+import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.model.ObjectMetadata;
 import com.ksyun.ks3.model.PartETag;
 import com.ksyun.ks3.model.acl.Authorization;
@@ -259,8 +258,9 @@ public class Ks3Client implements Ks3 {
 	/* Invoke asnyc http client */
 	private Ks3HttpRequest invoke(Authorization auth, Ks3HttpRequest request,
 			AsyncHttpResponseHandler resultHandler,boolean isUseAsyncMode) {
+		final LogRecord record = new LogRecord();
 		client.invoke(auth, request, resultHandler, clientConfiguration,
-				context, endpoint, authListener, isUseAsyncMode);
+				context, endpoint, authListener, isUseAsyncMode,record);
 		return request;
 	}
 

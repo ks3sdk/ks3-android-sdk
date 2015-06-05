@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.http.Header;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -31,7 +29,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.PartETag;
@@ -360,7 +357,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 			}
 		});
 		bucketInpuDialog.show();
-		client.setConfiguration(configuration);
+//		client.setConfiguration(configuration);
 	}
 
 	private void switchDir(File dir) {
@@ -465,6 +462,16 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 			@Override
 			public void onTaskSuccess(int statesCode, Header[] responceHeaders) {
 				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "success,header = "+responceHeaders.toString());
+				List<UploadFile> uploadFiles = dataSource.get(currentDir
+						.getPath());
+				for (UploadFile file : uploadFiles) {
+					if (file.file.getPath().equalsIgnoreCase(
+							item.file.getPath())) {
+						file.status = UploadFile.STATUS_COMPLETE;
+						item.status = UploadFile.STATUS_COMPLETE;
+					}
+				}
+				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 			}
 
 			@Override
@@ -489,16 +496,16 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
-				for (UploadFile file : uploadFiles) {
-					if (file.file.getPath().equalsIgnoreCase(
-							item.file.getPath())) {
-						file.status = UploadFile.STATUS_FINISH;
-						file.progress = 100;
-						item.status = UploadFile.STATUS_FINISH;
-						file.progress = 100;
-					}
-				}
-				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
+//				for (UploadFile file : uploadFiles) {
+//					if (file.file.getPath().equalsIgnoreCase(
+//							item.file.getPath())) {
+//						file.status = UploadFile.STATUS_FINISH;
+//						file.progress = 100;
+//						item.status = UploadFile.STATUS_FINISH;
+//						file.progress = 100;
+//					}
+//				}
+//				mHandler.sendEmptyMessage(UPDATE_SINGLE_UPLOAD_STATUS);
 			}
 
 
@@ -512,8 +519,8 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 			public void onTaskFailure(int statesCode, Ks3Error error,
 					Header[] responceHeaders, String response,
 					Throwable paramThrowable) {
-				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
-						responceHeaders.toString());
+//				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+//						responceHeaders.toString());
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
 				for (UploadFile file : uploadFiles) {

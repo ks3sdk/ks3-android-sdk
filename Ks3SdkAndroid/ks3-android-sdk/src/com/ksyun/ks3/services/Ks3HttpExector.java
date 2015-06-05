@@ -1,22 +1,18 @@
 package com.ksyun.ks3.services;
 
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Enumeration;
-
-import org.apache.http.conn.util.InetAddressUtils;
-
+import java.util.concurrent.Executors;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.util.Log;
-
-import com.ksyun.ks3.auth.AuthEvent;
 import com.ksyun.ks3.exception.Ks3ClientException;
+import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.model.acl.Authorization;
 import com.ksyun.ks3.services.request.Ks3HttpRequest;
 import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.PhoneInfoUtils;
+import com.ksyun.ks3.util.PhoneInfoUtils.PhoneInfo;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestHandle;
@@ -27,7 +23,8 @@ public class Ks3HttpExector {
 	public void invoke(Authorization auth, final Ks3HttpRequest request,
 			final AsyncHttpResponseHandler resultHandler,
 			Ks3ClientConfiguration clientConfiguration, final Context context,
-			String endpoint, AuthListener authListener, Boolean isUseAsyncMode) {
+			String endpoint, AuthListener authListener, Boolean isUseAsyncMode,
+			final LogRecord record) {
 		/* Configure AsyncHttpClient */
 		if (clientConfiguration != null) {
 			client = AsyncHttpClientFactory.getInstance(clientConfiguration);
@@ -40,36 +37,24 @@ public class Ks3HttpExector {
 		} else {
 			request.setEndpoint(endpoint);
 		}
-
 		// 异步
 		if (isUseAsyncMode) {
 			// Token形式
 			if (authListener != null) {
 				request.setAuthListener(authListener);
-				setUpRequsetInBackground(request, new Ks3AuthHandler() {
-
-					@Override
-					public void onSuccess(AuthEvent event) {
-						doRequset(request, context, resultHandler);
-					}
-
-					@Override
-					public void onFailure(AuthEvent event) {
-						resultHandler.onFailure(0, null, null,
-								new Ks3ClientException(event.getContent()));
-					}
-				}, resultHandler);
+				setUpRequsetInBackground(request, resultHandler, record,
+						context);
 			}
 			// AK&SK形式
 			else {
 				try {
-					request.completeRequset(null, resultHandler);
+					request.completeRequset(resultHandler);
 				} catch (Ks3ClientException e) {
 					resultHandler.onFailure(0, null, null, e);
 					return;
 				}
 
-				doRequset(request, context, resultHandler);
+				doRequset(request, context, resultHandler, record);
 			}
 		}
 		// 同步
@@ -77,78 +62,58 @@ public class Ks3HttpExector {
 			// Token形式
 			if (authListener != null) {
 				request.setAuthListener(authListener);
-				Ks3AuthHandler ks3AuthHandler = new Ks3AuthHandler() {
-
-					@Override
-					public void onSuccess(AuthEvent event) {
-						doRequset(request, context, resultHandler);
-					}
-
-					@Override
-					public void onFailure(AuthEvent event) {
-						resultHandler.onFailure(0, null, null,
-								new Ks3ClientException(event.getContent()));
-					}
-				};
-				try {
-					request.completeRequset(ks3AuthHandler, resultHandler);
-				} catch (Ks3ClientException e) {
-					ks3AuthHandler.isNeedCalculateAuth = false;
-					resultHandler.onFailure(0, null, null, e);
-					return;
-				}
+				setUpRequsetInBackground(request, resultHandler, record,
+						context);
 				// AK&SK形式
 			} else {
 				try {
-					request.completeRequset(null, resultHandler);
+					request.completeRequset(resultHandler);
 				} catch (Ks3ClientException e) {
 					resultHandler.onFailure(0, null, null, e);
 					return;
 				}
-				doRequset(request, context, resultHandler);
+				doRequset(request, context, resultHandler, record);
 			}
 		}
 
 	}
 
 	protected void doRequset(Ks3HttpRequest request, Context context,
-			AsyncHttpResponseHandler resultHandler) {
+			AsyncHttpResponseHandler resultHandler, LogRecord record) {
 		// For test
 		LogShow(request);
-		ShowTargetIp(request.getEndpoint());
-		Log.d(Constants.LOG_TAG, getLocalHostIp());
 		RequestHandle handler = null;
-		Log.d(Constants.LOG_TAG, PhoneInfoUtils.getPhoneInfo(context));
-		Log.d(Constants.LOG_TAG, "requset url => " + request.getUrl()
+		PhoneInfo info = PhoneInfoUtils.getPhoneInfo(context);
+		info.makeBasicRecord(record);
+		Log.i(Constants.LOG_TAG, "requset url => " + request.getUrl()
 				+ "\nmethod => " + request.getClass().getName());
-
 		switch (request.getHttpMethod()) {
 		case GET:
 			handler = client.get(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					null, resultHandler);
+					null, resultHandler, record);
 			break;
 		case POST:
 			handler = client.post(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
 					request.getEntity(), request.getContentType(),
-					resultHandler);
+					resultHandler, record);
 			break;
 		case PUT:
 			handler = client.put(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
 					request.getEntity(), request.getContentType(),
-					resultHandler);
+					resultHandler, record);
 			break;
 		case DELETE:
 			handler = client.delete(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					resultHandler);
+					resultHandler, record);
 			break;
 		case HEAD:
 			handler = client.head(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					null, resultHandler);
+					null, resultHandler, record);
 			break;
 		default:
 			Log.e(Constants.LOG_TAG, "unsupport http method ! ");
@@ -156,75 +121,13 @@ public class Ks3HttpExector {
 		}
 		request.setRequestHandler(handler);
 	}
-	private void ShowTargetIp(final String url) {
-		new Thread(new Runnable() {
 
-			private InetAddress x;
-
-			@Override
-			public void run() {
-				try {
-						x = java.net.InetAddress.getByName(url);
-					String ip = x.getHostAddress();// 得到字符串形式的ip地址
-					Log.d(Constants.LOG_TAG, "target ip is =" + ip);
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-					Log.d(Constants.LOG_TAG, "error is " + e.getMessage());
-				}
-			}
-		}).start();
-	}
-	
-	 public String getLocalHostIp()
-	    {
-	        String ipaddress = "";
-	        try
-	        {
-	            Enumeration<NetworkInterface> en = NetworkInterface
-	                    .getNetworkInterfaces();
-	            // 遍历所用的网络接口
-	            while (en.hasMoreElements())
-	            {
-	                NetworkInterface nif = en.nextElement();// 得到每一个网络接口绑定的所有ip
-	                Enumeration<InetAddress> inet = nif.getInetAddresses();
-	                // 遍历每一个接口绑定的所有ip
-	                while (inet.hasMoreElements())
-	                {
-	                    InetAddress ip = inet.nextElement();
-	                    if (!ip.isLoopbackAddress()
-	                            && InetAddressUtils.isIPv4Address(ip
-	                                    .getHostAddress()))
-	                    {
-	                        return ipaddress = "本机的ip是" + "：" + ip.getHostAddress();
-	                    }
-	                }
-
-	            }
-	        }
-	        catch (SocketException e)
-	        {
-	            Log.e("feige", "获取本地ip地址失败");
-	            e.printStackTrace();
-	        }
-	        return ipaddress;
-
-	    }
-
-	 
 	private void setUpRequsetInBackground(final Ks3HttpRequest request,
-			final Ks3AuthHandler ks3AuthHandler,
-			final AsyncHttpResponseHandler resultHandler) {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					request.completeRequset(ks3AuthHandler, resultHandler);
-				} catch (Ks3ClientException e) {
-					ks3AuthHandler.isNeedCalculateAuth = false;
-					resultHandler.onFailure(0, null, null, e);
-				}
-			}
-		}).start();
+			final AsyncHttpResponseHandler resultHandler,
+			final LogRecord record, Context context) {
+		SetUpRequestAsyncTask task = new SetUpRequestAsyncTask(request,
+				resultHandler, record, context);
+		task.executeOnExecutor(Executors.newCachedThreadPool(), "");
 	}
 
 	private void LogShow(Ks3HttpRequest request) {
@@ -242,7 +145,7 @@ public class Ks3HttpExector {
 					.append(request.getAsyncHttpRequestParam().getHeader()[i]
 							.getValue()).append("\n");
 		}
-		Log.e(Constants.LOG_TAG, sb.toString());
+		Log.i(Constants.LOG_TAG, sb.toString());
 	}
 
 	public void cancel(Context context) {
@@ -251,6 +154,56 @@ public class Ks3HttpExector {
 
 	public void pause(Context context) {
 		client.cancelRequests(context, true);
+	}
+
+	public class SetUpRequestAsyncTask extends
+			AsyncTask<String, Integer, Boolean> {
+
+		private Ks3HttpRequest request;
+		private AsyncHttpResponseHandler resultHandler;
+		private LogRecord record;
+		private InetAddress x;
+		private Context context;
+		private Throwable throwable;
+
+		public SetUpRequestAsyncTask(Ks3HttpRequest request,
+				AsyncHttpResponseHandler resultHandler, LogRecord record,
+				Context context) {
+			this.request = request;
+			this.resultHandler = resultHandler;
+			this.record = record;
+			this.context = context;
+		}
+
+		@Override
+		protected Boolean doInBackground(String... params) {
+			boolean result = true;
+			try {
+				x = java.net.InetAddress.getByName(request.getEndpoint());
+				record.setTarget_ip(x.getHostAddress());
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+				Log.i(Constants.LOG_TAG,
+						"Get host address failed,reason:" + e.getMessage());
+			}
+			try {
+				request.completeRequset(resultHandler);
+			} catch (Ks3ClientException e) {
+				throwable.initCause(e);
+				result = false;
+			}
+			return result;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+			if (result) {
+				doRequset(request, context, resultHandler, record);
+			} else {
+				resultHandler.onFailure(0, null, null, throwable);
+			}
+		}
+
 	}
 
 }

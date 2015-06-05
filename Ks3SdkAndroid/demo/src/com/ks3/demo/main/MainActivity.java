@@ -43,7 +43,6 @@ import com.ksyun.ks3.model.Owner;
 import com.ksyun.ks3.model.acl.AccessControlPolicy;
 import com.ksyun.ks3.model.acl.CannedAccessControlList;
 import com.ksyun.ks3.model.acl.Grant;
-import com.ksyun.ks3.model.result.HeadObjectResult;
 import com.ksyun.ks3.model.result.ListPartsResult;
 import com.ksyun.ks3.services.AuthListener;
 import com.ksyun.ks3.services.Ks3Client;

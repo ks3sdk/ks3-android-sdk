@@ -1,10 +1,13 @@
 package com.loopj.android.http;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.security.spec.EncodedKeySpec;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -18,10 +21,13 @@ import org.apache.http.protocol.HttpContext;
 
 import android.util.Log;
 
+import com.ksyun.ks3.model.HttpHeaders;
+import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.services.SafetyIpClient;
 import com.ksyun.ks3.services.request.ListObjectsRequest;
 import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.PhoneInfoUtils;
+import com.ksyun.ks3.util.StringUtils;
 
 public class AsyncHttpRequest implements Runnable {
 
@@ -34,14 +40,17 @@ public class AsyncHttpRequest implements Runnable {
 	private boolean cancelIsNotified;
 	private boolean isFinished;
 	private boolean isRequestPreProcessed;
+	private LogRecord record = null;
 
 	public AsyncHttpRequest(AbstractHttpClient client, HttpContext context,
-			HttpUriRequest request, ResponseHandlerInterface responseHandler) {
+			HttpUriRequest request, ResponseHandlerInterface responseHandler,
+			LogRecord record) {
 		this.client = client;
 		this.context = context;
 		this.request = request;
 		this.responseHandler = responseHandler;
 		this.context.setAttribute("http.request", this.request);
+		this.record = record;
 	}
 
 	public void onPreProcessRequest(AsyncHttpRequest request) {
@@ -88,19 +97,19 @@ public class AsyncHttpRequest implements Runnable {
 			}
 		} finally {
 			// modified , fixed steam close problem
-			if (this.request != null
-					&& this.request instanceof HttpEntityEnclosingRequestBase) {
-				try {
-					HttpEntity entity = ((HttpEntityEnclosingRequestBase) this.request)
-							.getEntity();
-					if (entity != null && entity.isStreaming())
-						entity.consumeContent();
-				} catch (IOException e) {
-					Log.e(Constants.LOG_TAG,
-							"consume stream entity failed , cause exception :"
-									+ e);
-				}
-			}
+//			if (this.request != null
+//					&& this.request instanceof HttpEntityEnclosingRequestBase) {
+//				try {
+//					HttpEntity entity = ((HttpEntityEnclosingRequestBase) this.request)
+//							.getEntity();
+//					if (entity != null && entity.isStreaming())
+//						entity.consumeContent();
+//				} catch (IOException e) {
+//					Log.e(Constants.LOG_TAG,
+//							"consume stream entity failed , cause exception :"
+//									+ e);
+//				}
+//			}
 		}
 
 		if (isCancelled()) {
@@ -133,22 +142,26 @@ public class AsyncHttpRequest implements Runnable {
 		if (this.request.getURI().getScheme() == null) {
 			throw new MalformedURLException("No valid URI scheme was provided");
 		}
-
+		long send_before_time = System.currentTimeMillis();
+		if (record != null) {
+			record.setSend_before_time(send_before_time);
+		}
 		HttpResponse response = this.client.execute(this.request, this.context);
-
+		long send_first_data_time = System.currentTimeMillis();
+		if (record != null) {
+			record.setSend_first_data_time(send_first_data_time);
+			this.responseHandler.sendLogRecordMessage(record);
+		}
 		if ((isCancelled()) || (this.responseHandler == null)) {
 			return;
 		}
-
 		this.responseHandler.onPreProcessResponse(this.responseHandler,
 				response);
 
 		if (isCancelled()) {
 			return;
 		}
-
 		this.responseHandler.sendResponseMessage(response);
-
 		if (isCancelled()) {
 			return;
 		}
@@ -170,11 +183,8 @@ public class AsyncHttpRequest implements Runnable {
 					return;
 				} catch (UnknownHostException e) {
 					// For deal with DNS fail
+					Log.i(Constants.LOG_TAG, "DNS parsed failure");
 					String originUrl = this.request.getURI().toString();
-					// String originUrl =
-					// "http://192.168.1.1/eflakee/?delimiter=%2F";
-					// String originUrl =
-					// "http://mofsa.czxcxzc.com/eflakee/?delimiter=%2F";
 					int networkOperatorType = PhoneInfoUtils.getProvidersType();
 					String ipStr = null;
 					if (SafetyIpClient.ipModel != null) {
@@ -185,7 +195,7 @@ public class AsyncHttpRequest implements Runnable {
 							break;
 						case PhoneInfoUtils.TYPE_CHINA_UNICOM:
 							ipStr = SafetyIpClient.ipModel
-									.getCHINA_UNICOM_SERVER_IP();
+									.getCHINA_MOBILE_SERVER_IP();
 							break;
 						case PhoneInfoUtils.TYPE_CHINA_TELCOM:
 							ipStr = SafetyIpClient.ipModel
@@ -201,26 +211,30 @@ public class AsyncHttpRequest implements Runnable {
 						// String vhostUrl =
 						// SafetyIpClient.PathToVhost(originUrl,
 						// "192.168.1.1", true);
-						// Log.d(Constants.LOG_TAG, vhostUrl);
+						 Log.d(Constants.LOG_TAG, ipUrl);
 						cause = e;
 						// cause = new
 						// IOException("UnknownHostException exception: " +
 						// e.getMessage());
 						// modify request
 						HttpRequestBase base = (HttpRequestBase) this.request;
+						base.setHeader(HttpHeaders.Host.toString(),
+								"kss.ksyun.com");
+						String pathStr = SafetyIpClient.getRealPath(ipUrl);
+
 						base.setURI(URIUtils.createURI(base.getURI()
 								.getScheme(), ipUri.getHost(), base.getURI()
-								.getPort(), ipUri.getPath(), base
-								.getURI().getQuery(), base.getURI()
-								.getFragment()));
+								.getPort(), pathStr, base.getURI()
+								.getQuery(), base.getURI().getFragment()));
 						// set resend request
-						Log.d(Constants.LOG_TAG, "dns failed changed url = "
+						Log.d(Constants.LOG_TAG, "dns failed, changed url = "
 								+ base.getURI().toString() + ", host = "
-								+ base.getURI().getHost());
+								+ "kss.ksyun.com");
 						this.context.setAttribute("http.request", base);
 						retry = retryHandler.retryRequest(cause,
 								++this.executionCount, this.context);
 					} else {
+						Log.d(Constants.LOG_TAG, "ip list is null");
 						retry = false;
 						return;
 					}
@@ -267,7 +281,6 @@ public class AsyncHttpRequest implements Runnable {
 	}
 
 	public boolean isDone() {
-
 		return (isCancelled()) || (this.isFinished);
 	}
 

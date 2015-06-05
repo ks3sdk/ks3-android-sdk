@@ -51,7 +51,7 @@ public class BucketInpuDialog extends Dialog implements
 	private void setUpViews() {
 
 		bucketField = (EditText) findViewById(R.id.input);
-		bucketField.setText("acc");
+		bucketField.setText("eflakee");
 		okBtn = (Button) findViewById(R.id.ok);
 		cancelBtn = (Button) findViewById(R.id.cancel);
 		okBtn.setOnClickListener(this);

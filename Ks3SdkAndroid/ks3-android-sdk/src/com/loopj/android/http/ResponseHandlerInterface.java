@@ -6,6 +6,8 @@ import java.net.URI;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 
+import com.ksyun.ks3.model.LogRecord;
+
 public abstract interface ResponseHandlerInterface
 {
 
@@ -41,4 +43,6 @@ public abstract interface ResponseHandlerInterface
 	public abstract void onPreProcessResponse(ResponseHandlerInterface paramResponseHandlerInterface, HttpResponse paramHttpResponse);
 
 	public abstract void onPostProcessResponse(ResponseHandlerInterface paramResponseHandlerInterface, HttpResponse paramHttpResponse);
+
+	public abstract void sendLogRecordMessage(LogRecord record);
 }

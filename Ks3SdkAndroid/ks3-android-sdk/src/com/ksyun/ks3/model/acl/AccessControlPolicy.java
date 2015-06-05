@@ -1,8 +1,6 @@
 package com.ksyun.ks3.model.acl;
 
 import java.util.HashSet;
-import java.util.Set;
-
 import com.ksyun.ks3.model.Owner;
 
 

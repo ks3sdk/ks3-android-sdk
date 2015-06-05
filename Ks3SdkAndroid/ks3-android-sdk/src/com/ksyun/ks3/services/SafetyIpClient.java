@@ -1,12 +1,11 @@
 package com.ksyun.ks3.services;
 
 import org.apache.http.Header;
-
+import org.json.JSONException;
+import org.json.JSONObject;
 import android.util.Log;
-
 import com.ksyun.ks3.model.IpModel;
 import com.ksyun.ks3.util.Constants;
-import com.ksyun.ks3.util.PhoneInfoUtils;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
@@ -14,31 +13,64 @@ public class SafetyIpClient {
 	private static final String HTTP = "http://";
 	public static IpModel ipModel;
 	private static AsyncHttpClient client;
-	
-	public static void setUpSafetyModel(){
-		// Request Ip Interface
-		Log.d(Constants.LOG_TAG, "setUpSafetyModel");
-		client = AsyncHttpClientFactory.getInstance();
-		ipModel = new IpModel("192.168.1.1","192.168.2.1","192.168.3.1");
 
-//		client.get("http://www.baidu.com", new AsyncHttpResponseHandler() {
-//			
-//			@Override
-//			public void onSuccess(int paramInt, Header[] paramArrayOfHeader,
-//					byte[] paramArrayOfByte) {
-//				ipModel = new IpModel("192.168.1.1","192.168.2.1","192.168.3.1");
-//				Log.d(Constants.LOG_TAG, "ip get completed");
-//			}
-//			
-//			@Override
-//			public void onFailure(int paramInt, Header[] paramArrayOfHeader,
-//					byte[] paramArrayOfByte, Throwable paramThrowable) {
-//				Log.d(Constants.LOG_TAG, "ip get failed");
-//				ipModel = new IpModel("192.168.1.1","192.168.2.1","192.168.3.1");
-//			}
-//		});
+	public static void setUpSafetyModel() {
+		client = AsyncHttpClientFactory.getInstance(Ks3ClientConfiguration
+				.getDefaultConfiguration());
+		client.get(Constants.Client_SATEFY_IP_URL_NORMAL,
+				new AsyncHttpResponseHandler() {
+					@Override
+					public void onSuccess(int paramInt,
+							Header[] paramArrayOfHeader, byte[] paramArrayOfByte) {
+						String result = new String(paramArrayOfByte).trim();
+						Log.i(Constants.LOG_TAG, "get ip ok");
+						parse(result);
+					}
+
+					@Override
+					public void onFailure(int paramInt,
+							Header[] paramArrayOfHeader,
+							byte[] paramArrayOfByte, Throwable paramThrowable) {
+						Log.i(Constants.LOG_TAG, "get ip failure");
+						client.get(Constants.Client_SATEFY_IP_URL_UNNORMAL,
+								new AsyncHttpResponseHandler() {
+
+									@Override
+									public void onSuccess(int paramInt,
+											Header[] paramArrayOfHeader,
+											byte[] paramArrayOfByte) {
+										String result = new String(
+												paramArrayOfByte).trim();
+										Log.i(Constants.LOG_TAG, "retry ip ok");
+										parse(result);
+									}
+
+									@Override
+									public void onFailure(int paramInt,
+											Header[] paramArrayOfHeader,
+											byte[] paramArrayOfByte,
+											Throwable paramThrowable) {
+										Log.i(Constants.LOG_TAG,
+												"retry ip failure");
+									}
+								});
+					}
+				});
 	}
-	
+
+	private static void parse(String json_str) {
+		try {
+			JSONObject object = new JSONObject(json_str);
+			String ct_array = object.getString("ct");
+
+			ipModel = new IpModel(ct_array.substring(0, ct_array.indexOf(",")),
+					ct_array.substring(ct_array.indexOf(",")),
+					ct_array.substring(0, ct_array.indexOf(",")));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
 	// For URL transform
 	public static String VhostToPath(String vhostUrl, String ip, boolean isIp) {
 		String hostSrt = vhostUrl.replace(HTTP, "");
@@ -52,13 +84,12 @@ public class SafetyIpClient {
 		if (isIp) {
 			int replaceIndex = result.indexOf("/");
 			String removeHostStr = result.substring(replaceIndex);
-			String ipPathUrl = appendString("192.168.1.1", removeHostStr);
+			String ipPathUrl = appendString(ip, removeHostStr);
 			return appendString(HTTP, ipPathUrl);
 		} else {
 			return appendString(HTTP, result);
 		}
 	}
-	
 
 	public static String PathToVhost(String pathUrl, String ip, boolean isIp) {
 		String pathStr = pathUrl.replace(HTTP, "");
@@ -108,8 +139,17 @@ public class SafetyIpClient {
 		buffer.append(originStr.substring(index));
 		return buffer.toString();
 	}
-	
+
+	public static String getRealPath(String ipUrl) {
+		String ipUrlWithoutHttpStr = ipUrl.replace(HTTP, "");
+		String result = ipUrlWithoutHttpStr.trim().substring(
+				ipUrlWithoutHttpStr.indexOf("/"));
+		if (result.contains("?")) {
+			result = result.substring(0, result.indexOf("?"));
+		}
+		return result;
+	}
+
 	// Request IpModel
-	
 
 }

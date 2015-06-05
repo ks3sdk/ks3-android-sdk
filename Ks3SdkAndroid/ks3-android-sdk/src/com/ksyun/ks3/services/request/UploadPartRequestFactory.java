@@ -9,7 +9,6 @@ public class UploadPartRequestFactory {
 	private String uploadId;
 	private long optimalPartSize;
 	private File file;
-	private PutObjectRequest putObjectRequest;
 	public int partNumber = 1;
 	private long offset = 0L;
 	private long remainingBytes;

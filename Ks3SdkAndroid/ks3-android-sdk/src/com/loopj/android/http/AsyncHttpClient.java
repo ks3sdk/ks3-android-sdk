@@ -60,6 +60,8 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.SyncBasicHttpContext;
 
+import com.ksyun.ks3.model.LogRecord;
+
 import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
@@ -106,8 +108,8 @@ public class AsyncHttpClient {
 	public AsyncHttpClient(boolean fixNoHttpResponseException, int httpPort,
 			int httpsPort) {
 
-		this(getDefaultSchemeRegistry(fixNoHttpResponseException,
-				httpPort, httpsPort));
+		this(getDefaultSchemeRegistry(fixNoHttpResponseException, httpPort,
+				httpsPort));
 	}
 
 	private static SchemeRegistry getDefaultSchemeRegistry(
@@ -115,7 +117,7 @@ public class AsyncHttpClient {
 
 		if (fixNoHttpResponseException) {
 			Log.d("AsyncHttpClient",
-							"Beware! Using the fix is insecure, as it doesn't verify SSL certificates.");
+					"Beware! Using the fix is insecure, as it doesn't verify SSL certificates.");
 		}
 
 		if (httpPort < 1) {
@@ -131,8 +133,7 @@ public class AsyncHttpClient {
 		}
 		SSLSocketFactory sslSocketFactory;
 		if (fixNoHttpResponseException)
-			sslSocketFactory = MySSLSocketFactory
-					.getFixedSocketFactory();
+			sslSocketFactory = MySSLSocketFactory.getFixedSocketFactory();
 		else {
 			sslSocketFactory = SSLSocketFactory.getSocketFactory();
 		}
@@ -140,8 +141,8 @@ public class AsyncHttpClient {
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 		schemeRegistry.register(new Scheme("http", PlainSocketFactory
 				.getSocketFactory(), httpPort));
-		schemeRegistry.register(new Scheme("https", sslSocketFactory,
-				httpsPort));
+		schemeRegistry
+				.register(new Scheme("https", sslSocketFactory, httpsPort));
 
 		return schemeRegistry;
 	}
@@ -155,112 +156,92 @@ public class AsyncHttpClient {
 				new ConnPerRouteBean(this.maxConnections));
 		ConnManagerParams.setMaxTotalConnections(httpParams, 10);
 
-		HttpConnectionParams.setSoTimeout(httpParams,
-				this.responseTimeout);
+		HttpConnectionParams.setSoTimeout(httpParams, this.responseTimeout);
 		HttpConnectionParams.setConnectionTimeout(httpParams,
 				this.connectTimeout);
 		HttpConnectionParams.setTcpNoDelay(httpParams, true);
 		HttpConnectionParams.setSocketBufferSize(httpParams, 8192);
 
-		HttpProtocolParams
-				.setVersion(httpParams, HttpVersion.HTTP_1_1);
+		HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
 
 		ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(
 				httpParams, schemeRegistry);
 
 		this.threadPool = getDefaultThreadPool();
-		this.requestMap = Collections
-				.synchronizedMap(new WeakHashMap());
-		this.clientHeaderMap = new HashMap();
+		this.requestMap = Collections.synchronizedMap(new WeakHashMap<Context,List<RequestHandle>>());
+		this.clientHeaderMap = new HashMap<String, String>();
 
-		this.httpContext = new SyncBasicHttpContext(
-				new BasicHttpContext());
+		this.httpContext = new SyncBasicHttpContext(new BasicHttpContext());
 		this.httpClient = new DefaultHttpClient(cm, httpParams);
-		this.httpClient
-				.addRequestInterceptor(new HttpRequestInterceptor() {
+		this.httpClient.addRequestInterceptor(new HttpRequestInterceptor() {
 
-					@Override
-					public void process(HttpRequest request, HttpContext context) {
+			@Override
+			public void process(HttpRequest request, HttpContext context) {
 
-						if (!request.containsHeader("Accept-Encoding")) {
-							request.addHeader("Accept-Encoding",
-									"gzip");
-						}
-						for (String header : AsyncHttpClient.this.clientHeaderMap
-								.keySet()) {
-							if (request.containsHeader(header)) {
-								Header overwritten = request
-										.getFirstHeader(header);
+				if (!request.containsHeader("Accept-Encoding")) {
+					request.addHeader("Accept-Encoding", "gzip");
+				}
+				for (String header : AsyncHttpClient.this.clientHeaderMap
+						.keySet()) {
+					if (request.containsHeader(header)) {
+						Header overwritten = request.getFirstHeader(header);
 
-								request.removeHeader(overwritten);
-							}
-							request
-									.addHeader(
-											header,
-											AsyncHttpClient.this.clientHeaderMap
-													.get(header));
-						}
+						request.removeHeader(overwritten);
 					}
+					request.addHeader(header,
+							AsyncHttpClient.this.clientHeaderMap.get(header));
+				}
+			}
 
-				});
-		this.httpClient
-				.addResponseInterceptor(new HttpResponseInterceptor() {
+		});
+		this.httpClient.addResponseInterceptor(new HttpResponseInterceptor() {
 
-					@Override
-					public void process(HttpResponse response,
-							HttpContext context) {
+			@Override
+			public void process(HttpResponse response, HttpContext context) {
 
-						HttpEntity entity = response.getEntity();
-						if (entity == null) {
-							return;
+				HttpEntity entity = response.getEntity();
+				if (entity == null) {
+					return;
+				}
+				Header encoding = entity.getContentEncoding();
+				if (encoding != null)
+					for (HeaderElement element : encoding.getElements())
+						if (element.getName().equalsIgnoreCase("gzip")) {
+							response.setEntity(new AsyncHttpClient.InflatingEntity(
+									entity));
+							break;
 						}
-						Header encoding = entity.getContentEncoding();
-						if (encoding != null)
-							for (HeaderElement element : encoding
-									.getElements())
-								if (element.getName()
-										.equalsIgnoreCase("gzip")) {
-									response
-											.setEntity(new AsyncHttpClient.InflatingEntity(
-													entity));
-									break;
-								}
+			}
+
+		});
+		this.httpClient.addRequestInterceptor(new HttpRequestInterceptor() {
+
+			@Override
+			public void process(HttpRequest request, HttpContext context)
+					throws HttpException, IOException {
+
+				AuthState authState = (AuthState) context
+						.getAttribute("http.auth.target-scope");
+				CredentialsProvider credsProvider = (CredentialsProvider) context
+						.getAttribute("http.auth.credentials-provider");
+
+				HttpHost targetHost = (HttpHost) context
+						.getAttribute("http.target_host");
+
+				if (authState.getAuthScheme() == null) {
+					AuthScope authScope = new AuthScope(targetHost
+							.getHostName(), targetHost.getPort());
+					Credentials creds = credsProvider.getCredentials(authScope);
+					if (creds != null) {
+						authState.setAuthScheme(new BasicScheme());
+						authState.setCredentials(creds);
 					}
+				}
+			}
 
-				});
-		this.httpClient.addRequestInterceptor(
-				new HttpRequestInterceptor() {
+		}, 0);
 
-					@Override
-					public void process(HttpRequest request, HttpContext context)
-							throws HttpException, IOException {
-
-						AuthState authState = (AuthState) context
-								.getAttribute("http.auth.target-scope");
-						CredentialsProvider credsProvider = (CredentialsProvider) context
-								.getAttribute("http.auth.credentials-provider");
-
-						HttpHost targetHost = (HttpHost) context
-								.getAttribute("http.target_host");
-
-						if (authState.getAuthScheme() == null) {
-							AuthScope authScope = new AuthScope(
-									targetHost.getHostName(), targetHost
-											.getPort());
-							Credentials creds = credsProvider
-									.getCredentials(authScope);
-							if (creds != null) {
-								authState
-										.setAuthScheme(new BasicScheme());
-								authState.setCredentials(creds);
-							}
-						}
-					}
-
-				}, 0);
-
-		this.httpClient.setHttpRequestRetryHandler(new RetryHandler(1,
-				1500));
+		this.httpClient.setHttpRequestRetryHandler(new RetryHandler(1, 1500));
 	}
 
 	public static void allowRetryExceptionClass(Class<?> cls) {
@@ -287,8 +268,7 @@ public class AsyncHttpClient {
 
 	public void setCookieStore(CookieStore cookieStore) {
 
-		this.httpContext
-				.setAttribute("http.cookie-store", cookieStore);
+		this.httpContext.setAttribute("http.cookie-store", cookieStore);
 	}
 
 	public void setThreadPool(ExecutorService threadPool) {
@@ -322,14 +302,12 @@ public class AsyncHttpClient {
 	public void setEnableRedirects(boolean enableRedirects,
 			boolean enableRelativeRedirects) {
 
-		setEnableRedirects(enableRedirects, enableRelativeRedirects,
-				true);
+		setEnableRedirects(enableRedirects, enableRelativeRedirects, true);
 	}
 
 	public void setEnableRedirects(boolean enableRedirects) {
 
-		setEnableRedirects(enableRedirects, enableRedirects,
-				enableRedirects);
+		setEnableRedirects(enableRedirects, enableRedirects, enableRedirects);
 	}
 
 	public void setRedirectHandler(RedirectHandler customRedirectHandler) {
@@ -339,8 +317,7 @@ public class AsyncHttpClient {
 
 	public void setUserAgent(String userAgent) {
 
-		HttpProtocolParams.setUserAgent(this.httpClient.getParams(),
-				userAgent);
+		HttpProtocolParams.setUserAgent(this.httpClient.getParams(), userAgent);
 	}
 
 	public int getMaxConnections() {
@@ -394,8 +371,7 @@ public class AsyncHttpClient {
 
 		this.responseTimeout = (value < 1000 ? 10000 : value);
 		HttpParams httpParams = this.httpClient.getParams();
-		HttpConnectionParams.setSoTimeout(httpParams,
-				this.responseTimeout);
+		HttpConnectionParams.setSoTimeout(httpParams, this.responseTimeout);
 	}
 
 	public void setProxy(String hostname, int port) {
@@ -425,8 +401,8 @@ public class AsyncHttpClient {
 
 	public void setMaxRetriesAndTimeout(int retries, int timeout) {
 		// for ip retry, we just retry once here
-		this.httpClient.setHttpRequestRetryHandler(new RetryHandler(
-				1, timeout));
+		this.httpClient
+				.setHttpRequestRetryHandler(new RetryHandler(1, timeout));
 	}
 
 	public void removeAllHeaders() {
@@ -504,8 +480,7 @@ public class AsyncHttpClient {
 			final boolean mayInterruptIfRunning) {
 
 		if (context == null) {
-			Log.e("AsyncHttpClient",
-					"Passed null Context to cancelRequests");
+			Log.e("AsyncHttpClient", "Passed null Context to cancelRequests");
 			return;
 		}
 		Runnable r = new Runnable() {
@@ -532,8 +507,7 @@ public class AsyncHttpClient {
 
 	public void cancelAllRequests(boolean mayInterruptIfRunning) {
 
-		for (List<RequestHandle> requestList : this.requestMap
-				.values()) {
+		for (List<RequestHandle> requestList : this.requestMap.values()) {
 			if (requestList != null) {
 				for (RequestHandle requestHandle : requestList) {
 					requestHandle.cancel(mayInterruptIfRunning);
@@ -564,22 +538,20 @@ public class AsyncHttpClient {
 	public RequestHandle head(Context context, String url,
 			RequestParams params, ResponseHandlerInterface responseHandler) {
 
-		return sendRequest(
-				this.httpClient,
-				this.httpContext,
-				new HttpHead(getUrlWithQueryString(this.isUrlEncodingEnabled,
-						url, params)), null, responseHandler, context);
+		return sendRequest(this.httpClient, this.httpContext, new HttpHead(
+				getUrlWithQueryString(this.isUrlEncodingEnabled, url, params)),
+				null, responseHandler, context);
 	}
 
 	public RequestHandle head(Context context, String url, Header[] headers,
-			RequestParams params, ResponseHandlerInterface responseHandler) {
+			RequestParams params, ResponseHandlerInterface responseHandler,LogRecord record) {
 
 		HttpUriRequest request = new HttpHead(getUrlWithQueryString(
 				this.isUrlEncodingEnabled, url, params));
 		if (headers != null)
 			request.setHeaders(headers);
-		return sendRequest(this.httpClient, this.httpContext, request,
-				null, responseHandler, context);
+		return sendRequest(this.httpClient, this.httpContext, request, null,
+				responseHandler, context,record);
 	}
 
 	public RequestHandle get(String url,
@@ -603,22 +575,20 @@ public class AsyncHttpClient {
 	public RequestHandle get(Context context, String url, RequestParams params,
 			ResponseHandlerInterface responseHandler) {
 
-		return sendRequest(
-				this.httpClient,
-				this.httpContext,
-				new HttpGet(getUrlWithQueryString(this.isUrlEncodingEnabled,
-						url, params)), null, responseHandler, context);
+		return sendRequest(this.httpClient, this.httpContext, new HttpGet(
+				getUrlWithQueryString(this.isUrlEncodingEnabled, url, params)),
+				null, responseHandler, context);
 	}
 
 	public RequestHandle get(Context context, String url, Header[] headers,
-			RequestParams params, ResponseHandlerInterface responseHandler) {
+			RequestParams params, ResponseHandlerInterface responseHandler,LogRecord record) {
 
 		HttpUriRequest request = new HttpGet(getUrlWithQueryString(
 				this.isUrlEncodingEnabled, url, params));
 		if (headers != null)
 			request.setHeaders(headers);
-		return sendRequest(this.httpClient, this.httpContext, request,
-				null, responseHandler, context);
+		return sendRequest(this.httpClient, this.httpContext, request, null,
+				responseHandler, context,record);
 	}
 
 	public RequestHandle post(String url,
@@ -636,8 +606,8 @@ public class AsyncHttpClient {
 	public RequestHandle post(Context context, String url,
 			RequestParams params, ResponseHandlerInterface responseHandler) {
 
-		return post(context, url,
-				paramsToEntity(params, responseHandler), null, responseHandler);
+		return post(context, url, paramsToEntity(params, responseHandler),
+				null, responseHandler);
 	}
 
 	public RequestHandle post(Context context, String url, HttpEntity entity,
@@ -655,8 +625,8 @@ public class AsyncHttpClient {
 			RequestParams params, String contentType,
 			ResponseHandlerInterface responseHandler) {
 
-		HttpEntityEnclosingRequestBase request = new HttpPost(URI
-				.create(url).normalize());
+		HttpEntityEnclosingRequestBase request = new HttpPost(URI.create(url)
+				.normalize());
 		if (params != null)
 			request.setEntity(paramsToEntity(params, responseHandler));
 		if (headers != null)
@@ -667,14 +637,14 @@ public class AsyncHttpClient {
 
 	public RequestHandle post(Context context, String url, Header[] headers,
 			HttpEntity entity, String contentType,
-			ResponseHandlerInterface responseHandler) {
+			ResponseHandlerInterface responseHandler,LogRecord record) {
 
 		HttpEntityEnclosingRequestBase request = addEntityToRequestBase(
 				new HttpPost(URI.create(url).normalize()), entity);
 		if (headers != null)
 			request.setHeaders(headers);
 		return sendRequest(this.httpClient, this.httpContext, request,
-				contentType, responseHandler, context);
+				contentType, responseHandler, context,record);
 	}
 
 	public RequestHandle put(String url,
@@ -692,8 +662,8 @@ public class AsyncHttpClient {
 	public RequestHandle put(Context context, String url, RequestParams params,
 			ResponseHandlerInterface responseHandler) {
 
-		return put(context, url,
-				paramsToEntity(params, responseHandler), null, responseHandler);
+		return put(context, url, paramsToEntity(params, responseHandler), null,
+				responseHandler);
 	}
 
 	public RequestHandle put(Context context, String url, HttpEntity entity,
@@ -709,14 +679,14 @@ public class AsyncHttpClient {
 
 	public RequestHandle put(Context context, String url, Header[] headers,
 			HttpEntity entity, String contentType,
-			ResponseHandlerInterface responseHandler) {
+			ResponseHandlerInterface responseHandler, LogRecord record) {
 
 		HttpEntityEnclosingRequestBase request = addEntityToRequestBase(
 				new HttpPut(URI.create(url).normalize()), entity);
 		if (headers != null)
 			request.setHeaders(headers);
-		return sendRequest(this.httpClient, this.httpContext,
-				request, contentType, responseHandler, context);
+		return sendRequest(this.httpClient, this.httpContext, request,
+				contentType, responseHandler, context, record);
 	}
 
 	public RequestHandle delete(String url,
@@ -728,21 +698,19 @@ public class AsyncHttpClient {
 	public RequestHandle delete(Context context, String url,
 			ResponseHandlerInterface responseHandler) {
 
-		HttpDelete delete = new HttpDelete(URI.create(url)
-				.normalize());
-		return sendRequest(this.httpClient, this.httpContext, delete,
-				null, responseHandler, context);
+		HttpDelete delete = new HttpDelete(URI.create(url).normalize());
+		return sendRequest(this.httpClient, this.httpContext, delete, null,
+				responseHandler, context);
 	}
 
 	public RequestHandle delete(Context context, String url, Header[] headers,
-			ResponseHandlerInterface responseHandler) {
+			ResponseHandlerInterface responseHandler,LogRecord record) {
 
-		HttpDelete delete = new HttpDelete(URI.create(url)
-				.normalize());
+		HttpDelete delete = new HttpDelete(URI.create(url).normalize());
 		if (headers != null)
 			delete.setHeaders(headers);
-		return sendRequest(this.httpClient, this.httpContext, delete,
-				null, responseHandler, context);
+		return sendRequest(this.httpClient, this.httpContext, delete, null,
+				responseHandler, context,record);
 	}
 
 	public RequestHandle delete(Context context, String url, Header[] headers,
@@ -752,23 +720,31 @@ public class AsyncHttpClient {
 				this.isUrlEncodingEnabled, url, params));
 		if (headers != null)
 			httpDelete.setHeaders(headers);
-		return sendRequest(this.httpClient, this.httpContext,
-				httpDelete, null, responseHandler, context);
+		return sendRequest(this.httpClient, this.httpContext, httpDelete, null,
+				responseHandler, context);
 	}
 
 	protected AsyncHttpRequest newAsyncHttpRequest(DefaultHttpClient client,
 			HttpContext httpContext, HttpUriRequest uriRequest,
 			String contentType, ResponseHandlerInterface responseHandler,
-			Context context) {
+			Context context, LogRecord record) {
 
 		return new AsyncHttpRequest(client, httpContext, uriRequest,
-				responseHandler);
+				responseHandler,record);
 	}
 
 	protected RequestHandle sendRequest(DefaultHttpClient client,
 			HttpContext httpContext, HttpUriRequest uriRequest,
 			String contentType, ResponseHandlerInterface responseHandler,
 			Context context) {
+		return this.sendRequest(client, httpContext, uriRequest, contentType,
+				responseHandler, context, null);
+	}
+
+	protected RequestHandle sendRequest(DefaultHttpClient client,
+			HttpContext httpContext, HttpUriRequest uriRequest,
+			String contentType, ResponseHandlerInterface responseHandler,
+			Context context, LogRecord record) {
 
 		if (uriRequest == null) {
 			throw new IllegalArgumentException(
@@ -787,9 +763,10 @@ public class AsyncHttpClient {
 
 		if (contentType != null) {
 			if (((uriRequest instanceof HttpEntityEnclosingRequestBase))
-					&& (((HttpEntityEnclosingRequestBase) uriRequest).getEntity() != null))
+					&& (((HttpEntityEnclosingRequestBase) uriRequest)
+							.getEntity() != null))
 				Log.w("AsyncHttpClient",
-								"Passed contentType will be ignored because HttpEntity sets content type");
+						"Passed contentType will be ignored because HttpEntity sets content type");
 			else {
 				uriRequest.setHeader("Content-Type", contentType);
 			}
@@ -798,17 +775,17 @@ public class AsyncHttpClient {
 		responseHandler.setRequestHeaders(uriRequest.getAllHeaders());
 		responseHandler.setRequestURI(uriRequest.getURI());
 
-		AsyncHttpRequest request = newAsyncHttpRequest(client,
-				httpContext, uriRequest, contentType, responseHandler, context);
+		AsyncHttpRequest request = newAsyncHttpRequest(client, httpContext,
+				uriRequest, contentType, responseHandler, context,record);
 		this.threadPool.submit(request);
 		RequestHandle requestHandle = new RequestHandle(request);
 
 		if (context != null) {
-			List requestList = this.requestMap.get(context);
+			List<RequestHandle> requestList = this.requestMap.get(context);
 			synchronized (this.requestMap) {
 				if (requestList == null) {
 					requestList = Collections
-							.synchronizedList(new LinkedList());
+							.synchronizedList(new LinkedList<RequestHandle>());
 					this.requestMap.put(context, requestList);
 				}
 			}
@@ -819,7 +796,7 @@ public class AsyncHttpClient {
 			}
 			requestList.add(requestHandle);
 
-			Iterator iterator = requestList.iterator();
+			Iterator<RequestHandle> iterator = requestList.iterator();
 			while (iterator.hasNext()) {
 				if (((RequestHandle) iterator.next())
 						.shouldBeGarbageCollected()) {
@@ -848,12 +825,11 @@ public class AsyncHttpClient {
 		if (params != null) {
 			String paramString = params.getParamString().trim();
 
-			if ((!paramString.equals(""))
-					&& (!paramString.equals("?"))) {
+			if ((!paramString.equals("")) && (!paramString.equals("?"))) {
 				url = new StringBuilder().append(url)
 						.append(url.contains("?") ? "&" : "?").toString();
-				url = new StringBuilder().append(url)
-						.append(paramString).toString();
+				url = new StringBuilder().append(url).append(paramString)
+						.toString();
 			}
 		}
 
@@ -869,8 +845,7 @@ public class AsyncHttpClient {
 		byte[] signature = new byte[2];
 		int readStatus = inputStream.read(signature);
 		inputStream.unread(signature);
-		int streamHeader = signature[0] & 0xFF | signature[1] << 8
-				& 0xFF00;
+		int streamHeader = signature[0] & 0xFF | signature[1] << 8 & 0xFF00;
 		return (readStatus == 2) && (35615 == streamHeader);
 	}
 
@@ -932,8 +907,7 @@ public class AsyncHttpClient {
 		if ((entity instanceof HttpEntityWrapper))
 			try {
 				Field f = null;
-				Field[] fields = HttpEntityWrapper.class
-						.getDeclaredFields();
+				Field[] fields = HttpEntityWrapper.class.getDeclaredFields();
 				for (Field ff : fields) {
 					if (ff.getName().equals("wrappedEntity")) {
 						f = ff;
@@ -966,12 +940,10 @@ public class AsyncHttpClient {
 		public InputStream getContent() throws IOException {
 
 			this.wrappedStream = this.wrappedEntity.getContent();
-			this.pushbackStream = new PushbackInputStream(
-					this.wrappedStream, 2);
+			this.pushbackStream = new PushbackInputStream(this.wrappedStream, 2);
 			if (AsyncHttpClient
 					.isInputStreamGZIPCompressed(this.pushbackStream)) {
-				this.gzippedStream = new GZIPInputStream(
-						this.pushbackStream);
+				this.gzippedStream = new GZIPInputStream(this.pushbackStream);
 				return this.gzippedStream;
 			}
 			return this.pushbackStream;
@@ -980,19 +952,16 @@ public class AsyncHttpClient {
 		@Override
 		public long getContentLength() {
 
-			return this.wrappedEntity == null ? 0L
-					: this.wrappedEntity.getContentLength();
+			return this.wrappedEntity == null ? 0L : this.wrappedEntity
+					.getContentLength();
 		}
 
 		@Override
 		public void consumeContent() throws IOException {
 
-			AsyncHttpClient
-					.silentCloseInputStream(this.wrappedStream);
-			AsyncHttpClient
-					.silentCloseInputStream(this.pushbackStream);
-			AsyncHttpClient
-					.silentCloseInputStream(this.gzippedStream);
+			AsyncHttpClient.silentCloseInputStream(this.wrappedStream);
+			AsyncHttpClient.silentCloseInputStream(this.pushbackStream);
+			AsyncHttpClient.silentCloseInputStream(this.gzippedStream);
 			super.consumeContent();
 		}
 
