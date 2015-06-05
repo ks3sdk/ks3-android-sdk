@@ -1,5 +1,14 @@
 #KS3 SDK for Android使用指南
 ---
+## V.1.1.0 改动日志
+
+* 规范错误处理，添加Ks3Error
+* 添加请求打点及日志上报功能
+* API精简化，只保留上传下载部分
+* 添加当DNS解析失败时，切换保底IP重试请求功能
+* 修正了多线程引起的BUG及特殊字符处理问题
+* SDK中加入改动后的AsyncHttpClient源代码
+
 ##开发前准备
 ###依赖库
 本SDK使用了loopj/android-async-http请求库，使用前请先下载对应的jar包，并导入工程
