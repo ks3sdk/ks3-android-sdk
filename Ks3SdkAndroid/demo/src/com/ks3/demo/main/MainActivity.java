@@ -274,10 +274,17 @@ public class MainActivity extends Activity {
 
 	private void setUpKs3Client() {
 		// AK&SK形式直接初始化，仅建议测试时使用，正式环境下请替换AuthListener方式
-		client = new Ks3Client(Constants.ACCESS_KEY__ID,
-				Constants.ACCESS_KEY_SECRET, MainActivity.this);
-		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
-		client.setConfiguration(configuration);
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				client = new Ks3Client(Constants.ACCESS_KEY__ID,
+						Constants.ACCESS_KEY_SECRET, MainActivity.this);
+				configuration = Ks3ClientConfiguration.getDefaultConfiguration();
+				client.setConfiguration(configuration);				
+			}
+		}).start();
+		
 
 		// AuthListener方式初始化
 		// client = new Ks3Client(new AuthListener() {

@@ -15,6 +15,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -287,60 +288,68 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 		// client = new Ks3Client(Constants.ACCESS_KEY__ID,
 		// Constants.ACCESS_KEY_SECRET, UploadActivity.this);
 		// client.setConfiguration(configuration);
-
-		// AuthListener方式初始化
-		client = new Ks3Client(new AuthListener() {
-
+		new Thread(new Runnable() {
+			
 			@Override
-			public AuthResult onCalculateAuth(final String httpMethod,
-					final String ContentType, final String Date,
-					final String ContentMD5, final String Resource,
-					final String Headers) {
+			public void run() {
+				// AuthListener方式初始化
+//				Looper.prepare();
+				
+				client = new Ks3Client(new AuthListener() {
 
-				// 此处应由APP端向业务服务器发送post请求返回Token。
-				// 需要注意该回调方法运行在非主线程
-				// 此处内部写法仅为示例，开发者请根据自身情况修改
-				// StringBuffer result = new StringBuffer();
-				// HttpPost request = new HttpPost(Constants.APP_SERTVER_HOST);
-				// StringEntity se;
-				// try {
-				// JSONObject object = new JSONObject();
-				// object.put("http_method", httpMethod.toString());
-				// object.put("content_type", ContentType);
-				// object.put("date", Date);
-				// object.put("content_md5", ContentMD5);
-				// object.put("resource", Resource);
-				// object.put("headers", Headers);
-				// se = new StringEntity(object.toString());
-				// request.setEntity(se);
-				// HttpResponse httpResponse = new
-				// DefaultHttpClient().execute(request);
-				// String retSrc = EntityUtils.toString(httpResponse
-				// .getEntity());
-				// result.append(retSrc);
-				// } catch (JSONException e) {
-				// e.printStackTrace();
-				// } catch (UnsupportedEncodingException e) {
-				// e.printStackTrace();
-				// } catch (ClientProtocolException e) {
-				// e.printStackTrace();
-				// } catch (IOException e) {
-				// e.printStackTrace();
-				// }
-				// return result.toString();
+					@Override
+					public AuthResult onCalculateAuth(final String httpMethod,
+							final String ContentType, final String Date,
+							final String ContentMD5, final String Resource,
+							final String Headers) {
 
-				try {
-					String authDate = DateUtil.GetUTCTime();
-					String authStr = AuthUtils.calcAuthToken(httpMethod, ContentType, authDate, ContentMD5, Resource, Headers, Constants.ACCESS_KEY__ID, Constants.ACCESS_KEY_SECRET);
+						// 此处应由APP端向业务服务器发送post请求返回Token。
+						// 需要注意该回调方法运行在非主线程
+						// 此处内部写法仅为示例，开发者请根据自身情况修改
+						// StringBuffer result = new StringBuffer();
+						// HttpPost request = new HttpPost(Constants.APP_SERTVER_HOST);
+						// StringEntity se;
+						// try {
+						// JSONObject object = new JSONObject();
+						// object.put("http_method", httpMethod.toString());
+						// object.put("content_type", ContentType);
+						// object.put("date", Date);
+						// object.put("content_md5", ContentMD5);
+						// object.put("resource", Resource);
+						// object.put("headers", Headers);
+						// se = new StringEntity(object.toString());
+						// request.setEntity(se);
+						// HttpResponse httpResponse = new
+						// DefaultHttpClient().execute(request);
+						// String retSrc = EntityUtils.toString(httpResponse
+						// .getEntity());
+						// result.append(retSrc);
+						// } catch (JSONException e) {
+						// e.printStackTrace();
+						// } catch (UnsupportedEncodingException e) {
+						// e.printStackTrace();
+						// } catch (ClientProtocolException e) {
+						// e.printStackTrace();
+						// } catch (IOException e) {
+						// e.printStackTrace();
+						// }
+						// return result.toString();
 
-					return new AuthResult(authStr, authDate);
-				} catch (SignatureException e) {
-					return null;
-				}
+						try {
+							String authDate = DateUtil.GetUTCTime();
+							String authStr = AuthUtils.calcAuthToken(httpMethod, ContentType, authDate, ContentMD5, Resource, Headers, Constants.ACCESS_KEY__ID, Constants.ACCESS_KEY_SECRET);
 
+							return new AuthResult(authStr, authDate);
+						} catch (SignatureException e) {
+							return null;
+						}
+
+					}
+				}, UploadActivity.this);
+				
 			}
-		}, UploadActivity.this);
-
+		}).start();
+		
 		// 输入框确获取Bucket之后，允许选择文件，开始Upload操作
 		bucketInpuDialog = new BucketInpuDialog(UploadActivity.this);
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {

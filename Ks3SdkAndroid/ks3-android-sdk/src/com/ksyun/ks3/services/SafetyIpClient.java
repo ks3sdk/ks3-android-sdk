@@ -1,61 +1,64 @@
 package com.ksyun.ks3.services;
 
+import java.io.IOException;
+
 import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.ResponseServer;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Log;
 import com.ksyun.ks3.model.IpModel;
 import com.ksyun.ks3.util.Constants;
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 
 public class SafetyIpClient {
+	private static final int STATUS_OK = 200;
 	private static final String HTTP = "http://";
 	public static IpModel ipModel;
-	private static AsyncHttpClient client;
 
 	public static void setUpSafetyModel() {
-		client = AsyncHttpClientFactory.getInstance(Ks3ClientConfiguration
-				.getDefaultConfiguration());
-		client.get(Constants.Client_SATEFY_IP_URL_NORMAL,
-				new AsyncHttpResponseHandler() {
-					@Override
-					public void onSuccess(int paramInt,
-							Header[] paramArrayOfHeader, byte[] paramArrayOfByte) {
-						String result = new String(paramArrayOfByte).trim();
-						Log.i(Constants.LOG_TAG, "get ip ok");
-						parse(result);
-					}
+		HttpGet getMethod = new HttpGet(Constants.Client_SATEFY_IP_URL_NORMAL);
 
-					@Override
-					public void onFailure(int paramInt,
-							Header[] paramArrayOfHeader,
-							byte[] paramArrayOfByte, Throwable paramThrowable) {
-						Log.i(Constants.LOG_TAG, "get ip failure");
-						client.get(Constants.Client_SATEFY_IP_URL_UNNORMAL,
-								new AsyncHttpResponseHandler() {
+		HttpClient httpClient = new DefaultHttpClient();
+		try {
+			HttpResponse response = httpClient.execute(getMethod);
+			if (response.getStatusLine().getStatusCode() == STATUS_OK) {
+				Log.i(Constants.LOG_TAG, "get ip success");
+				String result = EntityUtils.toString(response.getEntity());
+				parse(result);
+			} else {
+				Log.i(Constants.LOG_TAG, "get ip failure");
+				HttpGet failureGetMethod = new HttpGet(
+						Constants.Client_SATEFY_IP_URL_UNNORMAL);
+				HttpResponse failurResponsee = httpClient
+						.execute(failureGetMethod);
+				if (failurResponsee.getStatusLine().getStatusCode() == STATUS_OK) {
+					Log.i(Constants.LOG_TAG, "get ip second success");
+					String result = EntityUtils.toString(failurResponsee
+							.getEntity());
+					parse(result);
+				} else {
+					Log.i(Constants.LOG_TAG, "get ip second failure");
 
-									@Override
-									public void onSuccess(int paramInt,
-											Header[] paramArrayOfHeader,
-											byte[] paramArrayOfByte) {
-										String result = new String(
-												paramArrayOfByte).trim();
-										Log.i(Constants.LOG_TAG, "retry ip ok");
-										parse(result);
-									}
+				}
 
-									@Override
-									public void onFailure(int paramInt,
-											Header[] paramArrayOfHeader,
-											byte[] paramArrayOfByte,
-											Throwable paramThrowable) {
-										Log.i(Constants.LOG_TAG,
-												"retry ip failure");
-									}
-								});
-					}
-				});
+			}
+
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static void parse(String json_str) {
@@ -64,7 +67,7 @@ public class SafetyIpClient {
 			String ct_array = object.getString("ct");
 
 			ipModel = new IpModel(ct_array.substring(0, ct_array.indexOf(",")),
-					ct_array.substring(ct_array.indexOf(",")+1),
+					ct_array.substring(ct_array.indexOf(",") + 1),
 					ct_array.substring(0, ct_array.indexOf(",")));
 		} catch (JSONException e) {
 			e.printStackTrace();
