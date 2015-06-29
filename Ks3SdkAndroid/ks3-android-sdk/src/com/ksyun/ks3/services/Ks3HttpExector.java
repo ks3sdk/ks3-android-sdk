@@ -193,6 +193,7 @@ public class Ks3HttpExector {
 			try {
 				request.completeRequset(resultHandler);
 			} catch (Ks3ClientException e) {
+				throwable = new Throwable();
 				throwable.initCause(e);
 				result = false;
 			}
