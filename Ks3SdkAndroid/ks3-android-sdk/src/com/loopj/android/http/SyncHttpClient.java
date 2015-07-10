@@ -50,7 +50,7 @@ public class SyncHttpClient extends AsyncHttpClient
 
 		responseHandler.setUseSynchronousMode(true);
 
-		newAsyncHttpRequest(client, httpContext, uriRequest, contentType, responseHandler, context,null).run();
+		newAsyncHttpRequest(client, httpContext, uriRequest, contentType, responseHandler, context,null,null).run();
 
 		return new RequestHandle(null);
 	}

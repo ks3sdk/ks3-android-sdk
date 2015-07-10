@@ -28,7 +28,7 @@ public class Constants {
 	public static final String ClientConfig_IS_PREEMPTIVE_BASIC_PROXY_AUTH = "false";
 	public static final String ClientConfig_END_POINT = "kss.ksyun.com";
 	// for unknowing host test
-	// public static final String ClientConfig_END_POINT = "mofsa.czxcxzc.com";
+//	 public static final String ClientConfig_END_POINT = "mofsa.czxcxzc.com";
 	public static final String Client_SATEFY_IP_URL_NORMAL = "http://120.131.2.241/kssiplist";
 	public static final String Client_SATEFY_IP_URL_UNNORMAL = "http://123.59.35.94/kssiplist";
 	public static final String ClientConfig_CLIENT_SIGNER = "com.ksyun.ks3.signer.DefaultSigner";

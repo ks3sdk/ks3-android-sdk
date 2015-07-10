@@ -32,16 +32,18 @@ public class AsyncHttpRequest implements Runnable {
 	private boolean isFinished;
 	private boolean isRequestPreProcessed;
 	private LogRecord record = null;
+	private String bucketName;
 
 	public AsyncHttpRequest(AbstractHttpClient client, HttpContext context,
 			HttpUriRequest request, ResponseHandlerInterface responseHandler,
-			LogRecord record) {
+			LogRecord record, String bucketName) {
 		this.client = client;
 		this.context = context;
 		this.request = request;
 		this.responseHandler = responseHandler;
 		this.context.setAttribute("http.request", this.request);
 		this.record = record;
+		this.bucketName = bucketName;
 	}
 
 	public void onPreProcessRequest(AsyncHttpRequest request) {
@@ -159,6 +161,7 @@ public class AsyncHttpRequest implements Runnable {
 
 		this.responseHandler.onPostProcessResponse(this.responseHandler,
 				response);
+
 	}
 
 	private void makeRequestWithRetries() throws IOException {
@@ -197,20 +200,22 @@ public class AsyncHttpRequest implements Runnable {
 						}
 
 						String ipUrl = SafetyIpClient.VhostToPath(originUrl,
-								ipStr, true);
+								ipStr, bucketName, true);
 						URI ipUri = new URI(ipUrl);
 						Log.i(Constants.LOG_TAG, ipUrl);
 						cause = e;
 						// modify request
 						HttpRequestBase base = (HttpRequestBase) this.request;
-						base.setHeader(HttpHeaders.Host.toString(),
-								"kss.ksyun.com");
-						String pathStr = SafetyIpClient.getRealPath(ipUrl);
+						if (bucketName != null) {
+							base.setHeader(HttpHeaders.Host.toString(),
+									"kss.ksyun.com");
+							String pathStr = SafetyIpClient.getRealPath(ipUrl);
 
-						base.setURI(URIUtils.createURI(base.getURI()
-								.getScheme(), ipUri.getHost(), base.getURI()
-								.getPort(), pathStr, base.getURI().getQuery(),
-								base.getURI().getFragment()));
+							base.setURI(URIUtils.createURI(base.getURI()
+									.getScheme(), ipUri.getHost(), base
+									.getURI().getPort(), pathStr, base.getURI()
+									.getQuery(), base.getURI().getFragment()));
+						}
 						// set resend request
 						Log.i(Constants.LOG_TAG, "dns failed, changed url = "
 								+ base.getURI().toString() + ", host = "

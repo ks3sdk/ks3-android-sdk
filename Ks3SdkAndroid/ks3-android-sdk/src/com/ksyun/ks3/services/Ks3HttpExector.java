@@ -89,29 +89,29 @@ public class Ks3HttpExector {
 		case GET:
 			handler = client.get(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					null, resultHandler, record);
+					null, resultHandler, record,request.getBucketname());
 			break;
 		case POST:
 			handler = client.post(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
 					request.getEntity(), request.getContentType(),
-					resultHandler, record);
+					resultHandler, record,request.getBucketname());
 			break;
 		case PUT:
 			handler = client.put(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
 					request.getEntity(), request.getContentType(),
-					resultHandler, record);
+					resultHandler, record, request.getBucketname());
 			break;
 		case DELETE:
 			handler = client.delete(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					resultHandler, record);
+					resultHandler, record,request.getBucketname());
 			break;
 		case HEAD:
 			handler = client.head(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					null, resultHandler, record);
+					null, resultHandler, record,request.getBucketname());
 			break;
 		default:
 			Log.e(Constants.LOG_TAG, "unsupport http method ! ");

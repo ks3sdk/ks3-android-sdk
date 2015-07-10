@@ -71,7 +71,7 @@ public class LogClient {
 							byte[] paramArrayOfByte, Throwable paramThrowable) {
 						Log.i(Constants.LOG_TAG, "send log failure");
 					}
-				}, null);
+				}, null,null);
 	}
 
 }

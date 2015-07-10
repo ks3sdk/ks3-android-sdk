@@ -75,23 +75,31 @@ public class SafetyIpClient {
 	}
 
 	// For URL transform
-	public static String VhostToPath(String vhostUrl, String ip, boolean isIp) {
-		String hostSrt = vhostUrl.replace(HTTP, "");
-		int firstDotIndex = hostSrt.indexOf(".");
-		String bucketAndDotStr = hostSrt.substring(0, firstDotIndex + 1);
-		String removeBucketAndDotStr = hostSrt.substring(firstDotIndex + 1);
-		int insertIndex = removeBucketAndDotStr.indexOf("/") + 1;
-		String bucketAndSlash = bucketAndDotStr.replace(".", "/");
-		String result = insertString(insertIndex, removeBucketAndDotStr,
-				bucketAndSlash);
-		if (isIp) {
-			int replaceIndex = result.indexOf("/");
-			String removeHostStr = result.substring(replaceIndex);
-			String ipPathUrl = appendString(ip, removeHostStr);
-			return appendString(HTTP, ipPathUrl);
+	public static String VhostToPath(String vhostUrl, String ip,
+			String bucketName, boolean isIp) {
+		if (bucketName != null) {
+			String hostSrt = vhostUrl.replace(HTTP, "");
+			String bucketAndDotStr = bucketName + ".";
+			String removeBucket = hostSrt.replace(bucketName, "");
+			String removeBucketAndDotStr = removeBucket.substring(1);
+			// string without bucketname and dot
+			int insertIndex = removeBucketAndDotStr.indexOf("/") + 1;
+			String bucketAndSlash = bucketAndDotStr.substring(0,
+					bucketAndDotStr.length() - 1) + "/";
+			String result = insertString(insertIndex, removeBucketAndDotStr,
+					bucketAndSlash);
+			if (isIp) {
+				int replaceIndex = result.indexOf("/");
+				String removeHostStr = result.substring(replaceIndex);
+				String ipPathUrl = appendString(ip, removeHostStr);
+				return appendString(HTTP, ipPathUrl);
+			} else {
+				return appendString(HTTP, result);
+			}
 		} else {
-			return appendString(HTTP, result);
+			return vhostUrl;
 		}
+
 	}
 
 	public static String PathToVhost(String pathUrl, String ip, boolean isIp) {
