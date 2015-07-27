@@ -3,6 +3,9 @@ package com.ksyun.ks3.services;
 import java.io.File;
 import java.util.List;
 import android.content.Context;
+import android.util.Log;
+
+import com.ksyun.ks3.db.DBManager;
 import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.model.ObjectMetadata;
 import com.ksyun.ks3.model.PartETag;
@@ -35,7 +38,6 @@ public class Ks3Client implements Ks3 {
 	private Ks3HttpExector client = new Ks3HttpExector();
 	private Context context = null;
 	public AuthListener authListener = null;
-
 
 	public Ks3Client(String accesskeyid, String accesskeysecret, Context context) {
 		this(accesskeyid, accesskeysecret, Ks3ClientConfiguration
@@ -78,6 +80,7 @@ public class Ks3Client implements Ks3 {
 	private void init() {
 		setEndpoint(Constants.ClientConfig_END_POINT);
 		SafetyIpClient.setUpSafetyModel();
+		LogClient.getInstance(context.getApplicationContext()).start();
 	}
 
 	public void setConfiguration(Ks3ClientConfiguration clientConfiguration) {
@@ -98,8 +101,8 @@ public class Ks3Client implements Ks3 {
 
 	/* Service */
 	@Override
-	public Ks3HttpRequest getObject(Context context, String bucketname, String key,
-			GetObjectResponseHandler handler) {
+	public Ks3HttpRequest getObject(Context context, String bucketname,
+			String key, GetObjectResponseHandler handler) {
 		this.context = context;
 		return this.getObject(new GetObjectRequest(bucketname, key), handler);
 	}
@@ -111,17 +114,17 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private Ks3HttpRequest getObject(GetObjectRequest request,
-			GetObjectResponseHandler handler,boolean isUseAsyncMode) {
-		return this.invoke(auth, request, handler,isUseAsyncMode);
+			GetObjectResponseHandler handler, boolean isUseAsyncMode) {
+		return this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	@Override
-	public Ks3HttpRequest putObject(String bucketname, String objectkey, File file,
-			PutObjectResponseHandler handler) {
-		return this.putObject(new PutObjectRequest(bucketname, objectkey, file),
-				handler);
+	public Ks3HttpRequest putObject(String bucketname, String objectkey,
+			File file, PutObjectResponseHandler handler) {
+		return this.putObject(
+				new PutObjectRequest(bucketname, objectkey, file), handler);
 	}
-	
+
 	@Override
 	public Ks3HttpRequest putObject(String bucketname, String objectkey,
 			File file, ObjectMetadata objectmeta,
@@ -129,7 +132,7 @@ public class Ks3Client implements Ks3 {
 		return this.putObject(new PutObjectRequest(bucketname, objectkey, file,
 				objectmeta), handler);
 	}
-	
+
 	@Override
 	public Ks3HttpRequest putObject(PutObjectRequest request,
 			PutObjectResponseHandler handler) {
@@ -137,10 +140,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private Ks3HttpRequest putObject(PutObjectRequest request,
-			PutObjectResponseHandler handler,boolean isUseAsyncMode) {
-		return this.invoke(auth, request, handler,isUseAsyncMode);
+			PutObjectResponseHandler handler, boolean isUseAsyncMode) {
+		return this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	/* MultiUpload */
 	@Override
 	public void initiateMultipartUpload(String bucketname, String objectkey,
@@ -154,12 +157,14 @@ public class Ks3Client implements Ks3 {
 			InitiateMultipartUploadResponceHandler resultHandler) {
 		this.initiateMultipartUpload(request, resultHandler, true);
 	}
-	
-	private void initiateMultipartUpload(InitiateMultipartUploadRequest request,
-			InitiateMultipartUploadResponceHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+
+	private void initiateMultipartUpload(
+			InitiateMultipartUploadRequest request,
+			InitiateMultipartUploadResponceHandler resultHandler,
+			boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void uploadPart(String bucketName, String key, String uploadId,
 			File file, long offset, int partNumber, long partSize,
@@ -175,8 +180,8 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void uploadPart(UploadPartRequest request,
-			UploadPartResponceHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+			UploadPartResponceHandler resultHandler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
 
 	@Override
@@ -186,25 +191,27 @@ public class Ks3Client implements Ks3 {
 		this.completeMultipartUpload(new CompleteMultipartUploadRequest(
 				bucketname, objectkey, uploadId, partETags), handler);
 	}
-	
+
 	@Override
 	public void completeMultipartUpload(ListPartsResult result,
 			CompleteMultipartUploadResponseHandler handler) {
 		this.completeMultipartUpload(
 				new CompleteMultipartUploadRequest(result), handler);
 	}
-	
+
 	@Override
 	public void completeMultipartUpload(CompleteMultipartUploadRequest request,
 			CompleteMultipartUploadResponseHandler handler) {
 		this.completeMultipartUpload(request, handler, true);
 	}
 
-	private void completeMultipartUpload(CompleteMultipartUploadRequest request,
-			CompleteMultipartUploadResponseHandler handler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, handler,isUseAsyncMode);
+	private void completeMultipartUpload(
+			CompleteMultipartUploadRequest request,
+			CompleteMultipartUploadResponseHandler handler,
+			boolean isUseAsyncMode) {
+		this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void abortMultipartUpload(String bucketname, String objectkey,
 			String uploadId, AbortMultipartUploadResponseHandler handler) {
@@ -219,10 +226,10 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void abortMultipartUpload(AbortMultipartUploadRequest request,
-			AbortMultipartUploadResponseHandler handler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, handler,isUseAsyncMode);
+			AbortMultipartUploadResponseHandler handler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	@Override
 	public void listParts(String bucketname, String objectkey, String uploadId,
 			ListPartsResponseHandler handler) {
@@ -251,16 +258,16 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void listParts(ListPartsRequest request,
-			ListPartsResponseHandler handler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, handler,isUseAsyncMode);
+			ListPartsResponseHandler handler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, handler, isUseAsyncMode);
 	}
-	
+
 	/* Invoke asnyc http client */
 	private Ks3HttpRequest invoke(Authorization auth, Ks3HttpRequest request,
-			AsyncHttpResponseHandler resultHandler,boolean isUseAsyncMode) {
+			AsyncHttpResponseHandler resultHandler, boolean isUseAsyncMode) {
 		final LogRecord record = new LogRecord();
 		client.invoke(auth, request, resultHandler, clientConfiguration,
-				context, endpoint, authListener, isUseAsyncMode,record);
+				context, endpoint, authListener, isUseAsyncMode, record);
 		return request;
 	}
 
@@ -299,8 +306,8 @@ public class Ks3Client implements Ks3 {
 	}
 
 	private void listObjects(ListObjectsRequest request,
-			ListObjectsResponseHandler resultHandler,boolean isUseAsyncMode) {
-		this.invoke(auth, request, resultHandler,isUseAsyncMode);
+			ListObjectsResponseHandler resultHandler, boolean isUseAsyncMode) {
+		this.invoke(auth, request, resultHandler, isUseAsyncMode);
 	}
 
 }

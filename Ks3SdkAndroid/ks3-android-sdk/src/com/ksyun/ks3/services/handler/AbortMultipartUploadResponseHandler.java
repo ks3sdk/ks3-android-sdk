@@ -20,7 +20,7 @@ public abstract class AbortMultipartUploadResponseHandler extends
 			byte[] response) {
 		Log.i(Constants.LOG_TAG, "AbortMultipartUpload Request Success");
 		LogUtil.setSuccessLog(statesCode, response, responceHeaders, record);
-		LogClient.getInstance().insertAndSendLog(record);
+		LogClient.getInstance().put(record.toString());
 		this.onSuccess(statesCode, responceHeaders);
 	}
 
@@ -33,7 +33,7 @@ public abstract class AbortMultipartUploadResponseHandler extends
 						+ error.getErrorCode() + ",Error Message:"
 						+ error.getErrorMessage());
 		LogUtil.setFailureLog(statesCode, response, throwable, error, record);
-		LogClient.getInstance().insertAndSendLog(record);
+		LogClient.getInstance().put(record.toString());
 		this.onFailure(statesCode, error, responceHeaders,
 				response == null ? "" : new String(response), throwable);
 	}

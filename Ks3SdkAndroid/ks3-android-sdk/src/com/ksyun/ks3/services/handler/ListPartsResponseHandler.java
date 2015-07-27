@@ -35,7 +35,7 @@ public abstract class ListPartsResponseHandler extends Ks3HttpResponceHandler {
 			byte[] response) {
 		Log.i(Constants.LOG_TAG, "ListParts Request Success");
 		LogUtil.setSuccessLog(statesCode, response, responceHeaders, record);
-		LogClient.getInstance().insertAndSendLog(record);
+		LogClient.getInstance().put(record.toString());
 		this.onSuccess(statesCode, responceHeaders,
 				parseXml(responceHeaders, response));
 	}
@@ -48,7 +48,7 @@ public abstract class ListPartsResponseHandler extends Ks3HttpResponceHandler {
 				"ListParts Request Failed, Error Code: " + error.getErrorCode()
 						+ ",Error Message:" + error.getErrorMessage());
 		LogUtil.setFailureLog(statesCode, response, throwable, error, record);
-		LogClient.getInstance().insertAndSendLog(record);
+		LogClient.getInstance().put(record.toString());
 		this.onFailure(statesCode, error, responceHeaders,
 				response == null ? "" : new String(response), throwable);
 	}

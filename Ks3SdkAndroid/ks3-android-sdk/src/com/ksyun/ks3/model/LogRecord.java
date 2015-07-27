@@ -3,6 +3,11 @@ package com.ksyun.ks3.model;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.text.TextUtils;
+
 public class LogRecord {
 	private String source_ip;
 	private String target_ip;
@@ -181,26 +186,60 @@ public class LogRecord {
 
 	@Override
 	public String toString() {
-		StringBuffer buffer = new StringBuffer();
-		buffer.append("***log_record_begin***");
-		buffer.append("\nsource_ip = " + source_ip);
-		buffer.append("\ntarget_ip = " + target_ip);
-		buffer.append("\nmodel = " + model);
-		buffer.append("\nmanufacturer = " + manufacturer);
-		buffer.append("\nid = " + id);
-		buffer.append("\nnetwork_type = " + connect_type);
-		buffer.append("\nbuild_version = " + build_version);
-		buffer.append("\nsendTime=" + String.valueOf(getSend_before_time()));
-		buffer.append("\nfirst_data_time = " + getSend_first_data_time());
-		buffer.append("\nresponce_time = "
-				+ String.valueOf(getSend_complete_time()));
-		buffer.append("\nresponce_size = " + responce_size);
-		buffer.append("\nclient_state = " + client_state);
-		buffer.append("\nerror = " + error);
-		buffer.append("\nrequestIdr = " + requestId);
-		buffer.append("\nconnect_type = " + network_type);
-		buffer.append("\n***log_record_end***");
-		return buffer.toString();
+		JSONObject object = new JSONObject();
+		checkValue();
+		try {
+			// Source Ip
+			object.put("SI", source_ip);
+			// Target Ip
+			object.put("TI", target_ip);
+			// IMEI
+			object.put("ID", id);
+			// Network Type
+			object.put("NT", connect_type);
+			// Send Time
+			object.put("ST", String.valueOf(getSend_before_time()));
+			// First Data Time
+			object.put("FD", getSend_first_data_time());
+			// Response Time
+			object.put("RT", String.valueOf(getSend_complete_time()));
+			// Response Size
+			object.put("RS", responce_size);
+			// Client State
+			object.put("CS", client_state);
+			// Error
+			object.put("ER", error);
+			// Request Id
+			object.put("RI", requestId);
+			// Connect Type
+			object.put("CT", network_type);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return object.toString();
+	}
+
+	private void checkValue() {
+		if (TextUtils.isEmpty(source_ip)) {
+			source_ip = "";
+		}
+		if (TextUtils.isEmpty(target_ip)) {
+			target_ip = "";
+		}if (TextUtils.isEmpty(id)) {
+			id = "";
+		}if (TextUtils.isEmpty(connect_type)) {
+			connect_type = "";
+		}if (TextUtils.isEmpty(responce_size)) {
+			responce_size = "";
+		}if (TextUtils.isEmpty(client_state)) {
+			client_state = "";
+		}if (TextUtils.isEmpty(error)) {
+			error = "";
+		}if (TextUtils.isEmpty(requestId)) {
+			requestId = "";
+		}if (TextUtils.isEmpty(network_type)) {
+			network_type = "";
+		}
 	}
 
 	public Map<String, String> toHashMap() {

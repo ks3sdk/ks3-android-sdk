@@ -166,10 +166,17 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 
 	private void setUp() {
 		// Ks3Client初始化
-//		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
-		client = new Ks3Client(Constants.ACCESS_KEY__ID,
-				Constants.ACCESS_KEY_SECRET, DownloadActivity.this);
-//		client.setConfiguration(configuration);
+		// configuration = Ks3ClientConfiguration.getDefaultConfiguration();
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				client = new Ks3Client(Constants.ACCESS_KEY__ID,
+						Constants.ACCESS_KEY_SECRET, DownloadActivity.this);
+			}
+		}).start();
+
+		// client.setConfiguration(configuration);
 
 		// AuthListener方式初始化
 		// client = new Ks3Client(new AuthListener() {

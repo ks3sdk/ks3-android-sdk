@@ -20,7 +20,7 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
 		Log.i(Constants.LOG_TAG, "UploadPart Request Success");
 		LogUtil.setSuccessLog(statesCode, response,responceHeaders,record);
-		LogClient.getInstance().insertAndSendLog(record);
+		LogClient.getInstance().put(record.toString());
 		onSuccess(statesCode, responceHeaders, parse(responceHeaders));
 	}
 
@@ -29,7 +29,7 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 		Ks3Error error = new Ks3Error(statesCode, response, throwable);
 		Log.e(Constants.LOG_TAG, "UploadPartRequest Failed, Error Code: "+error.getErrorCode()+",Error Message:"+error.getErrorMessage());
 		LogUtil.setFailureLog(statesCode, response, throwable, error,record);
-		LogClient.getInstance().insertAndSendLog(record);
+		LogClient.getInstance().put(record.toString());
 		onFailure(statesCode,error, responceHeaders, response == null?"":new String(response), throwable);
 	}
 	

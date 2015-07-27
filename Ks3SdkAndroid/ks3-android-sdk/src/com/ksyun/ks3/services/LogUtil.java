@@ -1,5 +1,7 @@
 package com.ksyun.ks3.services;
 
+import java.io.File;
+
 import org.apache.http.Header;
 import android.util.Log;
 import com.ksyun.ks3.exception.Ks3Error;
@@ -13,6 +15,26 @@ public class LogUtil {
 			Header[] responceHeaders, LogRecord record) {
 		setSuccessRequestId(responceHeaders, record);
 		setCommonLog(statesCode, response, record);
+	}
+	
+	public static void setSuccessLog(int statesCode, File file,
+			Header[] responceHeaders, LogRecord record) {
+		setSuccessRequestId(responceHeaders, record);
+		setCommonLog(statesCode, file, record);
+	}
+
+	private static void setCommonLog(int statesCode, File file, LogRecord record) {
+		setClientState(statesCode, record);
+		setRecordTime(record);
+		setResponceSize(file, record);
+	}
+
+	private static void setResponceSize(File file, LogRecord record) {
+		if (record != null) {
+			if (file != null) {
+				record.setResponce_size("" + file.length());
+			}
+		}
 	}
 
 	public static void setSuccessRequestId(Header[] responceHeaders,

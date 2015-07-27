@@ -25,7 +25,7 @@ public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResp
 		Log.i(Constants.LOG_TAG, "InitiateMultipartUpload Request Success");
 		InitiateMultipartUploadResult initialUploadResult = parseXml(responceHeaders, response);
 		LogUtil.setSuccessLog(statesCode, response,responceHeaders,record);
-		LogClient.getInstance().insertAndSendLog(record);
+		LogClient.getInstance().put(record.toString());
 		onSuccess(statesCode, responceHeaders, initialUploadResult);
 	}
 
@@ -33,7 +33,7 @@ public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResp
 		Ks3Error error = new Ks3Error(statesCode, response, throwable);
 		Log.e(Constants.LOG_TAG, "InitiateMultipartUpload Request Failed, Error Code: "+error.getErrorCode()+",Error Message:"+error.getErrorMessage());
 		LogUtil.setFailureLog(statesCode, response, throwable, error,record);
-		LogClient.getInstance().insertAndSendLog(record);
+		LogClient.getInstance().put(record.toString());
 		onFailure(statesCode,error, responceHeaders, response == null ? "":new String(response), throwable);
 	}
 	
