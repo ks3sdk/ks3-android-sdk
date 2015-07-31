@@ -2,6 +2,8 @@ package com.ksyun.ks3.services.handler;
 
 import org.apache.http.Header;
 import android.util.Log;
+
+import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.services.LogClient;
 import com.ksyun.ks3.services.LogUtil;
@@ -20,7 +22,11 @@ public abstract class AbortMultipartUploadResponseHandler extends
 			byte[] response) {
 		Log.i(Constants.LOG_TAG, "AbortMultipartUpload Request Success");
 		LogUtil.setSuccessLog(statesCode, response, responceHeaders, record);
-		LogClient.getInstance().put(record.toString());
+		try {
+			LogClient.getInstance().put(record.toString());
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		this.onSuccess(statesCode, responceHeaders);
 	}
 
@@ -33,7 +39,11 @@ public abstract class AbortMultipartUploadResponseHandler extends
 						+ error.getErrorCode() + ",Error Message:"
 						+ error.getErrorMessage());
 		LogUtil.setFailureLog(statesCode, response, throwable, error, record);
-		LogClient.getInstance().put(record.toString());
+		try {
+			LogClient.getInstance().put(record.toString());
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		this.onFailure(statesCode, error, responceHeaders,
 				response == null ? "" : new String(response), throwable);
 	}

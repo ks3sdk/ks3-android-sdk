@@ -2,6 +2,8 @@ package com.ksyun.ks3.services.handler;
 
 import org.apache.http.Header;
 import android.util.Log;
+
+import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.PartETag;
@@ -20,7 +22,11 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
 		Log.i(Constants.LOG_TAG, "UploadPart Request Success");
 		LogUtil.setSuccessLog(statesCode, response,responceHeaders,record);
-		LogClient.getInstance().put(record.toString());
+		try {
+			LogClient.getInstance().put(record.toString());
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		onSuccess(statesCode, responceHeaders, parse(responceHeaders));
 	}
 
@@ -29,7 +35,11 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 		Ks3Error error = new Ks3Error(statesCode, response, throwable);
 		Log.e(Constants.LOG_TAG, "UploadPartRequest Failed, Error Code: "+error.getErrorCode()+",Error Message:"+error.getErrorMessage());
 		LogUtil.setFailureLog(statesCode, response, throwable, error,record);
-		LogClient.getInstance().put(record.toString());
+		try {
+			LogClient.getInstance().put(record.toString());
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		onFailure(statesCode,error, responceHeaders, response == null?"":new String(response), throwable);
 	}
 	

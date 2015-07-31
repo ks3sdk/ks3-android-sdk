@@ -3,9 +3,6 @@ package com.ksyun.ks3.services;
 import java.io.File;
 import java.util.List;
 import android.content.Context;
-import android.util.Log;
-
-import com.ksyun.ks3.db.DBManager;
 import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.model.ObjectMetadata;
 import com.ksyun.ks3.model.PartETag;

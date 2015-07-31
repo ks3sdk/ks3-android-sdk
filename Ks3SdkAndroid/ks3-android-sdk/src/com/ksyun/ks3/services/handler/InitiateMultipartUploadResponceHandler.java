@@ -8,6 +8,8 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 import android.util.Log;
+
+import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
 import com.ksyun.ks3.services.LogClient;
@@ -25,7 +27,11 @@ public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResp
 		Log.i(Constants.LOG_TAG, "InitiateMultipartUpload Request Success");
 		InitiateMultipartUploadResult initialUploadResult = parseXml(responceHeaders, response);
 		LogUtil.setSuccessLog(statesCode, response,responceHeaders,record);
-		LogClient.getInstance().put(record.toString());
+		try {
+			LogClient.getInstance().put(record.toString());
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		onSuccess(statesCode, responceHeaders, initialUploadResult);
 	}
 
@@ -33,7 +39,11 @@ public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResp
 		Ks3Error error = new Ks3Error(statesCode, response, throwable);
 		Log.e(Constants.LOG_TAG, "InitiateMultipartUpload Request Failed, Error Code: "+error.getErrorCode()+",Error Message:"+error.getErrorMessage());
 		LogUtil.setFailureLog(statesCode, response, throwable, error,record);
-		LogClient.getInstance().put(record.toString());
+		try {
+			LogClient.getInstance().put(record.toString());
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		onFailure(statesCode,error, responceHeaders, response == null ? "":new String(response), throwable);
 	}
 	

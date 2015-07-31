@@ -3,10 +3,7 @@ package com.ksyun.ks3.services.handler;
 import java.io.File;
 import org.apache.http.Header;
 
-import android.provider.SyncStateContract.Constants;
-import android.text.format.Time;
-import android.util.Log;
-
+import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.ObjectMetadata;
@@ -53,7 +50,11 @@ public abstract class GetObjectResponseHandler extends
 			Throwable throwable, byte[] response, File paramFile) {
 		Ks3Error error = new Ks3Error(statesCode, response, throwable);
 		LogUtil.setFailureLog(statesCode, response, throwable, error, record);
-		LogClient.getInstance().put(record.toString());
+		try {
+			LogClient.getInstance().put(record.toString());
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		this.onTaskFailure(statesCode, error, paramArrayOfHeader, throwable,
 				paramFile);
 	}
@@ -62,7 +63,11 @@ public abstract class GetObjectResponseHandler extends
 	public final void onSuccess(int paramInt, Header[] paramArrayOfHeader,
 			File paramFile) {
 		LogUtil.setSuccessLog(paramInt, paramFile, paramArrayOfHeader, record);
-		LogClient.getInstance().put(record.toString());
+		try {
+			LogClient.getInstance().put(record.toString());
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		this.onTaskSuccess(paramInt, paramArrayOfHeader,
 				parse(paramInt, paramArrayOfHeader, paramFile));
 	}

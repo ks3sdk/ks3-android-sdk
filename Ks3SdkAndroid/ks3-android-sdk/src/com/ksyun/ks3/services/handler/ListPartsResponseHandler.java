@@ -10,6 +10,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.util.Log;
 
+import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.Owner;
 import com.ksyun.ks3.model.Part;
@@ -35,7 +36,11 @@ public abstract class ListPartsResponseHandler extends Ks3HttpResponceHandler {
 			byte[] response) {
 		Log.i(Constants.LOG_TAG, "ListParts Request Success");
 		LogUtil.setSuccessLog(statesCode, response, responceHeaders, record);
-		LogClient.getInstance().put(record.toString());
+		try {
+			LogClient.getInstance().put(record.toString());
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		this.onSuccess(statesCode, responceHeaders,
 				parseXml(responceHeaders, response));
 	}
@@ -48,7 +53,11 @@ public abstract class ListPartsResponseHandler extends Ks3HttpResponceHandler {
 				"ListParts Request Failed, Error Code: " + error.getErrorCode()
 						+ ",Error Message:" + error.getErrorMessage());
 		LogUtil.setFailureLog(statesCode, response, throwable, error, record);
-		LogClient.getInstance().put(record.toString());
+		try {
+			LogClient.getInstance().put(record.toString());
+		} catch (Ks3ClientException e) {
+			e.printStackTrace();
+		}
 		this.onFailure(statesCode, error, responceHeaders,
 				response == null ? "" : new String(response), throwable);
 	}

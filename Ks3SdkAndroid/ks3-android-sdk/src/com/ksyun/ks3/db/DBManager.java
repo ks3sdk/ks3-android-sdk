@@ -8,8 +8,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.os.Build;
 
 public class DBManager {
+
 	private static final String SQL_INSERT_LOG = "INSERT INTO "
 			+ DBConstant.TABLE_NAME_LOG + "("
 			+ DBConstant.TABLE_LOG_COLUMN_CONTENT + ") VALUES (?)";
@@ -95,9 +97,14 @@ public class DBManager {
 									.getColumnIndex(DBConstant.TABLE_LOG_COLUMN_CONTENT));
 					result = new LogBean(logId, logContent);
 					// Delete this log
-					mDeleteStatement.clearBindings();
-					mDeleteStatement.bindLong(1, logId);
-					mDeleteStatement.executeUpdateDelete();
+					if (Build.VERSION.SDK_INT >= 11) {
+						mDeleteStatement.clearBindings();
+						mDeleteStatement.bindLong(1, logId);
+						mDeleteStatement.executeUpdateDelete();
+					} else {
+						// TODO
+						//
+					}
 				}
 				cursor.close();
 			}
@@ -131,17 +138,68 @@ public class DBManager {
 	@SuppressLint("NewApi")
 	public void deleteLog(long logId) {
 		synchronized (mLockObject) {
-			mDatabase.beginTransaction();
-			mDeleteStatement.clearBindings();
-			mDeleteStatement.bindLong(1, logId);
-			mDeleteStatement.executeUpdateDelete();
-			mDatabase.setTransactionSuccessful();
-			mDatabase.endTransaction();
+			if (Build.VERSION.SDK_INT >= 11) {
+				mDatabase.beginTransaction();
+				mDeleteStatement.clearBindings();
+				mDeleteStatement.bindLong(1, logId);
+				mDeleteStatement.executeUpdateDelete();
+				mDatabase.setTransactionSuccessful();
+				mDatabase.endTransaction();
+			} else {
+				mDatabase.execSQL(SQL_DELETE_LOG + logId);
+				mDatabase.delete(DBConstant.TABLE_NAME_LOG,
+						DBConstant.TABLE_LOG_COLUMN_ID + " = ?",
+						new String[] { String.valueOf(logId) });
+			}
 		}
 	}
 
-	public String getAllRecords() {
-		// TODO Auto-generated method stub
-		return null;
+	public RecordResult getRecords(int logOnceLimit, RecordResult recordResults) {
+		synchronized (mLockObject) {
+			mDatabase.beginTransaction();
+			Cursor cursor = mDatabase.query(DBConstant.TABLE_NAME_LOG,
+					new String[] { DBConstant.TABLE_LOG_COLUMN_ID,
+							DBConstant.TABLE_LOG_COLUMN_CONTENT }, null, null,
+					null, null, null, String.valueOf(logOnceLimit));
+			if (null != cursor) {
+				while (cursor.moveToNext()) {
+					int logId = cursor.getInt(cursor
+							.getColumnIndex(DBConstant.TABLE_LOG_COLUMN_ID));
+					String logContent = cursor
+							.getString(cursor
+									.getColumnIndex(DBConstant.TABLE_LOG_COLUMN_CONTENT));
+					recordResults.idBuffer.append(logId);
+					recordResults.idBuffer.append("/n");
+					recordResults.contentBuffer.append(logContent);
+					recordResults.contentBuffer.append("/n");
+				}
+				cursor.close();
+			}
+			mDatabase.setTransactionSuccessful();
+			mDatabase.endTransaction();
+		}
+		return recordResults;
 	}
+
+	@SuppressLint("NewApi")
+	public void deleteLogs(String recordsId) {
+		String[] ids = recordsId.split("/n");
+		synchronized (mLockObject) {
+			if (Build.VERSION.SDK_INT >= 11) {
+				mDatabase.beginTransaction();
+				mDeleteStatement.clearBindings();
+				for (int i = 0; i < ids.length; i++) {
+					mDeleteStatement.bindLong(1, Long.valueOf(ids[i]));
+					mDeleteStatement.executeUpdateDelete();
+				}
+				mDatabase.setTransactionSuccessful();
+				mDatabase.endTransaction();
+			} else {
+				mDatabase.delete(DBConstant.TABLE_NAME_LOG,
+						DBConstant.TABLE_LOG_COLUMN_ID + " = ?", ids);
+			}
+
+		}
+	}
+
 }

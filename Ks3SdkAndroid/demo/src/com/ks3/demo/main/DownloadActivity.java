@@ -46,11 +46,13 @@ import android.widget.Toast;
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.Ks3ObjectSummary;
+import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.model.ObjectListing;
 import com.ksyun.ks3.model.result.GetObjectResult;
 import com.ksyun.ks3.services.AuthListener;
 import com.ksyun.ks3.services.Ks3Client;
 import com.ksyun.ks3.services.Ks3ClientConfiguration;
+import com.ksyun.ks3.services.LogClient;
 import com.ksyun.ks3.services.handler.GetObjectResponseHandler;
 import com.ksyun.ks3.services.handler.ListObjectsResponseHandler;
 import com.ksyun.ks3.services.request.GetObjectRequest;
@@ -414,7 +416,6 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 				public void onTaskSuccess(int paramInt,
 						Header[] paramArrayOfHeader,
 						GetObjectResult getObjectResult) {
-
 				}
 
 				@Override
@@ -425,7 +426,6 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 					item.status = RemoteFile.STATUS_STARTED;
 					item.progress = 0;
 					mHandler.sendEmptyMessage(0);
-
 				}
 
 				@Override

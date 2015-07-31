@@ -28,14 +28,14 @@ public class LogRecord {
 	private long send_complete_time;
 
 	public void copyRecord(LogRecord record) {
-		setBuild_version(record.getBuild_version());
+//		setBuild_version(record.getBuild_version());
 		setClient_state(record.getClient_state());
 		setConnect_type(record.getConnect_type());
 		setError(record.getError());
 		setFirst_data_time(record.getFirst_data_time());
 		setId(record.getId());
-		setManufacturer(record.getManufacturer());
-		setModel(record.getModel());
+//		setManufacturer(record.getManufacturer());
+//		setModel(record.getModel());
 		setNetwork_type(record.getNetwork_type());
 		setRequestId(record.getRequestId());
 		setResponce_size(record.getResponce_size());
@@ -80,13 +80,13 @@ public class LogRecord {
 		this.connect_type = connect_type;
 	}
 
-	public String getBuild_version() {
+/*	private String getBuild_version() {
 		return build_version;
 	}
 
-	public void setBuild_version(String build_version) {
+	private void setBuild_version(String build_version) {
 		this.build_version = build_version;
-	}
+	}*/
 
 	public String getSource_ip() {
 		return source_ip;
@@ -104,21 +104,21 @@ public class LogRecord {
 		this.target_ip = target_ip;
 	}
 
-	public String getModel() {
+/*	private String getModel() {
 		return model;
 	}
 
-	public void setModel(String model) {
+	private void setModel(String model) {
 		this.model = model;
 	}
 
-	public String getManufacturer() {
+	private String getManufacturer() {
 		return manufacturer;
 	}
 
-	public void setManufacturer(String manufacturer) {
+	private void setManufacturer(String manufacturer) {
 		this.manufacturer = manufacturer;
-	}
+	}*/
 
 	public String getId() {
 		return id;
@@ -200,7 +200,7 @@ public class LogRecord {
 			// Send Time
 			object.put("ST", String.valueOf(getSend_before_time()));
 			// First Data Time
-			object.put("FD", getSend_first_data_time());
+			object.put("FT", getSend_first_data_time());
 			// Response Time
 			object.put("RT", String.valueOf(getSend_complete_time()));
 			// Response Size
@@ -246,9 +246,9 @@ public class LogRecord {
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("LogSourceIp", getSource_ip());
 		map.put("LogTargetIp", getTarget_ip());
-		map.put("LogModel", getModel());
+	/*	map.put("LogModel", getModel());
 		map.put("LogManufacturer", getManufacturer());
-		map.put("LogBuildVersion", getBuild_version());
+		map.put("LogBuildVersion", getBuild_version());*/
 		map.put("LogDeviceId", getId());
 		map.put("LogNetworkType", getConnect_type());
 		map.put("LogFirstDataTime", String.valueOf(getSend_first_data_time()));

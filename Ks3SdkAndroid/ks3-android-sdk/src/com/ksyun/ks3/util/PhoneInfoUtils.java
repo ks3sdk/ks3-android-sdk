@@ -273,12 +273,12 @@ public class PhoneInfoUtils {
 
 		public void makeBasicRecord(LogRecord record) {
 			record.setSource_ip(getLocal_ip());
-			record.setBuild_version(getBuild_version());
+//			record.setBuild_version(getBuild_version());
 			record.setConnect_type(getConnect_type());
 			record.setNetwork_type(getNetwork_type());
 			record.setId(getId());
-			record.setManufacturer(getManufacturer());
-			record.setModel(getModel());
+//			record.setManufacturer(getManufacturer());
+//			record.setModel(getModel());
 		}
 	}
 }
