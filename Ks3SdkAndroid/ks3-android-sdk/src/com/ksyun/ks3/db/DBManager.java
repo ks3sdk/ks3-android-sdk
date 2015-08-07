@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
+import android.test.mock.MockContext;
 
 public class DBManager {
 
@@ -43,8 +44,8 @@ public class DBManager {
 		return mInstance;
 	}
 
+	@SuppressLint("NewApi")
 	public DBManager(Context context) {
-		this.context = context;
 		SQLiteOpenHelper helper = new DBHelper(context);
 		mDatabase = helper.getWritableDatabase();
 		mInsertStatement = mDatabase.compileStatement(SQL_INSERT_LOG);
@@ -102,8 +103,9 @@ public class DBManager {
 						mDeleteStatement.bindLong(1, logId);
 						mDeleteStatement.executeUpdateDelete();
 					} else {
-						// TODO
-						//
+						mDatabase.delete(DBConstant.TABLE_NAME_LOG,
+								DBConstant.TABLE_LOG_COLUMN_ID + " = ?",
+								new String[] { String.valueOf(logId) });
 					}
 				}
 				cursor.close();
@@ -146,7 +148,6 @@ public class DBManager {
 				mDatabase.setTransactionSuccessful();
 				mDatabase.endTransaction();
 			} else {
-				mDatabase.execSQL(SQL_DELETE_LOG + logId);
 				mDatabase.delete(DBConstant.TABLE_NAME_LOG,
 						DBConstant.TABLE_LOG_COLUMN_ID + " = ?",
 						new String[] { String.valueOf(logId) });

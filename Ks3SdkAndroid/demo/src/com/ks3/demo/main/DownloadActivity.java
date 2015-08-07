@@ -3,6 +3,7 @@ package com.ks3.demo.main;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.model.ObjectListing;
 import com.ksyun.ks3.model.result.GetObjectResult;
 import com.ksyun.ks3.services.AuthListener;
+import com.ksyun.ks3.services.AuthResult;
 import com.ksyun.ks3.services.Ks3Client;
 import com.ksyun.ks3.services.Ks3ClientConfiguration;
 import com.ksyun.ks3.services.LogClient;
@@ -173,8 +175,53 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 
 			@Override
 			public void run() {
-				client = new Ks3Client(Constants.ACCESS_KEY__ID,
-						Constants.ACCESS_KEY_SECRET, DownloadActivity.this);
+				// client = new Ks3Client(Constants.ACCESS_KEY__ID,
+				// Constants.ACCESS_KEY_SECRET, DownloadActivity.this);
+				client = new Ks3Client(new AuthListener() {
+					@Override
+					public AuthResult onCalculateAuth(final String httpMethod,
+							final String ContentType, final String Date,
+							final String ContentMD5, final String Resource,
+							final String Headers) {
+						// 此处应由APP端向业务服务器发送post请求返回Token。
+						// 需要注意该回调方法运行在非主线程
+						// 此处内部写法仅为示例，开发者请根据自身情况修改
+						String result = null;
+						try {
+							result = AuthUtils.calcAuthToken(httpMethod, ContentType, Date, ContentMD5, Resource, Headers, Constants.ACCESS_KEY__ID, Constants.ACCESS_KEY_SECRET);
+						} catch (SignatureException e) {
+							e.printStackTrace();
+						}
+					/*	HttpPost request = new HttpPost(
+								Constants.APP_SERTVER_HOST);
+						StringEntity se;
+						try {
+							JSONObject object = new JSONObject();
+							object.put("http_method", httpMethod.toString());
+							object.put("content_type", ContentType);
+							object.put("date", Date);
+							object.put("content_md5", ContentMD5);
+							object.put("resource", Resource);
+							object.put("headers", Headers);
+							se = new StringEntity(object.toString());
+							request.setEntity(se);
+							HttpResponse httpResponse = new DefaultHttpClient()
+									.execute(request);
+							String retSrc = EntityUtils.toString(httpResponse
+									.getEntity());
+							result.append(retSrc);
+						} catch (JSONException e) {
+							e.printStackTrace();
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						} catch (ClientProtocolException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}*/
+						return new AuthResult(result, Date);
+					}
+				}, DownloadActivity.this);
 			}
 		}).start();
 

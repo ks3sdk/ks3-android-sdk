@@ -168,7 +168,7 @@ public class LogClient {
 					Log.d(Constants.LOG_TAG, "network unvaliable");
 				}
 			}
-		}, 0, TIMER_INTERVAL);
+		}, 5000, TIMER_INTERVAL);
 	}
 
 	private void sendRecord(int all_count) {
