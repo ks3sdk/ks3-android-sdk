@@ -28,7 +28,7 @@ public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler
 	public final void onSuccess(int statesCode, Header[] responceHeaders,
 			byte[] response) {
 		Log.i(Constants.LOG_TAG, "PutObject Request Success");
-		LogUtil.setSuccessLog(statesCode, response,responceHeaders,record);
+		LogUtil.setSuccessLog(statesCode, response, responceHeaders, record);
 		try {
 			LogClient.getInstance().put(record.toString());
 		} catch (Ks3ClientException e) {
@@ -41,8 +41,10 @@ public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler
 	public final void onFailure(int statesCode, Header[] responceHeaders,
 			byte[] response, Throwable throwable) {
 		Ks3Error error = new Ks3Error(statesCode, response, throwable);
-		Log.e(Constants.LOG_TAG, "PutObject Request Failed, Error Code: "+error.getErrorCode()+",Error Message:"+error.getErrorMessage());
-		LogUtil.setFailureLog(statesCode, response, throwable, error,record);
+		Log.e(Constants.LOG_TAG,
+				"PutObject Request Failed, Error Code: " + error.getErrorCode()
+						+ ",Error Message:" + error.getErrorMessage());
+		LogUtil.setFailureLog(statesCode, response, throwable, error, record);
 		try {
 			LogClient.getInstance().put(record.toString());
 		} catch (Ks3ClientException e) {
@@ -70,6 +72,5 @@ public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler
 	@Override
 	public final void onProgress(int bytesWritten, int totalSize) {
 	}
-
 
 }

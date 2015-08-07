@@ -1,14 +1,8 @@
 package com.ksyun.ks3.services;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.CountDownLatch;
-
 import org.apache.http.Header;
 import org.apache.http.entity.ByteArrayEntity;
 import org.json.JSONArray;
@@ -21,11 +15,10 @@ import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.GzipUtil;
 import com.ksyun.ks3.util.NetworkUtil;
-import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.SyncHttpClient;
 import android.content.Context;
-import android.os.Environment;
+import android.net.ConnectivityManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -37,8 +30,6 @@ public class LogClient {
 	private static SyncHttpClient syncClient;
 	private static Context mContext;
 	private volatile boolean mStarted = false;
-	private long interval;
-	private long UPTATE_INTERVAL_WIFI_TIME = 1000 * 60 * 2;
 	private Timer timer;
 	private boolean isNeedloop;
 	private int sendCount;
@@ -101,12 +92,12 @@ public class LogClient {
 							if (allCount - sendCount > 0) {
 								sendRecord(allCount - sendCount);
 							} else {
-								/*Log.d(Constants.LOG_TAG,
-										"more than 120 mode, last send all over");*/
+								Log.d(Constants.LOG_TAG,
+										"more than 120 mode, last send all over");
 							}
 						} else {
-						/*	Log.d(Constants.LOG_TAG,
-									"less than 120 mode, send all over");*/
+							Log.d(Constants.LOG_TAG,
+									"less than 120 mode, send all over");
 						}
 					}
 
@@ -114,8 +105,8 @@ public class LogClient {
 					public void onFailure(int paramInt,
 							Header[] paramArrayOfHeader,
 							byte[] paramArrayOfByte, Throwable paramThrowable) {
-					/*	Log.d(Constants.LOG_TAG,
-								"log send failure, response code = " + paramInt);*/
+						Log.d(Constants.LOG_TAG,
+								"log send failure, response code = " + paramInt);
 						if (paramArrayOfByte != null) {
 							Log.d(Constants.LOG_TAG, ",response = "
 									+ new String(paramArrayOfByte));
@@ -153,20 +144,26 @@ public class LogClient {
 				// For test
 				int current_count = DBManager.getInstance(mContext)
 						.queryCount();
-				/*Log.d(Constants.LOG_TAG, "send schedule, current thread id = "
+				Log.d(Constants.LOG_TAG, "send schedule, current thread id = "
 						+ Thread.currentThread().getId() + ",log count = "
-						+ current_count);*/
+						+ current_count);
 				if (NetworkUtil.isNetworkAvailable(mContext)) {
 					Log.d(Constants.LOG_TAG, "network valiable");
-					if (current_count > 0) {
-						Log.d(Constants.LOG_TAG, "send record");
-						sendRecord(current_count);
+					if (NetworkUtil.getNetWorkType(mContext)==ConnectivityManager.TYPE_WIFI) {
+						Log.d(Constants.LOG_TAG, "network valiable,type wifi");
+						if (current_count > 0) {
+							Log.d(Constants.LOG_TAG, "send record");
+							sendRecord(current_count);
+						} else {
+							Log.d(Constants.LOG_TAG, "no record");
+						}
 					} else {
-						Log.d(Constants.LOG_TAG, "no record");
+						Log.d(Constants.LOG_TAG, "network valiable,type not wifi");
 					}
 				} else {
 					Log.d(Constants.LOG_TAG, "network unvaliable");
 				}
+
 			}
 		}, 5000, TIMER_INTERVAL);
 	}
@@ -195,8 +192,8 @@ public class LogClient {
 	}
 
 	public void put(String message) throws Ks3ClientException {
-/*		Log.d(Constants.LOG_TAG, "new log: " + message);
-*/		if (jsonCheck(message)) {
+		Log.d(Constants.LOG_TAG, "new log: " + message);
+		if (jsonCheck(message)) {
 			DBManager.getInstance(mContext).insertLog(message);
 		} else {
 			throw new Ks3ClientException(
@@ -216,8 +213,8 @@ public class LogClient {
 
 	public void put(LogRecord record) throws Ks3ClientException {
 		if (record != null) {
-/*			Log.d(Constants.LOG_TAG, "new log: " + record.toString());
-*/			DBManager.getInstance(mContext).insertLog(record.toString());
+			Log.d(Constants.LOG_TAG, "new log: " + record.toString());
+			DBManager.getInstance(mContext).insertLog(record.toString());
 		} else {
 			throw new Ks3ClientException("record can not be null");
 		}

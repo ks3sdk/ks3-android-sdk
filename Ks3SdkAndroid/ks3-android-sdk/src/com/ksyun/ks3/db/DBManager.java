@@ -20,9 +20,6 @@ public class DBManager {
 			+ DBConstant.TABLE_NAME_LOG + " WHERE "
 			+ DBConstant.TABLE_LOG_COLUMN_ID + " = ?";
 
-	/**
-	 * Singleton instance
-	 */
 	private static DBManager mInstance;
 	private static Object mLockObject = new Object();
 	private Context context;
@@ -30,9 +27,6 @@ public class DBManager {
 	private SQLiteStatement mInsertStatement;
 	private SQLiteStatement mDeleteStatement;
 
-	/**
-	 * Singleton pattern
-	 */
 	public static DBManager getInstance(Context context) {
 		if (null == mInstance) {
 			synchronized (mLockObject) {

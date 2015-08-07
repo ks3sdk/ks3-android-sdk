@@ -90,4 +90,25 @@ public class NetworkUtil {
 		return netType.noneNet;
 
 	}
+	
+	public static int getNetWorkType(Context context) {
+		if (context != null) {
+			ConnectivityManager mConnectivityManager = (ConnectivityManager) context
+					.getSystemService(Context.CONNECTIVITY_SERVICE);
+			NetworkInfo mNetworkInfo = mConnectivityManager
+					.getActiveNetworkInfo();
+			if (mNetworkInfo != null && mNetworkInfo.isAvailable()) {
+				switch (mNetworkInfo.getType()) {
+				case ConnectivityManager.TYPE_MOBILE:
+					return ConnectivityManager.TYPE_MOBILE;
+				case ConnectivityManager.TYPE_WIFI:
+					return ConnectivityManager.TYPE_WIFI;
+				default:
+					break;
+				}
+				return 100;
+			}
+		}
+		return 100;
+	}
 }
