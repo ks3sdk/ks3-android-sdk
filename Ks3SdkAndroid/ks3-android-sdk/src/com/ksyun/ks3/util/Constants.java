@@ -40,7 +40,7 @@ public class Constants {
 	public static final int EXCEPTION = 0;
 	// call back
 	public static final String CALL_BACK_CUSTOM_PREFIX = "kss-";
-//	public static final String LOG_SERVER_URL = "http://mlog.ksyun.com";
-	public static final String LOG_SERVER_URL = "http://101.71.27.142:8181/d";
+	public static final String LOG_SERVER_URL = "http://mlog.ksyun.com";
+//	public static final String LOG_SERVER_URL = "http://101.71.27.142:8181/d";
 
 }

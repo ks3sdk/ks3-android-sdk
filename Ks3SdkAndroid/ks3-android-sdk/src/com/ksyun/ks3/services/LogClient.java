@@ -101,12 +101,12 @@ public class LogClient {
 							if (allCount - sendCount > 0) {
 								sendRecord(allCount - sendCount);
 							} else {
-								Log.d(Constants.LOG_TAG,
-										"more than 120 mode, last send all over");
+								/*Log.d(Constants.LOG_TAG,
+										"more than 120 mode, last send all over");*/
 							}
 						} else {
-							Log.d(Constants.LOG_TAG,
-									"less than 120 mode, send all over");
+						/*	Log.d(Constants.LOG_TAG,
+									"less than 120 mode, send all over");*/
 						}
 					}
 
@@ -114,8 +114,8 @@ public class LogClient {
 					public void onFailure(int paramInt,
 							Header[] paramArrayOfHeader,
 							byte[] paramArrayOfByte, Throwable paramThrowable) {
-						Log.d(Constants.LOG_TAG,
-								"log send failure, response code = " + paramInt);
+					/*	Log.d(Constants.LOG_TAG,
+								"log send failure, response code = " + paramInt);*/
 						if (paramArrayOfByte != null) {
 							Log.d(Constants.LOG_TAG, ",response = "
 									+ new String(paramArrayOfByte));
@@ -153,9 +153,9 @@ public class LogClient {
 				// For test
 				int current_count = DBManager.getInstance(mContext)
 						.queryCount();
-				Log.d(Constants.LOG_TAG, "send schedule, current thread id = "
+				/*Log.d(Constants.LOG_TAG, "send schedule, current thread id = "
 						+ Thread.currentThread().getId() + ",log count = "
-						+ current_count);
+						+ current_count);*/
 				if (NetworkUtil.isNetworkAvailable(mContext)) {
 					Log.d(Constants.LOG_TAG, "network valiable");
 					if (current_count > 0) {
@@ -195,8 +195,8 @@ public class LogClient {
 	}
 
 	public void put(String message) throws Ks3ClientException {
-		Log.d(Constants.LOG_TAG, "new log: " + message);
-		if (jsonCheck(message)) {
+/*		Log.d(Constants.LOG_TAG, "new log: " + message);
+*/		if (jsonCheck(message)) {
 			DBManager.getInstance(mContext).insertLog(message);
 		} else {
 			throw new Ks3ClientException(
@@ -216,8 +216,8 @@ public class LogClient {
 
 	public void put(LogRecord record) throws Ks3ClientException {
 		if (record != null) {
-			Log.d(Constants.LOG_TAG, "new log: " + record.toString());
-			DBManager.getInstance(mContext).insertLog(record.toString());
+/*			Log.d(Constants.LOG_TAG, "new log: " + record.toString());
+*/			DBManager.getInstance(mContext).insertLog(record.toString());
 		} else {
 			throw new Ks3ClientException("record can not be null");
 		}
