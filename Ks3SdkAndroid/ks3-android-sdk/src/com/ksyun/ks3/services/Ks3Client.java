@@ -112,6 +112,13 @@ public class Ks3Client implements Ks3 {
 
 	private Ks3HttpRequest getObject(GetObjectRequest request,
 			GetObjectResponseHandler handler, boolean isUseAsyncMode) {
+		if (handler.mFile != null) {
+			long length = handler.mFile.length();
+			if (length > 0) {
+					request.setRange(length);
+					handler.setOffset(length);
+			}
+		}
 		return this.invoke(auth, request, handler, isUseAsyncMode);
 	}
 

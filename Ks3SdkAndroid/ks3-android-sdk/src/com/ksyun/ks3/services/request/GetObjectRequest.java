@@ -60,6 +60,10 @@ public class GetObjectRequest extends Ks3HttpRequest {
 		return range;
 	}
 
+	public void setRange(long start) {
+		this.range = "bytes=" + start + "-";
+	}
+	
 	public void setRange(long start, long end) {
 		this.range = "bytes=" + start + "-" + end;
 	}

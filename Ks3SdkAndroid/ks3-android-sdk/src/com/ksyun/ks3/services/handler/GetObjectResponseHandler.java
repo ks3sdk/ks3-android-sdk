@@ -3,6 +3,8 @@ package com.ksyun.ks3.services.handler;
 import java.io.File;
 import org.apache.http.Header;
 
+import android.util.Log;
+
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.HttpHeaders;
@@ -11,6 +13,7 @@ import com.ksyun.ks3.model.ObjectMetadata.Meta;
 import com.ksyun.ks3.model.result.GetObjectResult;
 import com.ksyun.ks3.services.LogClient;
 import com.ksyun.ks3.services.LogUtil;
+import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.Md5Utils;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
 
@@ -19,13 +22,14 @@ public abstract class GetObjectResponseHandler extends
 
 	private String mBucketName;
 	private String mObjectKey;
+	private long offset = 0;
 
 	public GetObjectResponseHandler(File file, boolean append) {
 		super(file, append);
 	}
 
 	public GetObjectResponseHandler(File file, String buckName, String objectKey) {
-		this(file, false);
+		this(file, true);
 		this.mBucketName = buckName;
 		this.mObjectKey = objectKey;
 	}
@@ -74,6 +78,10 @@ public abstract class GetObjectResponseHandler extends
 
 	@Override
 	public final void onProgress(int bytesWritten, int totalSize) {
+		bytesWritten = offset > 0 ? (int) (bytesWritten + (int)offset)
+				: bytesWritten;
+		totalSize = offset > 0 ? (int) (totalSize + (int)offset)
+				: totalSize;
 		double progress = Double.valueOf(totalSize > 0 ? bytesWritten * 1.0D
 				/ totalSize * 100.0D : -1.0D);
 		onTaskProgress(progress);
@@ -187,6 +195,11 @@ public abstract class GetObjectResponseHandler extends
 			result.setIfPreconditionSuccess(false);
 		}
 		return result;
+	}
+
+	public void setOffset(long length) {
+		Log.d(Constants.LOG_TAG, "last offset =" +length);
+		this.offset = length;
 	}
 
 }

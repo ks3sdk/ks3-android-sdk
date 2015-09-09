@@ -1,6 +1,9 @@
 package com.ks3.demo.main;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -94,6 +97,11 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_dummy);
+		try {
+			prepareLocalUploadFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		setUpKs3Client();
 		setUpUserInterface();
 	}
@@ -212,7 +220,6 @@ public class MainActivity extends Activity {
 
 									}
 
-
 									@Override
 									public void onTaskProgress(double progress) {
 
@@ -231,7 +238,7 @@ public class MainActivity extends Activity {
 											String response,
 											Throwable paramThrowable) {
 										// TODO Auto-generated method stub
-										
+
 									}
 								});
 					}
@@ -263,7 +270,7 @@ public class MainActivity extends Activity {
 											String response,
 											Throwable paramThrowable) {
 										// TODO Auto-generated method stub
-										
+
 									}
 								});
 					}
@@ -275,16 +282,16 @@ public class MainActivity extends Activity {
 	private void setUpKs3Client() {
 		// AK&SK形式直接初始化，仅建议测试时使用，正式环境下请替换AuthListener方式
 		new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				client = new Ks3Client(Constants.ACCESS_KEY__ID,
 						Constants.ACCESS_KEY_SECRET, MainActivity.this);
-				configuration = Ks3ClientConfiguration.getDefaultConfiguration();
-				client.setConfiguration(configuration);				
+				configuration = Ks3ClientConfiguration
+						.getDefaultConfiguration();
+				client.setConfiguration(configuration);
 			}
 		}).start();
-		
 
 		// AuthListener方式初始化
 		// client = new Ks3Client(new AuthListener() {
@@ -345,66 +352,45 @@ public class MainActivity extends Activity {
 				.setOnBucketObjectDialogListener(new OnBucketObjectDialogListener() {
 					@Override
 					public void confirmBucketAndObject(String name, String key) {
-					/*	client.headObject(name, key,
-								new HeadObjectResponseHandler() {
-									@Override
-									public void onSuccess(int statesCode,
-											Header[] responceHeaders,
-											HeadObjectResult headObjectResult) {
-
-										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer
-												.append("lastModifiedDate      = "
-														+ headObjectResult
-																.getLastmodified())
-												.append("\n");
-										stringBuffer.append(
-												"ETag                  = "
-														+ headObjectResult
-																.getETag())
-												.append("\n");
-										ObjectMetadata metadata = headObjectResult
-												.getObjectMetadata();
-										stringBuffer.append(metadata);
-										Intent intent = new Intent(
-												MainActivity.this,
-												RESTAPITestResult.class);
-
-										Bundle data = new Bundle();
-										data.putString(RESULT,
-												stringBuffer.toString());
-										data.putString(API,
-												"head object Result");
-										intent.putExtras(data);
-										startActivity(intent);
-
-									}
-
-									@Override
-									public void onFailure(int statesCode,
-											Ks3Error error,
-											Header[] responceHeaders,
-											String response,
-											Throwable paramThrowable) {
-										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer.append(
-												"head object , states code :"
-														+ statesCode).append(
-												"\n");
-										stringBuffer.append("Exception :"
-												+ paramThrowable.toString());
-										Intent intent = new Intent(
-												MainActivity.this,
-												RESTAPITestResult.class);
-										Bundle data = new Bundle();
-										data.putString(RESULT,
-												stringBuffer.toString());
-										data.putString(API,
-												"head object Result");
-										intent.putExtras(data);
-										startActivity(intent);										
-									}
-								});*/
+						/*
+						 * client.headObject(name, key, new
+						 * HeadObjectResponseHandler() {
+						 * 
+						 * @Override public void onSuccess(int statesCode,
+						 * Header[] responceHeaders, HeadObjectResult
+						 * headObjectResult) {
+						 * 
+						 * StringBuffer stringBuffer = new StringBuffer();
+						 * stringBuffer .append("lastModifiedDate      = " +
+						 * headObjectResult .getLastmodified()) .append("\n");
+						 * stringBuffer.append( "ETag                  = " +
+						 * headObjectResult .getETag()) .append("\n");
+						 * ObjectMetadata metadata = headObjectResult
+						 * .getObjectMetadata(); stringBuffer.append(metadata);
+						 * Intent intent = new Intent( MainActivity.this,
+						 * RESTAPITestResult.class);
+						 * 
+						 * Bundle data = new Bundle(); data.putString(RESULT,
+						 * stringBuffer.toString()); data.putString(API,
+						 * "head object Result"); intent.putExtras(data);
+						 * startActivity(intent);
+						 * 
+						 * }
+						 * 
+						 * @Override public void onFailure(int statesCode,
+						 * Ks3Error error, Header[] responceHeaders, String
+						 * response, Throwable paramThrowable) { StringBuffer
+						 * stringBuffer = new StringBuffer();
+						 * stringBuffer.append( "head object , states code :" +
+						 * statesCode).append( "\n");
+						 * stringBuffer.append("Exception :" +
+						 * paramThrowable.toString()); Intent intent = new
+						 * Intent( MainActivity.this, RESTAPITestResult.class);
+						 * Bundle data = new Bundle(); data.putString(RESULT,
+						 * stringBuffer.toString()); data.putString(API,
+						 * "head object Result"); intent.putExtras(data);
+						 * startActivity(intent); } });
+						 */
 
 					}
 				});
@@ -416,77 +402,51 @@ public class MainActivity extends Activity {
 				.setOnBucketObjectDialogListener(new OnBucketObjectDialogListener() {
 					@Override
 					public void confirmBucketAndObject(String name, String key) {
-						/*client.getObjectACL(name, key,
-								new GetObjectACLResponseHandler() {
-
-									@Override
-									public void onSuccess(
-											int statesCode,
-											Header[] responceHeaders,
-											AccessControlPolicy accessControlPolicy) {
-										StringBuffer stringBuffer = new StringBuffer();
-										Owner owner = accessControlPolicy
-												.getOwner();
-										stringBuffer
-												.append("=======Owner : ID "
-														+ owner.getId()
-														+ " ; NAME :"
-														+ owner.getDisplayName())
-												.append("\n");
-										stringBuffer
-												.append("==============ACL LIST=========");
-										HashSet<Grant> grants = accessControlPolicy
-												.getAccessControlList()
-												.getGrants();
-										for (Grant grant : grants) {
-											stringBuffer
-													.append(grant.getGrantee()
-															.getIdentifier()
-															+ "========>"
-															+ grant.getPermission()
-																	.toString())
-													.append("\n");
-										}
-										Intent intent = new Intent(
-												MainActivity.this,
-												RESTAPITestResult.class);
-
-										Bundle data = new Bundle();
-										data.putString(RESULT,
-												stringBuffer.toString());
-										data.putString(API,
-												"head object Result");
-										intent.putExtras(data);
-										startActivity(intent);
-
-									}
-
-									@Override
-									public void onFailure(int statesCode,
-											Ks3Error error,
-											Header[] responceHeaders,
-											String response,
-											Throwable paramThrowable) {
-										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer.append(
-												"get object ACL FAIL !!!!!!, states code :"
-														+ statesCode).append(
-												"\n");
-										stringBuffer.append("Exception :"
-												+ paramThrowable.toString());
-										Intent intent = new Intent(
-												MainActivity.this,
-												RESTAPITestResult.class);
-										Bundle data = new Bundle();
-										data.putString(RESULT,
-												stringBuffer.toString());
-										data.putString(API,
-												"GET Object ACL Result");
-										intent.putExtras(data);
-										startActivity(intent);
-										
-									}
-								});*/
+						/*
+						 * client.getObjectACL(name, key, new
+						 * GetObjectACLResponseHandler() {
+						 * 
+						 * @Override public void onSuccess( int statesCode,
+						 * Header[] responceHeaders, AccessControlPolicy
+						 * accessControlPolicy) { StringBuffer stringBuffer =
+						 * new StringBuffer(); Owner owner = accessControlPolicy
+						 * .getOwner(); stringBuffer
+						 * .append("=======Owner : ID " + owner.getId() +
+						 * " ; NAME :" + owner.getDisplayName()) .append("\n");
+						 * stringBuffer
+						 * .append("==============ACL LIST=========");
+						 * HashSet<Grant> grants = accessControlPolicy
+						 * .getAccessControlList() .getGrants(); for (Grant
+						 * grant : grants) { stringBuffer
+						 * .append(grant.getGrantee() .getIdentifier() +
+						 * "========>" + grant.getPermission() .toString())
+						 * .append("\n"); } Intent intent = new Intent(
+						 * MainActivity.this, RESTAPITestResult.class);
+						 * 
+						 * Bundle data = new Bundle(); data.putString(RESULT,
+						 * stringBuffer.toString()); data.putString(API,
+						 * "head object Result"); intent.putExtras(data);
+						 * startActivity(intent);
+						 * 
+						 * }
+						 * 
+						 * @Override public void onFailure(int statesCode,
+						 * Ks3Error error, Header[] responceHeaders, String
+						 * response, Throwable paramThrowable) { StringBuffer
+						 * stringBuffer = new StringBuffer();
+						 * stringBuffer.append(
+						 * "get object ACL FAIL !!!!!!, states code :" +
+						 * statesCode).append( "\n");
+						 * stringBuffer.append("Exception :" +
+						 * paramThrowable.toString()); Intent intent = new
+						 * Intent( MainActivity.this, RESTAPITestResult.class);
+						 * Bundle data = new Bundle(); data.putString(RESULT,
+						 * stringBuffer.toString()); data.putString(API,
+						 * "GET Object ACL Result"); intent.putExtras(data);
+						 * startActivity(intent);
+						 * 
+						 * } });
+						 */
 
 					}
 				});
@@ -497,44 +457,34 @@ public class MainActivity extends Activity {
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
 			@Override
 			public void confirmBucket(String name) {
-			/*	client.deleteBucket(name, new DeleteBucketResponceHandler() {
-
-					@Override
-					public void onSuccess(int statesCode,
-							Header[] responceHeaders) {
-						Intent intent = new Intent(MainActivity.this,
-								RESTAPITestResult.class);
-						Bundle data = new Bundle();
-						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer
-								.append("Delete bucket success , states code :"
-										+ statesCode);
-						data.putString(RESULT, stringBuffer.toString());
-						data.putString(API, "Delete Bucket Result");
-						intent.putExtras(data);
-						startActivity(intent);
-					}
-
-					@Override
-					public void onFailure(int statesCode, Ks3Error error,
-							Header[] responceHeaders, String response,
-							Throwable paramThrowable) {
-						Intent intent = new Intent(MainActivity.this,
-								RESTAPITestResult.class);
-						Bundle data = new Bundle();
-						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer
-								.append("Delete bucket failed , states code :"
-										+ statesCode);
-						data.putString(RESULT, stringBuffer.toString());
-						data.putString(API, "Delete Bucket Result");
-						intent.putExtras(data);
-						startActivity(intent);						
-					}*/
-//				});
+				/*
+				 * client.deleteBucket(name, new DeleteBucketResponceHandler() {
+				 * 
+				 * @Override public void onSuccess(int statesCode, Header[]
+				 * responceHeaders) { Intent intent = new
+				 * Intent(MainActivity.this, RESTAPITestResult.class); Bundle
+				 * data = new Bundle(); StringBuffer stringBuffer = new
+				 * StringBuffer(); stringBuffer
+				 * .append("Delete bucket success , states code :" +
+				 * statesCode); data.putString(RESULT, stringBuffer.toString());
+				 * data.putString(API, "Delete Bucket Result");
+				 * intent.putExtras(data); startActivity(intent); }
+				 * 
+				 * @Override public void onFailure(int statesCode, Ks3Error
+				 * error, Header[] responceHeaders, String response, Throwable
+				 * paramThrowable) { Intent intent = new
+				 * Intent(MainActivity.this, RESTAPITestResult.class); Bundle
+				 * data = new Bundle(); StringBuffer stringBuffer = new
+				 * StringBuffer(); stringBuffer
+				 * .append("Delete bucket failed , states code :" + statesCode);
+				 * data.putString(RESULT, stringBuffer.toString());
+				 * data.putString(API, "Delete Bucket Result");
+				 * intent.putExtras(data); startActivity(intent); }
+				 */
+				// });
 			}
 		});
-//		bucketInpuDialog.show();
+		// bucketInpuDialog.show();
 	}
 
 	private void putObjectACL() {
@@ -542,72 +492,57 @@ public class MainActivity extends Activity {
 				.setOnBucketObjectDialogListener(new OnBucketObjectDialogListener() {
 					@Override
 					public void confirmBucketAndObject(String name, String key) {
-						/*PutObjectACLRequest request = new PutObjectACLRequest(
-								name, key);
-						CannedAccessControlList cannedList = CannedAccessControlList.PublicRead;
-						// AccessControlList acList = new AccessControlList();
-
-						// GranteeId grantee = new GranteeId();
-						// grantee.setIdentifier("123456");
-						// grantee.setDisplayName("TESTTEST1");
-						// acList.addGrant(grantee, Permission.Read);
-						// GranteeId grantee1 = new GranteeId();
-						// grantee1.setIdentifier("1235789");
-						// grantee1.setDisplayName("TESTTEST1");
-						// acList.addGrant(grantee1, Permission.FullControl);
-						//
-						// request.setAccessControlList(acList);
-						request.setCannedAcl(cannedList);
-
-						client.putObjectACL(request,
-								new PutObjectACLResponseHandler() {
-
-									@Override
-									public void onSuccess(int statesCode,
-											Header[] responceHeaders) {
-										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer
-												.append("Put Object ACL success , states code :"
-														+ statesCode);
-										Intent intent = new Intent(
-												MainActivity.this,
-												RESTAPITestResult.class);
-										Bundle data = new Bundle();
-										data.putString(RESULT,
-												stringBuffer.toString());
-										data.putString(API,
-												"Put Object ACL Result");
-										intent.putExtras(data);
-										startActivity(intent);
-
-									}
-									
-									@Override
-									public void onFailure(int statesCode,
-											Ks3Error error,
-											Header[] responceHeaders,
-											String response,
-											Throwable paramThrowable) {
-										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer.append(
-												"PUT Object ACL FAIL !!!!!!!!!, states code :"
-														+ statesCode).append(
-												"\n");
-										stringBuffer.append("Exception :"
-												+ paramThrowable.toString());
-										Intent intent = new Intent(
-												MainActivity.this,
-												RESTAPITestResult.class);
-										Bundle data = new Bundle();
-										data.putString(RESULT,
-												stringBuffer.toString());
-										data.putString(API,
-												"PUT Object ACL Result");
-										intent.putExtras(data);
-										startActivity(intent);
-										
-									}
-								});*/
+						/*
+						 * PutObjectACLRequest request = new
+						 * PutObjectACLRequest( name, key);
+						 * CannedAccessControlList cannedList =
+						 * CannedAccessControlList.PublicRead; //
+						 * AccessControlList acList = new AccessControlList();
+						 * 
+						 * // GranteeId grantee = new GranteeId(); //
+						 * grantee.setIdentifier("123456"); //
+						 * grantee.setDisplayName("TESTTEST1"); //
+						 * acList.addGrant(grantee, Permission.Read); //
+						 * GranteeId grantee1 = new GranteeId(); //
+						 * grantee1.setIdentifier("1235789"); //
+						 * grantee1.setDisplayName("TESTTEST1"); //
+						 * acList.addGrant(grantee1, Permission.FullControl); //
+						 * // request.setAccessControlList(acList);
+						 * request.setCannedAcl(cannedList);
+						 * 
+						 * client.putObjectACL(request, new
+						 * PutObjectACLResponseHandler() {
+						 * 
+						 * @Override public void onSuccess(int statesCode,
+						 * Header[] responceHeaders) { StringBuffer stringBuffer
+						 * = new StringBuffer(); stringBuffer
+						 * .append("Put Object ACL success , states code :" +
+						 * statesCode); Intent intent = new Intent(
+						 * MainActivity.this, RESTAPITestResult.class); Bundle
+						 * data = new Bundle(); data.putString(RESULT,
+						 * stringBuffer.toString()); data.putString(API,
+						 * "Put Object ACL Result"); intent.putExtras(data);
+						 * startActivity(intent);
+						 * 
+						 * }
+						 * 
+						 * @Override public void onFailure(int statesCode,
+						 * Ks3Error error, Header[] responceHeaders, String
+						 * response, Throwable paramThrowable) { StringBuffer
+						 * stringBuffer = new StringBuffer();
+						 * stringBuffer.append(
+						 * "PUT Object ACL FAIL !!!!!!!!!, states code :" +
+						 * statesCode).append( "\n");
+						 * stringBuffer.append("Exception :" +
+						 * paramThrowable.toString()); Intent intent = new
+						 * Intent( MainActivity.this, RESTAPITestResult.class);
+						 * Bundle data = new Bundle(); data.putString(RESULT,
+						 * stringBuffer.toString()); data.putString(API,
+						 * "PUT Object ACL Result"); intent.putExtras(data);
+						 * startActivity(intent);
+						 * 
+						 * } });
+						 */
 					}
 				});
 		bucketObjectInpuDialog.show();
@@ -617,42 +552,32 @@ public class MainActivity extends Activity {
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
 			@Override
 			public void confirmBucket(String name) {
-				/*client.headBucket(name, new HeadBucketResponseHandler() {
-					@Override
-					public void onSuccess(int statesCode,
-							Header[] responceHeaders) {
-						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer
-								.append("head Bucket success , states code :"
-										+ statesCode);
-						Intent intent = new Intent(MainActivity.this,
-								RESTAPITestResult.class);
-						Bundle data = new Bundle();
-						data.putString(RESULT, stringBuffer.toString());
-						data.putString(API, "head Bucket Result");
-						intent.putExtras(data);
-						startActivity(intent);
-					}
-
-					@Override
-					public void onFailure(int statesCode, Ks3Error error,
-							Header[] responceHeaders, String response,
-							Throwable paramThrowable) {
-						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(
-								"head Bucket Fail, states code :" + statesCode)
-								.append("\n");
-						stringBuffer.append("Exception :"
-								+ paramThrowable.toString());
-						Intent intent = new Intent(MainActivity.this,
-								RESTAPITestResult.class);
-						Bundle data = new Bundle();
-						data.putString(RESULT, stringBuffer.toString());
-						data.putString(API, "head Bucket Result");
-						intent.putExtras(data);
-						startActivity(intent);						
-					}
-				});*/
+				/*
+				 * client.headBucket(name, new HeadBucketResponseHandler() {
+				 * 
+				 * @Override public void onSuccess(int statesCode, Header[]
+				 * responceHeaders) { StringBuffer stringBuffer = new
+				 * StringBuffer(); stringBuffer
+				 * .append("head Bucket success , states code :" + statesCode);
+				 * Intent intent = new Intent(MainActivity.this,
+				 * RESTAPITestResult.class); Bundle data = new Bundle();
+				 * data.putString(RESULT, stringBuffer.toString());
+				 * data.putString(API, "head Bucket Result");
+				 * intent.putExtras(data); startActivity(intent); }
+				 * 
+				 * @Override public void onFailure(int statesCode, Ks3Error
+				 * error, Header[] responceHeaders, String response, Throwable
+				 * paramThrowable) { StringBuffer stringBuffer = new
+				 * StringBuffer(); stringBuffer.append(
+				 * "head Bucket Fail, states code :" + statesCode)
+				 * .append("\n"); stringBuffer.append("Exception :" +
+				 * paramThrowable.toString()); Intent intent = new
+				 * Intent(MainActivity.this, RESTAPITestResult.class); Bundle
+				 * data = new Bundle(); data.putString(RESULT,
+				 * stringBuffer.toString()); data.putString(API,
+				 * "head Bucket Result"); intent.putExtras(data);
+				 * startActivity(intent); } });
+				 */
 			}
 		});
 		bucketInpuDialog.show();
@@ -662,75 +587,62 @@ public class MainActivity extends Activity {
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
 			@Override
 			public void confirmBucket(String name) {
-			/*	PutBucketACLRequest request = new PutBucketACLRequest(name);
-				// AccessControlList acl = new AccessControlList();
-				// // GranteeUri urigrantee = GranteeUri.AllUsers;
-				// // Permission permission = Permission.Read;
-				//
-				// GranteeEmail email = new GranteeEmail();
-				// email.setEmail("guoli@gmail.com");
-				// Permission permission = Permission.Read;
-				// Grant g = new Grant(email, permission);
-				//
-				// GranteeUri uirGroup = GranteeUri.AllUsers;
-				// Permission uripermission = Permission.Read;
-				// Grant g1 = new Grant(uirGroup, uripermission);
-
-				// acl.addGrant(g);
-				// acl.addGrant(g1);
-
-				// GranteeId grantee = new GranteeId() ;
-				// grantee.setIdentifier("12773456");
-				// grantee.setDisplayName("guoliTest222");
-				// acl.addGrant(grantee, Permission.Read);
-
-				// GranteeId grantee1 = new GranteeId() ;
-				// grantee1.setIdentifier("123005789");
-				// grantee1.setDisplayName("guoliTest2D2");
-				// acl.addGrant(grantee1, Permission.Write);
-
-				// request.setAccessControlList(acl) ;
-
-				CannedAccessControlList cannedAcl = CannedAccessControlList.PublicReadWrite;
-				request.setCannedAcl(cannedAcl);
-				// request.setAccessControlList(acl);
-				client.putBucketACL(request, new PutBucketACLResponseHandler() {
-
-					@Override
-					public void onSuccess(int statesCode,
-							Header[] responceHeaders) {
-						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer
-								.append("Put Bucket ACL success, states code :"
-										+ statesCode);
-						Intent intent = new Intent(MainActivity.this,
-								RESTAPITestResult.class);
-						Bundle data = new Bundle();
-						data.putString(RESULT, stringBuffer.toString());
-						data.putString(API, "Put Bucket ACL Result");
-						intent.putExtras(data);
-						startActivity(intent);
-					}
-
-					@Override
-					public void onFailure(int statesCode, Ks3Error error,
-							Header[] responceHeaders, String response,
-							Throwable paramThrowable) {
-						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(
-								"PUT Bucket ACL FAIL, states code :"
-										+ statesCode).append("\n");
-						stringBuffer.append("Exception :"
-								+ paramThrowable.toString());
-						Intent intent = new Intent(MainActivity.this,
-								RESTAPITestResult.class);
-						Bundle data = new Bundle();
-						data.putString(RESULT, stringBuffer.toString());
-						data.putString(API, "PUT Bucket ACL Result");
-						intent.putExtras(data);
-						startActivity(intent);						
-					}
-				});*/
+				/*
+				 * PutBucketACLRequest request = new PutBucketACLRequest(name);
+				 * // AccessControlList acl = new AccessControlList(); // //
+				 * GranteeUri urigrantee = GranteeUri.AllUsers; // // Permission
+				 * permission = Permission.Read; // // GranteeEmail email = new
+				 * GranteeEmail(); // email.setEmail("guoli@gmail.com"); //
+				 * Permission permission = Permission.Read; // Grant g = new
+				 * Grant(email, permission); // // GranteeUri uirGroup =
+				 * GranteeUri.AllUsers; // Permission uripermission =
+				 * Permission.Read; // Grant g1 = new Grant(uirGroup,
+				 * uripermission);
+				 * 
+				 * // acl.addGrant(g); // acl.addGrant(g1);
+				 * 
+				 * // GranteeId grantee = new GranteeId() ; //
+				 * grantee.setIdentifier("12773456"); //
+				 * grantee.setDisplayName("guoliTest222"); //
+				 * acl.addGrant(grantee, Permission.Read);
+				 * 
+				 * // GranteeId grantee1 = new GranteeId() ; //
+				 * grantee1.setIdentifier("123005789"); //
+				 * grantee1.setDisplayName("guoliTest2D2"); //
+				 * acl.addGrant(grantee1, Permission.Write);
+				 * 
+				 * // request.setAccessControlList(acl) ;
+				 * 
+				 * CannedAccessControlList cannedAcl =
+				 * CannedAccessControlList.PublicReadWrite;
+				 * request.setCannedAcl(cannedAcl); //
+				 * request.setAccessControlList(acl);
+				 * client.putBucketACL(request, new
+				 * PutBucketACLResponseHandler() {
+				 * 
+				 * @Override public void onSuccess(int statesCode, Header[]
+				 * responceHeaders) { StringBuffer stringBuffer = new
+				 * StringBuffer(); stringBuffer
+				 * .append("Put Bucket ACL success, states code :" +
+				 * statesCode); Intent intent = new Intent(MainActivity.this,
+				 * RESTAPITestResult.class); Bundle data = new Bundle();
+				 * data.putString(RESULT, stringBuffer.toString());
+				 * data.putString(API, "Put Bucket ACL Result");
+				 * intent.putExtras(data); startActivity(intent); }
+				 * 
+				 * @Override public void onFailure(int statesCode, Ks3Error
+				 * error, Header[] responceHeaders, String response, Throwable
+				 * paramThrowable) { StringBuffer stringBuffer = new
+				 * StringBuffer(); stringBuffer.append(
+				 * "PUT Bucket ACL FAIL, states code :" +
+				 * statesCode).append("\n"); stringBuffer.append("Exception :" +
+				 * paramThrowable.toString()); Intent intent = new
+				 * Intent(MainActivity.this, RESTAPITestResult.class); Bundle
+				 * data = new Bundle(); data.putString(RESULT,
+				 * stringBuffer.toString()); data.putString(API,
+				 * "PUT Bucket ACL Result"); intent.putExtras(data);
+				 * startActivity(intent); } });
+				 */
 			}
 		});
 		bucketInpuDialog.show();
@@ -741,56 +653,40 @@ public class MainActivity extends Activity {
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
 			@Override
 			public void confirmBucket(String name) {
-				/*client.getBucketACL(name, new GetBucketACLResponceHandler() {
-
-					@Override
-					public void onSuccess(int statesCode,
-							Header[] responceHeaders,
-							AccessControlPolicy accessControlPolicy) {
-						StringBuffer stringBuffer = new StringBuffer();
-						Owner owner = accessControlPolicy.getOwner();
-						stringBuffer.append(
-								"=======Owner : ID " + owner.getId()
-										+ " ; NAME :" + owner.getDisplayName())
-								.append("\n");
-						stringBuffer.append("==============ACL LIST=========");
-						HashSet<Grant> grants = accessControlPolicy
-								.getAccessControlList().getGrants();
-						for (Grant grant : grants) {
-							stringBuffer.append(
-									grant.getGrantee().getIdentifier()
-											+ "========>"
-											+ grant.getPermission().toString())
-									.append("\n");
-						}
-						Intent intent = new Intent(MainActivity.this,
-								RESTAPITestResult.class);
-						Bundle data = new Bundle();
-						data.putString(RESULT, stringBuffer.toString());
-						data.putString(API, "GET BUCKET ACL Result");
-						intent.putExtras(data);
-						startActivity(intent);
-					}
-
-					@Override
-					public void onFailure(int statesCode, Ks3Error error,
-							Header[] responceHeaders, String response,
-							Throwable paramThrowable) {
-						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(
-								"GET BUCKET ACL fail , states code :"
-										+ statesCode).append("\n");
-						stringBuffer.append("Exception :"
-								+ paramThrowable.toString());
-						Intent intent = new Intent(MainActivity.this,
-								RESTAPITestResult.class);
-						Bundle data = new Bundle();
-						data.putString(RESULT, stringBuffer.toString());
-						data.putString(API, "GET BUCKET ACL Result");
-						intent.putExtras(data);
-						startActivity(intent);						
-					}
-				});*/
+				/*
+				 * client.getBucketACL(name, new GetBucketACLResponceHandler() {
+				 * 
+				 * @Override public void onSuccess(int statesCode, Header[]
+				 * responceHeaders, AccessControlPolicy accessControlPolicy) {
+				 * StringBuffer stringBuffer = new StringBuffer(); Owner owner =
+				 * accessControlPolicy.getOwner(); stringBuffer.append(
+				 * "=======Owner : ID " + owner.getId() + " ; NAME :" +
+				 * owner.getDisplayName()) .append("\n");
+				 * stringBuffer.append("==============ACL LIST=========");
+				 * HashSet<Grant> grants = accessControlPolicy
+				 * .getAccessControlList().getGrants(); for (Grant grant :
+				 * grants) { stringBuffer.append(
+				 * grant.getGrantee().getIdentifier() + "========>" +
+				 * grant.getPermission().toString()) .append("\n"); } Intent
+				 * intent = new Intent(MainActivity.this,
+				 * RESTAPITestResult.class); Bundle data = new Bundle();
+				 * data.putString(RESULT, stringBuffer.toString());
+				 * data.putString(API, "GET BUCKET ACL Result");
+				 * intent.putExtras(data); startActivity(intent); }
+				 * 
+				 * @Override public void onFailure(int statesCode, Ks3Error
+				 * error, Header[] responceHeaders, String response, Throwable
+				 * paramThrowable) { StringBuffer stringBuffer = new
+				 * StringBuffer(); stringBuffer.append(
+				 * "GET BUCKET ACL fail , states code :" +
+				 * statesCode).append("\n"); stringBuffer.append("Exception :" +
+				 * paramThrowable.toString()); Intent intent = new
+				 * Intent(MainActivity.this, RESTAPITestResult.class); Bundle
+				 * data = new Bundle(); data.putString(RESULT,
+				 * stringBuffer.toString()); data.putString(API,
+				 * "GET BUCKET ACL Result"); intent.putExtras(data);
+				 * startActivity(intent); } });
+				 */
 			}
 		});
 		bucketInpuDialog.show();
@@ -802,55 +698,37 @@ public class MainActivity extends Activity {
 				.setOnBucketObjectDialogListener(new OnBucketObjectDialogListener() {
 					@Override
 					public void confirmBucketAndObject(String name, String key) {
-					/*	DeleteObjectRequest request = new DeleteObjectRequest(
-								name, key);
-						client.deleteObject(request,
-								new DeleteObjectRequestHandler() {
-
-									@Override
-									public void onSuccess(int statesCode,
-											Header[] responceHeaders) {
-										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer
-												.append("Delete success , states code :"
-														+ statesCode);
-										Intent intent = new Intent(
-												MainActivity.this,
-												RESTAPITestResult.class);
-										Bundle data = new Bundle();
-										data.putString(RESULT,
-												stringBuffer.toString());
-										data.putString(API,
-												"Delete Object Result");
-										intent.putExtras(data);
-										startActivity(intent);
-									}
-
-									@Override
-									public void onFailure(int statesCode,
-											Ks3Error error,
-											Header[] responceHeaders,
-											String response,
-											Throwable paramThrowable) {
-										StringBuffer stringBuffer = new StringBuffer();
-										stringBuffer.append(
-												"Delete fail , states code :"
-														+ statesCode).append(
-												"\n");
-										stringBuffer.append("Exception :"
-												+ paramThrowable.toString());
-										Intent intent = new Intent(
-												MainActivity.this,
-												RESTAPITestResult.class);
-										Bundle data = new Bundle();
-										data.putString(RESULT,
-												stringBuffer.toString());
-										data.putString(API,
-												"Delete Object Result");
-										intent.putExtras(data);
-										startActivity(intent);										
-									}
-								});*/
+						/*
+						 * DeleteObjectRequest request = new
+						 * DeleteObjectRequest( name, key);
+						 * client.deleteObject(request, new
+						 * DeleteObjectRequestHandler() {
+						 * 
+						 * @Override public void onSuccess(int statesCode,
+						 * Header[] responceHeaders) { StringBuffer stringBuffer
+						 * = new StringBuffer(); stringBuffer
+						 * .append("Delete success , states code :" +
+						 * statesCode); Intent intent = new Intent(
+						 * MainActivity.this, RESTAPITestResult.class); Bundle
+						 * data = new Bundle(); data.putString(RESULT,
+						 * stringBuffer.toString()); data.putString(API,
+						 * "Delete Object Result"); intent.putExtras(data);
+						 * startActivity(intent); }
+						 * 
+						 * @Override public void onFailure(int statesCode,
+						 * Ks3Error error, Header[] responceHeaders, String
+						 * response, Throwable paramThrowable) { StringBuffer
+						 * stringBuffer = new StringBuffer();
+						 * stringBuffer.append( "Delete fail , states code :" +
+						 * statesCode).append( "\n");
+						 * stringBuffer.append("Exception :" +
+						 * paramThrowable.toString()); Intent intent = new
+						 * Intent( MainActivity.this, RESTAPITestResult.class);
+						 * Bundle data = new Bundle(); data.putString(RESULT,
+						 * stringBuffer.toString()); data.putString(API,
+						 * "Delete Object Result"); intent.putExtras(data);
+						 * startActivity(intent); } });
+						 */
 					}
 				});
 		bucketObjectInpuDialog.show();
@@ -945,7 +823,7 @@ public class MainActivity extends Activity {
 					public void onFailure(int statesCode, Ks3Error error,
 							Header[] responceHeaders, String response,
 							Throwable paramThrowable) {
-						
+
 					}
 				});
 			}
@@ -955,86 +833,93 @@ public class MainActivity extends Activity {
 	}
 
 	private void listBuckets() {
-		/*client.listBuckets(new ListBucketsResponceHandler() {
-			@Override
-			public void onSuccess(int paramInt, Header[] paramArrayOfHeader,
-					ArrayList<Bucket> resultList) {
-				StringBuffer stringBuffer = new StringBuffer();
-				for (Bucket bucket : resultList) {
-					stringBuffer.append(bucket.getName()).append("\n");
-					stringBuffer.append(bucket.getCreationDate()).append("\n");
-					stringBuffer.append(bucket.getOwner().getDisplayName())
-							.append("\n");
-					stringBuffer.append(bucket.getOwner().getId()).append("\n");
-				}
-				Intent intent = new Intent(MainActivity.this,
-						RESTAPITestResult.class);
-				Bundle data = new Bundle();
-				data.putString(RESULT, stringBuffer.toString());
-				data.putString(API, "List Bucket Result");
-				intent.putExtras(data);
-				startActivity(intent);
-			}
-
-			@Override
-			public void onFailure(int statesCode, Ks3Error error,
-					Header[] responceHeaders, String response,
-					Throwable paramThrowable) {
-				StringBuffer stringBuffer = new StringBuffer();
-				stringBuffer.append(
-						"list bucket fail , states code :" + statesCode)
-						.append("\n");
-				stringBuffer.append("Exception :" + paramThrowable.toString());
-				Intent intent = new Intent(MainActivity.this,
-						RESTAPITestResult.class);
-				Bundle data = new Bundle();
-				data.putString(RESULT, stringBuffer.toString());
-				data.putString(API, "List Buckets");
-				intent.putExtras(data);
-				startActivity(intent);				
-			}
-		});*/
+		/*
+		 * client.listBuckets(new ListBucketsResponceHandler() {
+		 * 
+		 * @Override public void onSuccess(int paramInt, Header[]
+		 * paramArrayOfHeader, ArrayList<Bucket> resultList) { StringBuffer
+		 * stringBuffer = new StringBuffer(); for (Bucket bucket : resultList) {
+		 * stringBuffer.append(bucket.getName()).append("\n");
+		 * stringBuffer.append(bucket.getCreationDate()).append("\n");
+		 * stringBuffer.append(bucket.getOwner().getDisplayName())
+		 * .append("\n");
+		 * stringBuffer.append(bucket.getOwner().getId()).append("\n"); } Intent
+		 * intent = new Intent(MainActivity.this, RESTAPITestResult.class);
+		 * Bundle data = new Bundle(); data.putString(RESULT,
+		 * stringBuffer.toString()); data.putString(API, "List Bucket Result");
+		 * intent.putExtras(data); startActivity(intent); }
+		 * 
+		 * @Override public void onFailure(int statesCode, Ks3Error error,
+		 * Header[] responceHeaders, String response, Throwable paramThrowable)
+		 * { StringBuffer stringBuffer = new StringBuffer();
+		 * stringBuffer.append( "list bucket fail , states code :" + statesCode)
+		 * .append("\n"); stringBuffer.append("Exception :" +
+		 * paramThrowable.toString()); Intent intent = new
+		 * Intent(MainActivity.this, RESTAPITestResult.class); Bundle data = new
+		 * Bundle(); data.putString(RESULT, stringBuffer.toString());
+		 * data.putString(API, "List Buckets"); intent.putExtras(data);
+		 * startActivity(intent); } });
+		 */
 	}
 
 	private void createBucket() {
 		bucketInpuDialog.setOnBucketInputListener(new OnBucketDialogListener() {
 			@Override
 			public void confirmBucket(String name) {
-				/*client.createBucket(name, new CreateBucketResponceHandler() {
-					@Override
-					public void onSuccess(int statesCode,
-							Header[] responceHeaders) {
-						Intent intent = new Intent(MainActivity.this,
-								RESTAPITestResult.class);
-						Bundle data = new Bundle();
-						data.putString(RESULT, "success");
-						data.putString(API, "Create Bucket Result");
-						intent.putExtras(data);
-						startActivity(intent);
-					}
-
-					@Override
-					public void onFailure(int statesCode, Ks3Error error,
-							Header[] responceHeaders, String response,
-							Throwable paramThrowable) {
-						StringBuffer stringBuffer = new StringBuffer();
-						stringBuffer.append(
-								"Delete fail , states code :" + statesCode)
-								.append("\n");
-						stringBuffer.append("Exception :"
-								+ paramThrowable.toString());
-						Intent intent = new Intent(MainActivity.this,
-								RESTAPITestResult.class);
-						Bundle data = new Bundle();
-						data.putString(RESULT, stringBuffer.toString());
-						data.putString(API, "List Buckets");
-						intent.putExtras(data);
-						startActivity(intent);						
-					}
-				});*/
+				/*
+				 * client.createBucket(name, new CreateBucketResponceHandler() {
+				 * 
+				 * @Override public void onSuccess(int statesCode, Header[]
+				 * responceHeaders) { Intent intent = new
+				 * Intent(MainActivity.this, RESTAPITestResult.class); Bundle
+				 * data = new Bundle(); data.putString(RESULT, "success");
+				 * data.putString(API, "Create Bucket Result");
+				 * intent.putExtras(data); startActivity(intent); }
+				 * 
+				 * @Override public void onFailure(int statesCode, Ks3Error
+				 * error, Header[] responceHeaders, String response, Throwable
+				 * paramThrowable) { StringBuffer stringBuffer = new
+				 * StringBuffer(); stringBuffer.append(
+				 * "Delete fail , states code :" + statesCode) .append("\n");
+				 * stringBuffer.append("Exception :" +
+				 * paramThrowable.toString()); Intent intent = new
+				 * Intent(MainActivity.this, RESTAPITestResult.class); Bundle
+				 * data = new Bundle(); data.putString(RESULT,
+				 * stringBuffer.toString()); data.putString(API,
+				 * "List Buckets"); intent.putExtras(data);
+				 * startActivity(intent); } });
+				 */
 			}
 		});
 		bucketInpuDialog.show();
 	}
 
+	private void prepareLocalUploadFile() throws IOException {
+
+		DataOutputStream out = null;
+		Constants.LOCAL_FILE_FORDER_DOWNLOAD.mkdirs();
+
+		// 创建测试需要使用的1M大小文件
+		File M1file = new File(Constants.LOCAL_FILE_FORDER_DOWNLOAD,
+				Constants.LOCAL_M1_FILE_NAME);
+		if (M1file.exists()) {
+			Log.i(com.ksyun.ks3.util.Constants.LOG_TAG,
+					Constants.LOCAL_M1_FILE_NAME + "已经存在，无需再次创建");
+		} else {
+			out = new DataOutputStream(new BufferedOutputStream(
+					new FileOutputStream(M1file, true)));
+			for (int i = 0; i < 1 * 1024; i++) {
+				out.write("1".getBytes());
+			}
+			for (int i = 1 * 1024; i < 2 * 1024; i++) {
+				out.write("2".getBytes());
+			}
+			for (int i = 2 * 1024; i < 3 * 1024; i++) {
+				out.write("3".getBytes());
+			}
+			out.close();
+			Log.i(com.ksyun.ks3.util.Constants.LOG_TAG, "create file "
+					+ Constants.LOCAL_M1_FILE_NAME + " success");
+		}
+	}
 }

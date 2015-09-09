@@ -16,7 +16,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 
 public abstract class FileAsyncHttpResponseHandler extends
 		AsyncHttpResponseHandler {
-	protected final File mFile;
+	public final File mFile;
 	protected final boolean append;
 	private static final String LOG_TAG = "FileAsyncHttpResponseHandler";
 

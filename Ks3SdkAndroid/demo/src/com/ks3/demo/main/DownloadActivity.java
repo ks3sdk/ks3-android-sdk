@@ -78,6 +78,7 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 	private File storeForder;
 	private myHandler mHandler = new myHandler();
 	private BucketInpuDialog bucketInpuDialog;
+	private long oldtime;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +99,7 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 
 	private void prepareStoreForder() {
 		storeForder = new File(Environment.getExternalStorageDirectory(),
-				"ksyun_download");
+				"ksyun_test_download");
 		if (!storeForder.exists()) {
 			storeForder.mkdirs();
 		} else if (storeForder.isFile()) {
@@ -188,37 +189,33 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 						// 此处内部写法仅为示例，开发者请根据自身情况修改
 						String result = null;
 						try {
-							result = AuthUtils.calcAuthToken(httpMethod, ContentType, Date, ContentMD5, Resource, Headers, Constants.ACCESS_KEY__ID, Constants.ACCESS_KEY_SECRET);
+							result = AuthUtils.calcAuthToken(httpMethod,
+									ContentType, Date, ContentMD5, Resource,
+									Headers, Constants.ACCESS_KEY__ID,
+									Constants.ACCESS_KEY_SECRET);
 						} catch (SignatureException e) {
 							e.printStackTrace();
 						}
-					/*	HttpPost request = new HttpPost(
-								Constants.APP_SERTVER_HOST);
-						StringEntity se;
-						try {
-							JSONObject object = new JSONObject();
-							object.put("http_method", httpMethod.toString());
-							object.put("content_type", ContentType);
-							object.put("date", Date);
-							object.put("content_md5", ContentMD5);
-							object.put("resource", Resource);
-							object.put("headers", Headers);
-							se = new StringEntity(object.toString());
-							request.setEntity(se);
-							HttpResponse httpResponse = new DefaultHttpClient()
-									.execute(request);
-							String retSrc = EntityUtils.toString(httpResponse
-									.getEntity());
-							result.append(retSrc);
-						} catch (JSONException e) {
-							e.printStackTrace();
-						} catch (UnsupportedEncodingException e) {
-							e.printStackTrace();
-						} catch (ClientProtocolException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}*/
+						/*
+						 * HttpPost request = new HttpPost(
+						 * Constants.APP_SERTVER_HOST); StringEntity se; try {
+						 * JSONObject object = new JSONObject();
+						 * object.put("http_method", httpMethod.toString());
+						 * object.put("content_type", ContentType);
+						 * object.put("date", Date); object.put("content_md5",
+						 * ContentMD5); object.put("resource", Resource);
+						 * object.put("headers", Headers); se = new
+						 * StringEntity(object.toString());
+						 * request.setEntity(se); HttpResponse httpResponse =
+						 * new DefaultHttpClient() .execute(request); String
+						 * retSrc = EntityUtils.toString(httpResponse
+						 * .getEntity()); result.append(retSrc); } catch
+						 * (JSONException e) { e.printStackTrace(); } catch
+						 * (UnsupportedEncodingException e) {
+						 * e.printStackTrace(); } catch (ClientProtocolException
+						 * e) { e.printStackTrace(); } catch (IOException e) {
+						 * e.printStackTrace(); }
+						 */
 						return new AuthResult(result, Date);
 					}
 				}, DownloadActivity.this);
@@ -449,6 +446,7 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 					|| item.status == RemoteFile.STATUS_FINISH)
 				return;
 			// 下载操作示例
+			oldtime = System.currentTimeMillis();
 			final GetObjectRequest request = new GetObjectRequest(
 					item.bucketName, item.objectKey);
 			String objectName = item.objectKey.substring(item.objectKey
@@ -456,6 +454,8 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 					.lastIndexOf("/"));
 			// request.setCallBack(callBackUrl, callBackBody, callBackHeaders);
 			File file = new File(storeForder, objectName);
+			Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+					"last length = " + file.length());
 			client.getObject(request, new GetObjectResponseHandler(file,
 					item.bucketName, item.objectKey) {
 
@@ -477,9 +477,10 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 
 				@Override
 				public void onTaskProgress(double progress) {
-					// if (progress > 50.0) {
-					// request.abort();
-					// }
+				/*	if (progress >= 20.0) {
+						request.abort();
+						Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "download percentage 10% - 20%,cost time ="+String.valueOf(System.currentTimeMillis()-oldtime));
+					}*/
 					RemoteFile remoteFile = dataSource.get(item.objectKey);
 					remoteFile.status = RemoteFile.STATUS_DOWNLOADING;
 					remoteFile.progress = (int) progress;

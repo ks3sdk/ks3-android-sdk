@@ -363,6 +363,18 @@ public abstract class Ks3HttpRequest implements Serializable {
 				setEntity(entity);
 			}
 		} else if (this.getHttpMethod() == HttpMethod.GET) {
+			if (requestBody != null) {
+				Map<String, String> headrs = this.getHeader();
+				String length = headrs
+						.get(HttpHeaders.ContentLength.toString());
+				if (length == null)
+					throw new Ks3ClientException(
+							"content-length can not be null when put request");
+				RepeatableInputStreamRequestEntity entity = new RepeatableInputStreamRequestEntity(
+						requestBody, length);
+				entity.setProgressLisener(this.progressListener);
+				setEntity(entity);
+			}
 		} else if (this.getHttpMethod() == HttpMethod.PUT) {
 			if (requestBody != null) {
 				Map<String, String> headrs = this.getHeader();

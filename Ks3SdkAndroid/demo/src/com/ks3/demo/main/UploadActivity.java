@@ -33,6 +33,10 @@ import android.widget.TextView;
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.PartETag;
+import com.ksyun.ks3.model.acl.AccessControlList;
+import com.ksyun.ks3.model.acl.CannedAccessControlList;
+import com.ksyun.ks3.model.acl.GranteeId;
+import com.ksyun.ks3.model.acl.Permission;
 import com.ksyun.ks3.model.result.CompleteMultipartUploadResult;
 import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
 import com.ksyun.ks3.model.result.ListPartsResult;
@@ -449,6 +453,13 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 				item.file.getName(), item.file);
 		// request.setCallBackUrl("");
 		// request.setCallBackBody("");
+		AccessControlList list = new AccessControlList();
+		GranteeId grantee = new GranteeId();
+        grantee.setIdentifier("12773456");
+        grantee.setDisplayName("eflake");
+        list.addGrant(grantee, Permission.FullControl);		
+        request.setAcl(list);
+		request.setCannedAcl(CannedAccessControlList.PublicReadWrite);
 		client.putObject(request, new PutObjectResponseHandler() {
 
 			@Override
