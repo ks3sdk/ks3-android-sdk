@@ -33,7 +33,7 @@ public abstract class SaxAsyncHttpResponseHandler<T extends DefaultHandler> exte
 	}
 
 	@Override
-	protected byte[] getResponseData(HttpEntity entity)
+	protected byte[] getResponseData(HttpEntity entity, int statusCode)
 			throws IOException
 	{
 

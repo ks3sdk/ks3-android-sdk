@@ -263,7 +263,7 @@ public abstract class AsyncHttpResponseHandler implements
 		if (!Thread.currentThread().isInterrupted()) {
 			StatusLine status = response.getStatusLine();
 
-			byte[] responseBody = getResponseData(response.getEntity());
+			byte[] responseBody = getResponseData(response.getEntity(),status.getStatusCode());
 
 			if (!Thread.currentThread().isInterrupted())
 				if (status.getStatusCode() >= 300)
@@ -277,7 +277,7 @@ public abstract class AsyncHttpResponseHandler implements
 		}
 	}
 
-	byte[] getResponseData(HttpEntity entity) throws IOException {
+	byte[] getResponseData(HttpEntity entity, int statusCode) throws IOException {
 		byte[] responseBody = null;
 		if (entity != null) {
 			InputStream instream = entity.getContent();

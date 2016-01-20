@@ -49,13 +49,13 @@ public abstract class RangeFileAsyncHttpResponseHandler extends FileAsyncHttpRes
 				} else {
 					Log.v("RangeFileAsyncHttpResponseHandler", "Content-Range: " + header.getValue());
 				}
-				sendSuccessMessage(status.getStatusCode(), response.getAllHeaders(), getResponseData(response.getEntity()));
+				sendSuccessMessage(status.getStatusCode(), response.getAllHeaders(), getResponseData(response.getEntity(),200));
 			}
 		}
 	}
 
 	@Override
-	protected byte[] getResponseData(HttpEntity entity)
+	protected byte[] getResponseData(HttpEntity entity, int statusCode)
 			throws IOException
 	{
 

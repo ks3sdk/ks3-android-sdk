@@ -48,7 +48,7 @@ public abstract class DataAsyncHttpResponseHandler extends AsyncHttpResponseHand
 	}
 
 	@Override
-	byte[] getResponseData(HttpEntity entity)
+	byte[] getResponseData(HttpEntity entity, int statusCode)
 			throws IOException
 	{
 

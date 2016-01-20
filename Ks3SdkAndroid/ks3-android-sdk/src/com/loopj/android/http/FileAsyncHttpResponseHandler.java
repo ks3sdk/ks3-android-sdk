@@ -76,27 +76,33 @@ public abstract class FileAsyncHttpResponseHandler extends
 	public abstract void onSuccess(int paramInt, Header[] paramArrayOfHeader,
 			File paramFile);
 
-	protected byte[] getResponseData(HttpEntity entity) throws IOException {
+	// modified for step download , 2016/01/20
+	protected byte[] getResponseData(HttpEntity entity,int statusCode) throws IOException {
 		if (entity != null) {
-			InputStream instream = entity.getContent();
-			long contentLength = entity.getContentLength();
-			FileOutputStream buffer = new FileOutputStream(getTargetFile(),
-					this.append);
-			if (instream != null) {
-				try {
-					byte[] tmp = new byte[4096];
-					int count = 0;
-					int l;
-					while (((l = instream.read(tmp)) != -1)
-							&& (!Thread.currentThread().isInterrupted())) {
-						count += l;
-						buffer.write(tmp, 0, l);
-						sendProgressMessage(count, (int) contentLength);
+			if (statusCode >=300) {
+				// in failure situation, do not write response into file
+				super.getResponseData(entity,statusCode);
+			} else {
+				InputStream instream = entity.getContent();
+				long contentLength = entity.getContentLength();
+				FileOutputStream buffer = new FileOutputStream(getTargetFile(),
+						this.append);
+				if (instream != null) {
+					try {
+						byte[] tmp = new byte[4096];
+						int count = 0;
+						int l;
+						while (((l = instream.read(tmp)) != -1)
+								&& (!Thread.currentThread().isInterrupted())) {
+							count += l;
+							buffer.write(tmp, 0, l);
+							sendProgressMessage(count, (int) contentLength);
+						}
+					} finally {
+						AsyncHttpClient.silentCloseInputStream(instream);
+						buffer.flush();
+						AsyncHttpClient.silentCloseOutputStream(buffer);
 					}
-				} finally {
-					AsyncHttpClient.silentCloseInputStream(instream);
-					buffer.flush();
-					AsyncHttpClient.silentCloseOutputStream(buffer);
 				}
 			}
 		}
