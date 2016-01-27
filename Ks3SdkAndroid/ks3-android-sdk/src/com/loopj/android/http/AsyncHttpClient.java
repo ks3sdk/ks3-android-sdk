@@ -168,7 +168,8 @@ public class AsyncHttpClient {
 				httpParams, schemeRegistry);
 
 		this.threadPool = getDefaultThreadPool();
-		this.requestMap = Collections.synchronizedMap(new WeakHashMap<Context,List<RequestHandle>>());
+		this.requestMap = Collections
+				.synchronizedMap(new WeakHashMap<Context, List<RequestHandle>>());
 		this.clientHeaderMap = new HashMap<String, String>();
 
 		this.httpContext = new SyncBasicHttpContext(new BasicHttpContext());
@@ -544,14 +545,15 @@ public class AsyncHttpClient {
 	}
 
 	public RequestHandle head(Context context, String url, Header[] headers,
-			RequestParams params, ResponseHandlerInterface responseHandler,LogRecord record, String bucketName) {
+			RequestParams params, ResponseHandlerInterface responseHandler,
+			LogRecord record, StringBuffer traceBuffer, String bucketName) {
 
 		HttpUriRequest request = new HttpHead(getUrlWithQueryString(
 				this.isUrlEncodingEnabled, url, params));
 		if (headers != null)
 			request.setHeaders(headers);
 		return sendRequest(this.httpClient, this.httpContext, request, null,
-				responseHandler, context,record,bucketName);
+				responseHandler, context, record, traceBuffer, bucketName);
 	}
 
 	public RequestHandle get(String url,
@@ -581,14 +583,15 @@ public class AsyncHttpClient {
 	}
 
 	public RequestHandle get(Context context, String url, Header[] headers,
-			RequestParams params, ResponseHandlerInterface responseHandler,LogRecord record, String bucketName) {
+			RequestParams params, ResponseHandlerInterface responseHandler,
+			LogRecord record, StringBuffer traceBuffer, String bucketName) {
 
 		HttpUriRequest request = new HttpGet(getUrlWithQueryString(
 				this.isUrlEncodingEnabled, url, params));
 		if (headers != null)
 			request.setHeaders(headers);
 		return sendRequest(this.httpClient, this.httpContext, request, null,
-				responseHandler, context,record,bucketName);
+				responseHandler, context, record, traceBuffer, bucketName);
 	}
 
 	public RequestHandle post(String url,
@@ -637,14 +640,16 @@ public class AsyncHttpClient {
 
 	public RequestHandle post(Context context, String url, Header[] headers,
 			HttpEntity entity, String contentType,
-			ResponseHandlerInterface responseHandler,LogRecord record, String bucketName) {
+			ResponseHandlerInterface responseHandler, LogRecord record,
+			StringBuffer traceBuffer, String bucketName) {
 
 		HttpEntityEnclosingRequestBase request = addEntityToRequestBase(
 				new HttpPost(URI.create(url).normalize()), entity);
 		if (headers != null)
 			request.setHeaders(headers);
 		return sendRequest(this.httpClient, this.httpContext, request,
-				contentType, responseHandler, context,record,bucketName);
+				contentType, responseHandler, context, record, traceBuffer,
+				bucketName);
 	}
 
 	public RequestHandle put(String url,
@@ -679,14 +684,16 @@ public class AsyncHttpClient {
 
 	public RequestHandle put(Context context, String url, Header[] headers,
 			HttpEntity entity, String contentType,
-			ResponseHandlerInterface responseHandler, LogRecord record, String bucketName) {
+			ResponseHandlerInterface responseHandler, LogRecord record,
+			StringBuffer traceBuffer, String bucketName) {
 
 		HttpEntityEnclosingRequestBase request = addEntityToRequestBase(
 				new HttpPut(URI.create(url).normalize()), entity);
 		if (headers != null)
 			request.setHeaders(headers);
 		return sendRequest(this.httpClient, this.httpContext, request,
-				contentType, responseHandler, context, record,bucketName);
+				contentType, responseHandler, context, record, traceBuffer,
+				bucketName);
 	}
 
 	public RequestHandle delete(String url,
@@ -704,13 +711,14 @@ public class AsyncHttpClient {
 	}
 
 	public RequestHandle delete(Context context, String url, Header[] headers,
-			ResponseHandlerInterface responseHandler,LogRecord record, String bucketName) {
+			ResponseHandlerInterface responseHandler, LogRecord record,
+			StringBuffer traceBuffer, String bucketName) {
 
 		HttpDelete delete = new HttpDelete(URI.create(url).normalize());
 		if (headers != null)
 			delete.setHeaders(headers);
 		return sendRequest(this.httpClient, this.httpContext, delete, null,
-				responseHandler, context,record,bucketName);
+				responseHandler, context, record, traceBuffer, bucketName);
 	}
 
 	public RequestHandle delete(Context context, String url, Header[] headers,
@@ -727,10 +735,10 @@ public class AsyncHttpClient {
 	protected AsyncHttpRequest newAsyncHttpRequest(DefaultHttpClient client,
 			HttpContext httpContext, HttpUriRequest uriRequest,
 			String contentType, ResponseHandlerInterface responseHandler,
-			Context context, LogRecord record, String bucketName) {
+			Context context, LogRecord record, StringBuffer traceBuffer, String bucketName) {
 
 		return new AsyncHttpRequest(client, httpContext, uriRequest,
-				responseHandler,record,bucketName);
+				responseHandler, record,traceBuffer, bucketName);
 	}
 
 	protected RequestHandle sendRequest(DefaultHttpClient client,
@@ -738,13 +746,14 @@ public class AsyncHttpClient {
 			String contentType, ResponseHandlerInterface responseHandler,
 			Context context) {
 		return this.sendRequest(client, httpContext, uriRequest, contentType,
-				responseHandler, context, null,null);
+				responseHandler, context, null, null, null);
 	}
 
 	protected RequestHandle sendRequest(DefaultHttpClient client,
 			HttpContext httpContext, HttpUriRequest uriRequest,
 			String contentType, ResponseHandlerInterface responseHandler,
-			Context context, LogRecord record,String bucketName) {
+			Context context, LogRecord record, StringBuffer traceBuffer,
+			String bucketName) {
 
 		if (uriRequest == null) {
 			throw new IllegalArgumentException(
@@ -776,7 +785,8 @@ public class AsyncHttpClient {
 		responseHandler.setRequestURI(uriRequest.getURI());
 
 		AsyncHttpRequest request = newAsyncHttpRequest(client, httpContext,
-				uriRequest, contentType, responseHandler, context,record,bucketName);
+				uriRequest, contentType, responseHandler, context, record,traceBuffer,
+				bucketName);
 		this.threadPool.submit(request);
 		RequestHandle requestHandle = new RequestHandle(request);
 

@@ -14,9 +14,9 @@ import com.ksyun.ks3.util.Constants;
 
 public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler implements RequestProgressListener{
 
-	public abstract void onSuccess(int statesCode, Header[] responceHeaders,PartETag result);
+	public abstract void onSuccess(int statesCode, Header[] responceHeaders,PartETag result, StringBuffer stringBuffer);
 
-	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable throwable);
+	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable throwable, StringBuffer stringBuffer);
 
 	@Override
 	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
@@ -27,7 +27,7 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 		} catch (Ks3ClientException e) {
 			e.printStackTrace();
 		}
-		onSuccess(statesCode, responceHeaders, parse(responceHeaders));
+		onSuccess(statesCode, responceHeaders, parse(responceHeaders), getTraceBuffer());
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public abstract class UploadPartResponceHandler extends Ks3HttpResponceHandler i
 		} catch (Ks3ClientException e) {
 			e.printStackTrace();
 		}
-		onFailure(statesCode,error, responceHeaders, response == null?"":new String(response), throwable);
+		onFailure(statesCode,error, responceHeaders, response == null?"":new String(response), throwable, getTraceBuffer());
 	}
 	
 	

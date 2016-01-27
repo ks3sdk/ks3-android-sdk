@@ -115,7 +115,7 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 		client.listObjects(request, new ListObjectsResponseHandler() {
 			@Override
 			public void onSuccess(int statesCode, Header[] responceHeaders,
-					ObjectListing objectListing) {
+					ObjectListing objectListing, StringBuffer traceBuffer) {
 				mProgressBar.setVisibility(View.GONE);
 				currentBucketTextView.setVisibility(View.VISIBLE);
 				mListView.setVisibility(View.VISIBLE);
@@ -163,7 +163,7 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 			@Override
 			public void onFailure(int statesCode, Ks3Error error,
 					Header[] responceHeaders, String response,
-					Throwable paramThrowable) {
+					Throwable paramThrowable, StringBuffer traceBuffer) {
 
 			}
 		});
@@ -462,7 +462,17 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 				@Override
 				public void onTaskSuccess(int paramInt,
 						Header[] paramArrayOfHeader,
-						GetObjectResult getObjectResult) {
+						GetObjectResult getObjectResult,
+						StringBuffer traceBuffer) {
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+							traceBuffer.toString());
+					RemoteFile remoteFile = dataSource.get(item.objectKey);
+					remoteFile.status = RemoteFile.STATUS_FINISH;
+					remoteFile.progress = 100;
+					item.status = RemoteFile.STATUS_FINISH;
+					item.progress = 100;
+					mHandler.sendEmptyMessage(0);
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "onTaskSuccess");
 				}
 
 				@Override
@@ -477,44 +487,57 @@ public class DownloadActivity extends Activity implements OnItemClickListener {
 
 				@Override
 				public void onTaskProgress(double progress) {
-				/*	if (progress >= 20.0) {
-						request.abort();
-						Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "download percentage 10% - 20%,cost time ="+String.valueOf(System.currentTimeMillis()-oldtime));
-					}*/
+//					if (progress >= 20.0) {
+//						request.abort();
+//						Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+//								"download percentage 10% - 20%,cost time ="
+//										+ String.valueOf(System
+//												.currentTimeMillis() - oldtime));
+//					}
 					RemoteFile remoteFile = dataSource.get(item.objectKey);
 					remoteFile.status = RemoteFile.STATUS_DOWNLOADING;
 					remoteFile.progress = (int) progress;
 					item.status = RemoteFile.STATUS_DOWNLOADING;
 					item.progress = (int) progress;
 					mHandler.sendEmptyMessage(0);
+					// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+					// "onTaskProgress:" + progress);
 				}
 
 				@Override
 				public void onTaskFinish() {
-					RemoteFile remoteFile = dataSource.get(item.objectKey);
-					remoteFile.status = RemoteFile.STATUS_FINISH;
-					remoteFile.progress = 100;
-					item.status = RemoteFile.STATUS_FINISH;
-					item.progress = 100;
-					mHandler.sendEmptyMessage(0);
+					// RemoteFile remoteFile = dataSource.get(item.objectKey);
+					// remoteFile.status = RemoteFile.STATUS_FINISH;
+					// remoteFile.progress = 100;
+					// item.status = RemoteFile.STATUS_FINISH;
+					// item.progress = 100;
+					// mHandler.sendEmptyMessage(0);
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "onTaskFinish");
 				}
 
 				@Override
 				public void onTaskCancel() {
-					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "cancle ok");
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, "onTaskCancel");
 				}
 
 				@Override
 				public void onTaskFailure(int paramInt, Ks3Error ks3Error,
 						Header[] paramArrayOfHeader, Throwable paramThrowable,
-						File paramFile) {
+						File paramFile, StringBuffer traceBuffer) {
 					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG, paramInt
 							+ "failure: reason = " + paramThrowable.toString()
-							+ "/n" + "response:" + ks3Error.getErrorMessage());
+							+ "\n" + "response:" + ks3Error.getErrorMessage());
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+							traceBuffer.toString());
 					RemoteFile remoteFile = dataSource.get(item.objectKey);
 					remoteFile.status = RemoteFile.STATUS_FAIL;
 					item.status = RemoteFile.STATUS_FAIL;
 					mHandler.sendEmptyMessage(0);
+					// boolean delete_result = deleteTempFile();
+					// Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+					// "onTaskFailure，delete file = "
+					// + getTempFile().getAbsolutePath()
+					// + " result = " + delete_result);
 				}
 			});
 		}

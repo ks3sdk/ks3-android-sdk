@@ -24,7 +24,7 @@ public class Ks3HttpExector {
 			final AsyncHttpResponseHandler resultHandler,
 			Ks3ClientConfiguration clientConfiguration, final Context context,
 			String endpoint, AuthListener authListener, Boolean isUseAsyncMode,
-			final LogRecord record) {
+			final LogRecord record, StringBuffer traceBuffer) {
 		/* Configure AsyncHttpClient */
 		if (clientConfiguration != null) {
 			client = AsyncHttpClientFactory.getInstance(clientConfiguration);
@@ -43,7 +43,7 @@ public class Ks3HttpExector {
 			if (authListener != null) {
 				request.setAuthListener(authListener);
 				setUpRequsetInBackground(request, resultHandler, record,
-						context);
+						traceBuffer, context);
 			}
 			// AK&SK形式
 			else {
@@ -53,7 +53,7 @@ public class Ks3HttpExector {
 					resultHandler.onFailure(0, null, null, e);
 					return;
 				}
-				doRequset(request, context, resultHandler, record);
+				doRequset(request, context, resultHandler, record, traceBuffer);
 			}
 		}
 		// 同步
@@ -62,7 +62,7 @@ public class Ks3HttpExector {
 			if (authListener != null) {
 				request.setAuthListener(authListener);
 				setUpRequsetInBackground(request, resultHandler, record,
-						context);
+						traceBuffer, context);
 				// AK&SK形式
 			} else {
 				try {
@@ -71,16 +71,18 @@ public class Ks3HttpExector {
 					resultHandler.onFailure(0, null, null, e);
 					return;
 				}
-				doRequset(request, context, resultHandler, record);
+				doRequset(request, context, resultHandler, record, traceBuffer);
 			}
 		}
 
 	}
 
 	protected void doRequset(Ks3HttpRequest request, Context context,
-			AsyncHttpResponseHandler resultHandler, LogRecord record) {
-		// For test
-		LogShow(request);
+			AsyncHttpResponseHandler resultHandler, LogRecord record,
+			StringBuffer traceBuffer) {
+		if (traceBuffer != null) {
+			traceBuffer.append(LogShow(request));
+		}
 		RequestHandle handler = null;
 		PhoneInfo info = PhoneInfoUtils.getPhoneInfo(context);
 		info.makeBasicRecord(record);
@@ -89,29 +91,37 @@ public class Ks3HttpExector {
 		case GET:
 			handler = client.get(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					null, resultHandler, record,request.getBucketname());
+					null, resultHandler, record, traceBuffer, request
+							.getBucketname());
 			break;
 		case POST:
-			handler = client.post(context, request.getAsyncHttpRequestParam()
-					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					request.getEntity(), request.getContentType(),
-					resultHandler, record,request.getBucketname());
+			handler = client
+					.post(context, request.getAsyncHttpRequestParam().getUrl(),
+							request.getAsyncHttpRequestParam().getHeader(),
+							request.getEntity(), request.getContentType(),
+							resultHandler, record, traceBuffer,
+							request.getBucketname());
 			break;
 		case PUT:
-			handler = client.put(context, request.getAsyncHttpRequestParam()
-					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					request.getEntity(), request.getContentType(),
-					resultHandler, record, request.getBucketname());
+			handler = client
+					.put(context, request.getAsyncHttpRequestParam().getUrl(),
+							request.getAsyncHttpRequestParam().getHeader(),
+							request.getEntity(), request.getContentType(),
+							resultHandler, record, traceBuffer,
+							request.getBucketname());
 			break;
 		case DELETE:
-			handler = client.delete(context, request.getAsyncHttpRequestParam()
-					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					resultHandler, record,request.getBucketname());
+			handler = client
+					.delete(context, request.getAsyncHttpRequestParam()
+							.getUrl(), request.getAsyncHttpRequestParam()
+							.getHeader(), resultHandler, record, traceBuffer,
+							request.getBucketname());
 			break;
 		case HEAD:
 			handler = client.head(context, request.getAsyncHttpRequestParam()
 					.getUrl(), request.getAsyncHttpRequestParam().getHeader(),
-					null, resultHandler, record,request.getBucketname());
+					null, resultHandler, record, traceBuffer, request
+							.getBucketname());
 			break;
 		default:
 			Log.e(Constants.LOG_TAG, "unsupport http method ! ");
@@ -122,18 +132,19 @@ public class Ks3HttpExector {
 
 	private void setUpRequsetInBackground(final Ks3HttpRequest request,
 			final AsyncHttpResponseHandler resultHandler,
-			final LogRecord record, Context context) {
+			final LogRecord record, StringBuffer traceBuffer, Context context) {
 		SetUpRequestAsyncTask task = new SetUpRequestAsyncTask(request,
-				resultHandler, record, context);
+				resultHandler, record, traceBuffer, context);
 		task.executeOnExecutor(Executors.newCachedThreadPool(), "");
 	}
 
-	private void LogShow(Ks3HttpRequest request) {
+	private String LogShow(Ks3HttpRequest request) {
 		request.getAsyncHttpRequestParam().getUrl();
 		request.getAsyncHttpRequestParam().getHeader();
 		request.getAsyncHttpRequestParam().getParams();
 		StringBuffer sb = new StringBuffer();
 		String className = request.getClass().getName();
+		sb.append("Step ==> Make equest").append("\n");
 		sb.append(
 				"Method ==> "
 						+ className.substring(className.lastIndexOf(".") + 1))
@@ -149,7 +160,9 @@ public class Ks3HttpExector {
 							.getValue()).append("\n");
 		}
 		sb.append("Heads End ==> ").append("\n");
+		sb.append("Step ==> Execut async-http-client request").append("\n");
 		Log.i(Constants.LOG_TAG, sb.toString());
+		return sb.toString();
 	}
 
 	public void cancel(Context context) {
@@ -169,14 +182,16 @@ public class Ks3HttpExector {
 		private InetAddress x;
 		private Context context;
 		private Throwable throwable;
+		private StringBuffer traceBuffer;
 
 		public SetUpRequestAsyncTask(Ks3HttpRequest request,
 				AsyncHttpResponseHandler resultHandler, LogRecord record,
-				Context context) {
+				StringBuffer traceBuffer, Context context) {
 			this.request = request;
 			this.resultHandler = resultHandler;
 			this.record = record;
 			this.context = context;
+			this.traceBuffer = traceBuffer;
 		}
 
 		@Override
@@ -203,7 +218,7 @@ public class Ks3HttpExector {
 		@Override
 		protected void onPostExecute(Boolean result) {
 			if (result) {
-				doRequset(request, context, resultHandler, record);
+				doRequset(request, context, resultHandler, record, traceBuffer);
 			} else {
 				resultHandler.onFailure(0, null, null, throwable);
 			}

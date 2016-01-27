@@ -26,10 +26,10 @@ public abstract class ListPartsResponseHandler extends Ks3HttpResponceHandler {
 	private static String RESPONSE_TAG_PRIFIX = "ns2:";
 
 	public abstract void onFailure(int statesCode, Ks3Error error,
-			Header[] responceHeaders, String response, Throwable paramThrowable);
+			Header[] responceHeaders, String response, Throwable paramThrowable, StringBuffer stringBuffer);
 
 	public abstract void onSuccess(int statesCode, Header[] responceHeaders,
-			ListPartsResult listPartsResult);
+			ListPartsResult listPartsResult, StringBuffer stringBuffer);
 
 	@Override
 	public final void onSuccess(int statesCode, Header[] responceHeaders,
@@ -42,7 +42,7 @@ public abstract class ListPartsResponseHandler extends Ks3HttpResponceHandler {
 			e.printStackTrace();
 		}
 		this.onSuccess(statesCode, responceHeaders,
-				parseXml(responceHeaders, response));
+				parseXml(responceHeaders, response), getTraceBuffer());
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public abstract class ListPartsResponseHandler extends Ks3HttpResponceHandler {
 			e.printStackTrace();
 		}
 		this.onFailure(statesCode, error, responceHeaders,
-				response == null ? "" : new String(response), throwable);
+				response == null ? "" : new String(response), throwable, getTraceBuffer());
 	}
 
 	@Override

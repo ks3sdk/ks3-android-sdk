@@ -460,6 +460,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
         list.addGrant(grantee, Permission.FullControl);		
         request.setAcl(list);
 		request.setCannedAcl(CannedAccessControlList.PublicReadWrite);
+//		request.setBucketname("2123");
 		client.putObject(request, new PutObjectResponseHandler() {
 
 			@Override
@@ -480,8 +481,10 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 			}
 
 			@Override
-			public void onTaskSuccess(int statesCode, Header[] responceHeaders) {
+			public void onTaskSuccess(int statesCode, Header[] responceHeaders,StringBuffer traceBuffer) {
 //				Log.i(com.ksyun.ks3.util.Constants.LOG_TAG, "success,header = "+responceHeaders.toString());
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+						traceBuffer.toString());
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
 				for (UploadFile file : uploadFiles) {
@@ -538,9 +541,11 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 			@Override
 			public void onTaskFailure(int statesCode, Ks3Error error,
 					Header[] responceHeaders, String response,
-					Throwable paramThrowable) {
+					Throwable paramThrowable,StringBuffer traceBuffer) {
 //				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
 //						responceHeaders.toString());
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+						traceBuffer.toString());
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
 				for (UploadFile file : uploadFiles) {
@@ -566,15 +571,16 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 	private void initiateMultipartUpload(
 			final InitiateMultipartUploadRequest request, final UploadFile item) {
-
+//		request.setBucketname(request.getBucketname()+"2");
 		client.initiateMultipartUpload(request,
 				new InitiateMultipartUploadResponceHandler() {
 
 					@Override
 					public void onSuccess(int statesCode,
 							Header[] responceHeaders,
-							InitiateMultipartUploadResult result) {
-
+							InitiateMultipartUploadResult result,StringBuffer traceBuffer) {
+						Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+								traceBuffer.toString());
 						List<UploadFile> uploadFiles = dataSource
 								.get(currentDir.getPath());
 						for (UploadFile file : uploadFiles) {
@@ -592,7 +598,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 					@Override
 					public void onFailure(int statesCode, Ks3Error error,
 							Header[] responceHeaders, String response,
-							Throwable paramThrowable) {
+							Throwable paramThrowable,StringBuffer traceBuffer) {
+						Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+								traceBuffer.toString());
 						List<UploadFile> uploadFiles = dataSource
 								.get(currentDir.getPath());
 						for (UploadFile file : uploadFiles) {
@@ -661,8 +669,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 				@Override
 				public void onSuccess(int statesCode, Header[] responceHeaders,
-						PartETag result) {
-
+						PartETag result,StringBuffer traceBuffer) {
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+							traceBuffer.toString());
 					Message message = mHandler.obtainMessage();
 					message.what = UPLOAD_NEXT_PART;
 					Bundle bundle = new Bundle();
@@ -675,7 +684,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 				@Override
 				public void onFailure(int statesCode, Ks3Error error,
 						Header[] responceHeaders, String response,
-						Throwable throwable) {
+						Throwable throwable,StringBuffer traceBuffer) {
+					Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+							traceBuffer.toString());
 					List<UploadFile> uploadFiles = dataSource.get(currentDir
 							.getPath());
 					for (UploadFile file : uploadFiles) {
@@ -707,8 +718,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 
 			@Override
 			public void onSuccess(int statesCode, Header[] responceHeaders,
-					ListPartsResult result) {
-
+					ListPartsResult result,StringBuffer traceBuffer) {
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+						traceBuffer.toString());
 				Message message = mHandler.obtainMessage();
 				message.what = LIST_PART_FINISH;
 				message.obj = result;
@@ -721,7 +733,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 			@Override
 			public void onFailure(int statesCode, Ks3Error error,
 					Header[] responceHeaders, String response,
-					Throwable paramThrowable) {
+					Throwable paramThrowable,StringBuffer traceBuffer) {
+				Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+						traceBuffer.toString());
 				List<UploadFile> uploadFiles = dataSource.get(currentDir
 						.getPath());
 				for (UploadFile file : uploadFiles) {
@@ -745,8 +759,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 					@Override
 					public void onSuccess(int statesCode,
 							Header[] responceHeaders,
-							CompleteMultipartUploadResult result) {
-
+							CompleteMultipartUploadResult result,StringBuffer traceBuffer) {
+						Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+								traceBuffer.toString());
 						List<UploadFile> uploadFiles = dataSource
 								.get(currentDir.getPath());
 						for (UploadFile file : uploadFiles) {
@@ -762,7 +777,9 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 					@Override
 					public void onFailure(int statesCode, Ks3Error error,
 							Header[] responceHeaders, String response,
-							Throwable paramThrowable) {
+							Throwable paramThrowable,StringBuffer traceBuffer) {
+						Log.d(com.ksyun.ks3.util.Constants.LOG_TAG,
+								traceBuffer.toString());
 						List<UploadFile> uploadFiles = dataSource
 								.get(currentDir.getPath());
 						for (UploadFile file : uploadFiles) {

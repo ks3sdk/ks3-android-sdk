@@ -35,6 +35,7 @@ public abstract class AsyncHttpResponseHandler implements
 	private Header[] requestHeaders = null;
 	private Looper looper = null;
 	public LogRecord record = new LogRecord();
+	public StringBuffer traceBuffer = new StringBuffer();
 
 	public URI getRequestURI() {
 		return this.requestURI;
@@ -78,6 +79,14 @@ public abstract class AsyncHttpResponseHandler implements
 
 	public String getCharset() {
 		return this.responseCharset == null ? "UTF-8" : this.responseCharset;
+	}
+
+	public LogRecord getLogRecord() {
+		return record;
+	}
+
+	public StringBuffer getTraceBuffer() {
+		return traceBuffer;
 	}
 
 	public AsyncHttpResponseHandler() {
@@ -259,27 +268,85 @@ public abstract class AsyncHttpResponseHandler implements
 		pass_record = null;
 	}
 
+	@Override
+	public void sendTraceBuffer(StringBuffer oldTraceBuffer) {
+		traceBuffer.append(oldTraceBuffer);
+		oldTraceBuffer.delete(0, oldTraceBuffer.length());
+		oldTraceBuffer = null;
+	}
+
+	public void appendTraceBuffer(String appendStr) {
+		if (traceBuffer != null) {
+			traceBuffer.append(appendStr);
+		}
+	}
+
 	public void sendResponseMessage(HttpResponse response) throws IOException {
 		if (!Thread.currentThread().isInterrupted()) {
 			StatusLine status = response.getStatusLine();
+			if (traceBuffer != null) {
+				long send_first_data_time = System.currentTimeMillis();
+				traceBuffer.append("Step ==> Get httpclient first response")
+						.append("\n");
+				traceBuffer.append(
+						"Log ==> Get first data time:" + send_first_data_time)
+						.append("\n");
+				traceBuffer.append(
+						"Log ==> Original Status code = "
+								+ status.getStatusCode()).append("\n");
+				traceBuffer.append(
+						"Step ==> Deal with httpclient response data").append(
+						"\n");
+			}
+			byte[] responseBody = getResponseData(response.getEntity(),
+					status.getStatusCode());
 
-			byte[] responseBody = getResponseData(response.getEntity(),status.getStatusCode());
-
-			if (!Thread.currentThread().isInterrupted())
-				if (status.getStatusCode() >= 300)
+			if (!Thread.currentThread().isInterrupted()) {
+				if (traceBuffer != null) {
+					traceBuffer
+							.append("Step ==> Reading or Writting httpclient response data success  ")
+							.append("\n");
+				}
+				if (status.getStatusCode() >= 300) {
+					if (traceBuffer != null) {
+						traceBuffer
+								.append("Step ==> Response Error,handler send error message")
+								.append("\n");
+						traceBuffer.append(
+								"Log ==> Error Code = "
+										+ status.getStatusCode()
+										+ ", Error Message = "
+										+ new String(responseBody))
+								.append("\n");
+					}
 					sendFailureMessage(status.getStatusCode(),
 							response.getAllHeaders(), responseBody,
 							new HttpResponseException(status.getStatusCode(),
 									status.getReasonPhrase()));
-				else
+				} else {
+					if (traceBuffer != null) {
+						traceBuffer
+								.append("Step ==> Response Success,handler send success message")
+								.append("\n");
+						traceBuffer.append(
+								"Log ==> Success Code = "
+										+ status.getStatusCode()).append("\n");
+					}
 					sendSuccessMessage(status.getStatusCode(),
 							response.getAllHeaders(), responseBody);
+				}
+			}
 		}
 	}
 
-	byte[] getResponseData(HttpEntity entity, int statusCode) throws IOException {
+	byte[] getResponseData(HttpEntity entity, int statusCode)
+			throws IOException {
 		byte[] responseBody = null;
 		if (entity != null) {
+			if (traceBuffer != null) {
+				traceBuffer.append("Step ==>Reading httpclient response data")
+						.append("\n");
+			}
 			InputStream instream = entity.getContent();
 			if (instream != null) {
 				long contentLength = entity.getContentLength();

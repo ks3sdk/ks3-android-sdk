@@ -195,4 +195,10 @@ public class JsonHttpResponseHandler extends TextHttpResponseHandler
 		}
 		return result;
 	}
+
+	@Override
+	public void sendTraceBuffer(StringBuffer traceBuffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

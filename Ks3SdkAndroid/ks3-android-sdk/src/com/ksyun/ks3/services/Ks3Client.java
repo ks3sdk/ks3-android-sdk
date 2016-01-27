@@ -112,8 +112,8 @@ public class Ks3Client implements Ks3 {
 
 	private Ks3HttpRequest getObject(GetObjectRequest request,
 			GetObjectResponseHandler handler, boolean isUseAsyncMode) {
-		if (handler.mFile != null) {
-			long length = handler.mFile.length();
+		if (handler.mTempFile != null) {
+			long length = handler.mTempFile.length();
 			if (length > 0) {
 					request.setRange(length);
 					handler.setOffset(length);
@@ -270,8 +270,9 @@ public class Ks3Client implements Ks3 {
 	private Ks3HttpRequest invoke(Authorization auth, Ks3HttpRequest request,
 			AsyncHttpResponseHandler resultHandler, boolean isUseAsyncMode) {
 		final LogRecord record = new LogRecord();
+		final StringBuffer buffer = new StringBuffer();
 		client.invoke(auth, request, resultHandler, clientConfiguration,
-				context, endpoint, authListener, isUseAsyncMode, record);
+				context, endpoint, authListener, isUseAsyncMode, record,buffer);
 		return request;
 	}
 

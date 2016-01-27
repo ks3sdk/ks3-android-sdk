@@ -18,6 +18,7 @@ import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.services.SafetyIpClient;
 import com.ksyun.ks3.util.Constants;
+import com.ksyun.ks3.util.ExceptionUtil;
 import com.ksyun.ks3.util.PhoneInfoUtils;
 
 public class AsyncHttpRequest implements Runnable {
@@ -33,16 +34,18 @@ public class AsyncHttpRequest implements Runnable {
 	private boolean isRequestPreProcessed;
 	private LogRecord record = null;
 	private String bucketName;
+	private StringBuffer traceBuffer;
 
 	public AsyncHttpRequest(AbstractHttpClient client, HttpContext context,
 			HttpUriRequest request, ResponseHandlerInterface responseHandler,
-			LogRecord record, String bucketName) {
+			LogRecord record, StringBuffer traceBuffer, String bucketName) {
 		this.client = client;
 		this.context = context;
 		this.request = request;
 		this.responseHandler = responseHandler;
 		this.context.setAttribute("http.request", this.request);
 		this.record = record;
+		this.traceBuffer = traceBuffer;
 		this.bucketName = bucketName;
 	}
 
@@ -81,9 +84,12 @@ public class AsyncHttpRequest implements Runnable {
 		try {
 			makeRequestWithRetries();
 		} catch (IOException e) {
-			if ((!isCancelled()) && (this.responseHandler != null))
+			if ((!isCancelled()) && (this.responseHandler != null)) {
+				((AsyncHttpResponseHandler) responseHandler)
+						.appendTraceBuffer("FINAL ERROR ==>"
+								+ ExceptionUtil.getStackMsg(e));
 				this.responseHandler.sendFailureMessage(0, null, null, e);
-			else {
+			} else {
 				Log.e(Constants.LOG_TAG,
 						"makeRequestWithRetries returned error, but handler is null",
 						e);
@@ -136,6 +142,18 @@ public class AsyncHttpRequest implements Runnable {
 			throw new MalformedURLException("No valid URI scheme was provided");
 		}
 		long send_before_time = System.currentTimeMillis();
+		if (traceBuffer != null) {
+			traceBuffer.append("Step ==> Before httpclient request execution")
+					.append("\n");
+			if (executionCount > 0) {
+				traceBuffer.append(
+						"Log ==> Current request is retry, url is:"
+								+ request.getURI().toString()).append("\n");
+			}
+			traceBuffer.append("Log ==> Send before time:" + send_before_time)
+					.append("\n");
+			this.responseHandler.sendTraceBuffer(traceBuffer);
+		}
 		if (record != null) {
 			record.setSend_before_time(send_before_time);
 		}
@@ -178,10 +196,16 @@ public class AsyncHttpRequest implements Runnable {
 				} catch (UnknownHostException e) {
 					// For deal with DNS fail
 					Log.i(Constants.LOG_TAG, "DNS parsed failure");
+					((AsyncHttpResponseHandler) responseHandler)
+							.appendTraceBuffer("ERROR ==>"
+									+ ExceptionUtil.getStackMsg(e));
 					String originUrl = this.request.getURI().toString();
 					int networkOperatorType = PhoneInfoUtils.getProvidersType();
 					String ipStr = null;
 					if (SafetyIpClient.ipModel != null) {
+						((AsyncHttpResponseHandler) responseHandler)
+								.appendTraceBuffer("Step ==> Safety IP retry begin"
+										+ "\n");
 						switch (networkOperatorType) {
 						case PhoneInfoUtils.TYPE_CHINA_MOBILE:
 							ipStr = SafetyIpClient.ipModel
@@ -224,12 +248,23 @@ public class AsyncHttpRequest implements Runnable {
 						retry = retryHandler.retryRequest(cause,
 								++this.executionCount, this.context);
 					} else {
+						((AsyncHttpResponseHandler) responseHandler)
+								.appendTraceBuffer("Step ==> Safety IP list is null, ingore retry，request do not execut"
+										+ "\n");
+						((AsyncHttpResponseHandler) responseHandler)
+								.appendTraceBuffer("Step ==> No Response,handler send error message"
+										+ "\n");
 						Log.i(Constants.LOG_TAG, "ip list is null");
 						retry = false;
+						this.responseHandler.sendFailureMessage(0, null, null,
+								e);
 						return;
 					}
 				} catch (NullPointerException e) {
-					cause = new IOException("NPE in HttpClient: "
+					((AsyncHttpResponseHandler) responseHandler)
+							.appendTraceBuffer("ERROR ==>"
+									+ ExceptionUtil.getStackMsg(e));
+					cause = new IOException("NullPointerException in HttpClient: "
 							+ e.getMessage());
 					retry = retryHandler.retryRequest(cause,
 							++this.executionCount, this.context);
@@ -237,14 +272,24 @@ public class AsyncHttpRequest implements Runnable {
 					if (isCancelled()) {
 						return;
 					}
+					((AsyncHttpResponseHandler) responseHandler)
+							.appendTraceBuffer("ERROR ==>"
+									+ ExceptionUtil.getStackMsg(e));
 					cause = e;
 					retry = retryHandler.retryRequest(cause,
 							++this.executionCount, this.context);
 				}
-				if ((retry) && (this.responseHandler != null))
+				if ((retry) && (this.responseHandler != null)) {
+					((AsyncHttpResponseHandler) responseHandler)
+							.appendTraceBuffer("Step ==> Request do retry"
+									+ "\n");
 					this.responseHandler.sendRetryMessage(this.executionCount);
+				}
 			}
 		} catch (Exception e) {
+			((AsyncHttpResponseHandler) responseHandler)
+					.appendTraceBuffer("ERROR ==>"
+							+ ExceptionUtil.getStackMsg(e));
 			Log.e("AsyncHttpRequest", "Unhandled exception origin cause", e);
 			cause = new IOException("Unhandled exception: " + e.getMessage());
 		}
@@ -255,6 +300,8 @@ public class AsyncHttpRequest implements Runnable {
 	public boolean isCancelled() {
 
 		if (this.isCancelled) {
+			((AsyncHttpResponseHandler) responseHandler)
+					.appendTraceBuffer("Step ==> User cancelled request");
 			sendCancelNotification();
 		}
 		return this.isCancelled;

@@ -43,11 +43,12 @@ public abstract class GetObjectResponseHandler extends
 	public abstract void onTaskCancel();
 
 	public abstract void onTaskSuccess(int paramInt,
-			Header[] paramArrayOfHeader, GetObjectResult getObjectResult);
+			Header[] paramArrayOfHeader, GetObjectResult getObjectResult,
+			StringBuffer stringBuffer);
 
 	public abstract void onTaskFailure(int paramInt, Ks3Error error,
 			Header[] paramArrayOfHeader, Throwable paramThrowable,
-			File paramFile);
+			File paramFile, StringBuffer stringBuffer);
 
 	@Override
 	public final void onFailure(int statesCode, Header[] paramArrayOfHeader,
@@ -60,7 +61,7 @@ public abstract class GetObjectResponseHandler extends
 			e.printStackTrace();
 		}
 		this.onTaskFailure(statesCode, error, paramArrayOfHeader, throwable,
-				paramFile);
+				paramFile, getTraceBuffer());
 	}
 
 	@Override
@@ -73,15 +74,15 @@ public abstract class GetObjectResponseHandler extends
 			e.printStackTrace();
 		}
 		this.onTaskSuccess(paramInt, paramArrayOfHeader,
-				parse(paramInt, paramArrayOfHeader, paramFile));
+				parse(paramInt, paramArrayOfHeader, paramFile),
+				getTraceBuffer());
 	}
 
 	@Override
 	public final void onProgress(int bytesWritten, int totalSize) {
-		bytesWritten = offset > 0 ? (int) (bytesWritten + (int)offset)
+		bytesWritten = offset > 0 ? (int) (bytesWritten + (int) offset)
 				: bytesWritten;
-		totalSize = offset > 0 ? (int) (totalSize + (int)offset)
-				: totalSize;
+		totalSize = offset > 0 ? (int) (totalSize + (int) offset) : totalSize;
 		double progress = Double.valueOf(totalSize > 0 ? bytesWritten * 1.0D
 				/ totalSize * 100.0D : -1.0D);
 		onTaskProgress(progress);
@@ -103,14 +104,14 @@ public abstract class GetObjectResponseHandler extends
 	}
 
 	@Override
-	public final boolean deleteTargetFile() {
-		return (getTargetFile() != null) && (getTargetFile().delete());
+	public final boolean deleteTempFile() {
+		return (getTempFile() != null) && (getTempFile().delete());
 	}
 
 	@Override
-	protected final File getTargetFile() {
-		assert (this.mFile != null);
-		return this.mFile;
+	protected final File getTempFile() {
+		assert (this.mTempFile != null);
+		return this.mTempFile;
 	}
 
 	private GetObjectResult parse(int statesCode, Header[] responceHeaders,
@@ -198,7 +199,7 @@ public abstract class GetObjectResponseHandler extends
 	}
 
 	public void setOffset(long length) {
-		Log.d(Constants.LOG_TAG, "last offset =" +length);
+		Log.d(Constants.LOG_TAG, "last offset =" + length);
 		this.offset = length;
 	}
 

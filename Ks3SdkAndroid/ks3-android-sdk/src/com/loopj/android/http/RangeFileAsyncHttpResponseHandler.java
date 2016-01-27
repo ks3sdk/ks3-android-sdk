@@ -62,7 +62,7 @@ public abstract class RangeFileAsyncHttpResponseHandler extends FileAsyncHttpRes
 		if (entity != null) {
 			InputStream instream = entity.getContent();
 			long contentLength = entity.getContentLength() + this.current;
-			FileOutputStream buffer = new FileOutputStream(getTargetFile(), this.append);
+			FileOutputStream buffer = new FileOutputStream(getTempFile(), this.append);
 			if (instream != null) {
 				try {
 					byte[] tmp = new byte[4096];
@@ -84,8 +84,8 @@ public abstract class RangeFileAsyncHttpResponseHandler extends FileAsyncHttpRes
 
 	public void updateRequestHeaders(HttpUriRequest uriRequest) {
 
-		if ((this.mFile.exists()) && (this.mFile.canWrite()))
-			this.current = this.mFile.length();
+		if ((this.mTempFile.exists()) && (this.mTempFile.canWrite()))
+			this.current = this.mTempFile.length();
 		if (this.current > 0L) {
 			this.append = true;
 			uriRequest.setHeader("Range", "bytes=" + this.current + "-");

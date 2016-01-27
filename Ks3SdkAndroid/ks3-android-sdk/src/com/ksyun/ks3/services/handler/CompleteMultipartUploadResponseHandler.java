@@ -13,9 +13,9 @@ import com.ksyun.ks3.util.Constants;
 public abstract class CompleteMultipartUploadResponseHandler extends
 		Ks3HttpResponceHandler {
 	
-	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable paramThrowable);
+	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable paramThrowable, StringBuffer stringBuffer);
 
-	public abstract void onSuccess(int statesCode, Header[] responceHeaders,CompleteMultipartUploadResult result);
+	public abstract void onSuccess(int statesCode, Header[] responceHeaders,CompleteMultipartUploadResult result, StringBuffer stringBuffer);
 	
 	
 	@Override
@@ -27,7 +27,7 @@ public abstract class CompleteMultipartUploadResponseHandler extends
 		} catch (Ks3ClientException e) {
 			e.printStackTrace();
 		}
-		this.onSuccess(statesCode, responceHeaders, new CompleteMultipartUploadResult());
+		this.onSuccess(statesCode, responceHeaders, new CompleteMultipartUploadResult(),getTraceBuffer());
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public abstract class CompleteMultipartUploadResponseHandler extends
 		} catch (Ks3ClientException e) {
 			e.printStackTrace();
 		}
-		this.onFailure(statesCode, error,responceHeaders, response==null?"":new String(response), throwable);
+		this.onFailure(statesCode, error,responceHeaders, response==null?"":new String(response), throwable, getTraceBuffer());
 	}
 
 	@Override

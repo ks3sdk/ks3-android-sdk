@@ -14,9 +14,9 @@ public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler
 		implements RequestProgressListener {
 
 	public abstract void onTaskFailure(int statesCode, Ks3Error error,
-			Header[] responceHeaders, String response, Throwable paramThrowable);
+			Header[] responceHeaders, String response, Throwable paramThrowable, StringBuffer stringBuffer);
 
-	public abstract void onTaskSuccess(int statesCode, Header[] responceHeaders);
+	public abstract void onTaskSuccess(int statesCode, Header[] responceHeaders, StringBuffer stringBuffer);
 
 	public abstract void onTaskStart();
 
@@ -34,7 +34,7 @@ public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler
 		} catch (Ks3ClientException e) {
 			e.printStackTrace();
 		}
-		onTaskSuccess(statesCode, responceHeaders);
+		onTaskSuccess(statesCode, responceHeaders, getTraceBuffer());
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler
 			e.printStackTrace();
 		}
 		onTaskFailure(statesCode, error, responceHeaders, response == null ? ""
-				: new String(response), throwable);
+				: new String(response), throwable, getTraceBuffer());
 	}
 
 	@Override

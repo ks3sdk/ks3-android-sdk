@@ -45,4 +45,6 @@ public abstract interface ResponseHandlerInterface
 	public abstract void onPostProcessResponse(ResponseHandlerInterface paramResponseHandlerInterface, HttpResponse paramHttpResponse);
 
 	public abstract void sendLogRecordMessage(LogRecord record);
+
+	public abstract void sendTraceBuffer(StringBuffer traceBuffer);
 }

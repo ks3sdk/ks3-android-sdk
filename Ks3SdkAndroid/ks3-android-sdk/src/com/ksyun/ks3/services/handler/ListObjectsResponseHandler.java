@@ -20,19 +20,19 @@ import com.ksyun.ks3.util.StringUtils;
 public abstract class ListObjectsResponseHandler extends Ks3HttpResponceHandler{
 	private boolean isCommonPrefixes = false;
 	
-	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable paramThrowable);
+	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable paramThrowable, StringBuffer stringBuffer);
 
-	public abstract void onSuccess(int statesCode, Header[] responceHeaders,ObjectListing objectListing);
+	public abstract void onSuccess(int statesCode, Header[] responceHeaders,ObjectListing objectListing, StringBuffer stringBuffer);
 	
 	@Override
 	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
-		this.onSuccess(statesCode, responceHeaders, parseXml(responceHeaders, response));
+		this.onSuccess(statesCode, responceHeaders, parseXml(responceHeaders, response), getTraceBuffer());
 	}
 
 	@Override
 	public final void onFailure(int statesCode, Header[] responceHeaders,	byte[] response, Throwable throwable) {
 		Ks3Error error = new Ks3Error(statesCode, response, throwable);
-		this.onFailure(statesCode,error, responceHeaders, response==null?"":new String(response), throwable);
+		this.onFailure(statesCode,error, responceHeaders, response==null?"":new String(response), throwable, getTraceBuffer());
 	}
 
 	@Override

@@ -13,9 +13,9 @@ public abstract class AbortMultipartUploadResponseHandler extends
 		Ks3HttpResponceHandler {
 
 	public abstract void onFailure(int statesCode, Ks3Error error,
-			Header[] responceHeaders, String response, Throwable paramThrowable);
+			Header[] responceHeaders, String response, Throwable paramThrowable, StringBuffer stringBuffer);
 
-	public abstract void onSuccess(int statesCode, Header[] responceHeaders);
+	public abstract void onSuccess(int statesCode, Header[] responceHeaders, StringBuffer stringBuffer);
 
 	@Override
 	public final void onSuccess(int statesCode, Header[] responceHeaders,
@@ -27,7 +27,7 @@ public abstract class AbortMultipartUploadResponseHandler extends
 		} catch (Ks3ClientException e) {
 			e.printStackTrace();
 		}
-		this.onSuccess(statesCode, responceHeaders);
+		this.onSuccess(statesCode, responceHeaders, getTraceBuffer());
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public abstract class AbortMultipartUploadResponseHandler extends
 			e.printStackTrace();
 		}
 		this.onFailure(statesCode, error, responceHeaders,
-				response == null ? "" : new String(response), throwable);
+				response == null ? "" : new String(response), throwable, getTraceBuffer());
 	}
 
 	@Override

@@ -18,9 +18,9 @@ import com.ksyun.ks3.util.Constants;
 
 public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResponceHandler {
 	
-	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable paramThrowable);
+	public abstract void onFailure(int statesCode, Ks3Error error, Header[] responceHeaders,String response, Throwable paramThrowable, StringBuffer stringBuffer);
 
-	public abstract void onSuccess(int statesCode, Header[] responceHeaders,InitiateMultipartUploadResult result);	
+	public abstract void onSuccess(int statesCode, Header[] responceHeaders,InitiateMultipartUploadResult result, StringBuffer stringBuffer);	
 	
 	@Override
 	public final void onSuccess(int statesCode, Header[] responceHeaders,byte[] response) {
@@ -32,7 +32,7 @@ public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResp
 		} catch (Ks3ClientException e) {
 			e.printStackTrace();
 		}
-		onSuccess(statesCode, responceHeaders, initialUploadResult);
+		onSuccess(statesCode, responceHeaders, initialUploadResult,getTraceBuffer());
 	}
 
 	public final void onFailure(int statesCode, Header[] responceHeaders,byte[] response, Throwable throwable) {
@@ -44,7 +44,7 @@ public abstract class InitiateMultipartUploadResponceHandler extends Ks3HttpResp
 		} catch (Ks3ClientException e) {
 			e.printStackTrace();
 		}
-		onFailure(statesCode,error, responceHeaders, response == null ? "":new String(response), throwable);
+		onFailure(statesCode,error, responceHeaders, response == null ? "":new String(response), throwable,getTraceBuffer());
 	}
 	
 	@Override

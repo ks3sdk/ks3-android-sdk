@@ -190,7 +190,8 @@ public class MainActivity extends Activity {
 
 									@Override
 									public void onTaskSuccess(int statesCode,
-											Header[] responceHeaders) {
+											Header[] responceHeaders,
+											StringBuffer traceBuffer) {
 										StringBuffer stringBuffer = new StringBuffer();
 										stringBuffer.append(
 												"upload file success,file = "
@@ -236,7 +237,8 @@ public class MainActivity extends Activity {
 											Ks3Error error,
 											Header[] responceHeaders,
 											String response,
-											Throwable paramThrowable) {
+											Throwable paramThrowable,
+											StringBuffer traceBuffer) {
 										// TODO Auto-generated method stub
 
 									}
@@ -259,7 +261,7 @@ public class MainActivity extends Activity {
 									@Override
 									public void onSuccess(int statesCode,
 											Header[] responceHeaders,
-											ListPartsResult listPartsResult) {
+											ListPartsResult listPartsResult,StringBuffer traceBuffer) {
 
 									}
 
@@ -268,7 +270,7 @@ public class MainActivity extends Activity {
 											Ks3Error error,
 											Header[] responceHeaders,
 											String response,
-											Throwable paramThrowable) {
+											Throwable paramThrowable,StringBuffer traceBuffer) {
 										// TODO Auto-generated method stub
 
 									}
@@ -747,7 +749,7 @@ public class MainActivity extends Activity {
 					@Override
 					public void onSuccess(int statesCode,
 							Header[] responceHeaders,
-							ObjectListing objectListing) {
+							ObjectListing objectListing,StringBuffer traceBuffer) {
 						StringBuffer stringBuffer = new StringBuffer();
 						stringBuffer.append(
 								"name   =    " + objectListing.getBucketName())
@@ -822,7 +824,7 @@ public class MainActivity extends Activity {
 					@Override
 					public void onFailure(int statesCode, Ks3Error error,
 							Header[] responceHeaders, String response,
-							Throwable paramThrowable) {
+							Throwable paramThrowable,StringBuffer traceBuffer) {
 
 					}
 				});
