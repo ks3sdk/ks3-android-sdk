@@ -11,6 +11,7 @@ import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.model.acl.Authorization;
 import com.ksyun.ks3.services.request.Ks3HttpRequest;
 import com.ksyun.ks3.util.Constants;
+import com.ksyun.ks3.util.ExceptionUtil;
 import com.ksyun.ks3.util.PhoneInfoUtils;
 import com.ksyun.ks3.util.PhoneInfoUtils.PhoneInfo;
 import com.loopj.android.http.AsyncHttpClient;
@@ -50,6 +51,8 @@ public class Ks3HttpExector {
 				try {
 					request.completeRequset(resultHandler);
 				} catch (Ks3ClientException e) {
+					resultHandler.appendTraceBuffer("Step ==> Client request set up error");
+					resultHandler.appendTraceBuffer(ExceptionUtil.getStackMsg(e));
 					resultHandler.onFailure(0, null, null, e);
 					return;
 				}
@@ -68,6 +71,8 @@ public class Ks3HttpExector {
 				try {
 					request.completeRequset(resultHandler);
 				} catch (Ks3ClientException e) {
+					resultHandler.appendTraceBuffer("Step ==> Client request set up error");
+					resultHandler.appendTraceBuffer(ExceptionUtil.getStackMsg(e));
 					resultHandler.onFailure(0, null, null, e);
 					return;
 				}
@@ -220,6 +225,8 @@ public class Ks3HttpExector {
 			if (result) {
 				doRequset(request, context, resultHandler, record, traceBuffer);
 			} else {
+				resultHandler.appendTraceBuffer("Step ==> Client request set up error");
+				resultHandler.appendTraceBuffer(ExceptionUtil.getStackMsg(throwable.getCause()));
 				resultHandler.onFailure(0, null, null, throwable);
 			}
 		}
