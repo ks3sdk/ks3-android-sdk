@@ -220,8 +220,13 @@ public abstract class Ks3HttpRequest implements Serializable {
 		return this.header.get(HttpHeaders.ContentMD5.toString());
 	}
 
-	/* ContentHandler Type */
-	protected void setContentType(String type) {
+	/* ContentHandler Type  ccy set it from protected to public*/
+	/**
+	 * 设置ContentType 
+	 * 上传默认为binary/octet-stream
+	 * @param type
+	 */
+	public void setContentType(String type) {
 
 		this.header.put(HttpHeaders.ContentType.toString(), type);
 	}
@@ -316,7 +321,7 @@ public abstract class Ks3HttpRequest implements Serializable {
 		httpMethod = HttpMethod.POST;
 		this.setContentMD5("");
 		this.addHeader(HttpHeaders.UserAgent, Constants.KS3_SDK_USER_AGENT);
-		this.setContentType("text/plain");
+//		this.setContentType("text/plain");
 		this.setDate(DateUtil.GetUTCTime());
 	}
 

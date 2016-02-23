@@ -64,7 +64,9 @@ public class PutObjectRequest extends Ks3HttpRequest implements
 
 	@Override
 	protected void setupRequest() throws Ks3ClientException {
-		this.setContentType("binary/octet-stream");
+		//ccy
+		if(TextUtils.isEmpty(getContentType()))
+			this.setContentType("binary/octet-stream");
 		try {
 			this.setRequestBody(new RepeatableFileInputStream(file));
 		} catch (FileNotFoundException e) {

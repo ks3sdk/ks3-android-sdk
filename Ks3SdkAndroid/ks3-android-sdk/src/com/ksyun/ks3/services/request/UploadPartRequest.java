@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.ksyun.ks3.auth.ValidateUtil;
@@ -57,7 +58,10 @@ public class UploadPartRequest extends Ks3HttpRequest {
 		this.setHttpMethod(HttpMethod.PUT);
 		this.addParams("uploadId", this.uploadId);
 		this.addParams("partNumber", String.valueOf(this.partNumber));
-		this.addHeader(HttpHeaders.ContentType, "binary/octet-stream");
+		//ccy
+		if(TextUtils.isEmpty(getContentType()))
+			this.addHeader(HttpHeaders.ContentType, "binary/octet-stream");
+		
 		MD5DigestCalculatingInputStream inputStream = null;
 		try {
 			inputStream = new MD5DigestCalculatingInputStream(
