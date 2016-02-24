@@ -1,6 +1,6 @@
 package com.ksyun.ks3.services;
 
-import com.loopj.android.http.AsyncHttpClient;
+import com.ksyun.loopj.android.http.AsyncHttpClient;
 
 public class AsyncHttpClientFactory {
 	private static AsyncHttpClient instance;

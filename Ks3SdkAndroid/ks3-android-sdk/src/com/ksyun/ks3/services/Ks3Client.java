@@ -2,7 +2,9 @@ package com.ksyun.ks3.services;
 
 import java.io.File;
 import java.util.List;
+
 import android.content.Context;
+
 import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.model.ObjectMetadata;
 import com.ksyun.ks3.model.PartETag;
@@ -26,7 +28,7 @@ import com.ksyun.ks3.services.request.ListPartsRequest;
 import com.ksyun.ks3.services.request.PutObjectRequest;
 import com.ksyun.ks3.services.request.UploadPartRequest;
 import com.ksyun.ks3.util.Constants;
-import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.ksyun.loopj.android.http.AsyncHttpResponseHandler;
 
 public class Ks3Client implements Ks3 {
 	private Ks3ClientConfiguration clientConfiguration;

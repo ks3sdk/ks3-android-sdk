@@ -3,11 +3,13 @@ package com.ksyun.ks3.services;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import org.apache.http.Header;
 import org.apache.http.entity.ByteArrayEntity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import com.ksyun.ks3.db.DBManager;
 import com.ksyun.ks3.db.RecordResult;
 import com.ksyun.ks3.exception.Ks3ClientException;
@@ -15,8 +17,9 @@ import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.GzipUtil;
 import com.ksyun.ks3.util.NetworkUtil;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.SyncHttpClient;
+import com.ksyun.loopj.android.http.AsyncHttpResponseHandler;
+import com.ksyun.loopj.android.http.SyncHttpClient;
+
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.text.TextUtils;

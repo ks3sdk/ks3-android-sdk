@@ -17,9 +17,10 @@ import org.json.JSONObject;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
+
 import com.ksyun.ks3.model.IpModel;
 import com.ksyun.ks3.util.Constants;
-import com.loopj.android.http.AsyncHttpClient;
+import com.ksyun.loopj.android.http.AsyncHttpClient;
 
 public class SafetyIpClient {
 	private static final int STATUS_OK = 200;

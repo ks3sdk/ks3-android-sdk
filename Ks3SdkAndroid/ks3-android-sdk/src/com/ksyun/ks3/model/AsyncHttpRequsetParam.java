@@ -1,10 +1,12 @@
 package com.ksyun.ks3.model;
 
 import java.util.Map;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+
 import com.ksyun.ks3.util.ModelUtil;
-import com.loopj.android.http.RequestParams;
+import com.ksyun.loopj.android.http.RequestParams;
 
 public class AsyncHttpRequsetParam {
 	private String url;

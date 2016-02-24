@@ -1,6 +1,7 @@
 package com.ksyun.ks3.services.handler;
 
 import java.io.File;
+
 import org.apache.http.Header;
 
 import android.util.Log;
@@ -15,7 +16,7 @@ import com.ksyun.ks3.services.LogClient;
 import com.ksyun.ks3.services.LogUtil;
 import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.Md5Utils;
-import com.loopj.android.http.FileAsyncHttpResponseHandler;
+import com.ksyun.loopj.android.http.FileAsyncHttpResponseHandler;
 
 public abstract class GetObjectResponseHandler extends
 		FileAsyncHttpResponseHandler {

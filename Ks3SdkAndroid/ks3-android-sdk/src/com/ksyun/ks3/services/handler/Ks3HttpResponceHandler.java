@@ -4,8 +4,8 @@ package com.ksyun.ks3.services.handler;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.ResponseHandlerInterface;
+import com.ksyun.loopj.android.http.AsyncHttpResponseHandler;
+import com.ksyun.loopj.android.http.ResponseHandlerInterface;
 
 public abstract class Ks3HttpResponceHandler extends AsyncHttpResponseHandler{
 	@Override

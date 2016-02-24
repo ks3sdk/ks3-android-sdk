@@ -3,9 +3,11 @@ package com.ksyun.ks3.services;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
+
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.LogRecord;
 import com.ksyun.ks3.model.acl.Authorization;
@@ -14,9 +16,9 @@ import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.ExceptionUtil;
 import com.ksyun.ks3.util.PhoneInfoUtils;
 import com.ksyun.ks3.util.PhoneInfoUtils.PhoneInfo;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestHandle;
+import com.ksyun.loopj.android.http.AsyncHttpClient;
+import com.ksyun.loopj.android.http.AsyncHttpResponseHandler;
+import com.ksyun.loopj.android.http.RequestHandle;
 
 public class Ks3HttpExector {
 	private AsyncHttpClient client;

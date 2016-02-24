@@ -3,11 +3,12 @@ package com.ksyun.ks3.util;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.ParseException;
 
-import com.loopj.android.http.RequestParams;
+import com.ksyun.loopj.android.http.RequestParams;
 
 public class ModelUtil {
 

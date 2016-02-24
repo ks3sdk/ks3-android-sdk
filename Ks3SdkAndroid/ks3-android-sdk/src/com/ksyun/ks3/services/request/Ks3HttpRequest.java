@@ -14,12 +14,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.StringEntity;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.ksyun.ks3.auth.AuthEvent;
 import com.ksyun.ks3.auth.AuthEventCode;
 import com.ksyun.ks3.auth.AuthUtils;
@@ -39,8 +42,8 @@ import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.DateUtil;
 import com.ksyun.ks3.util.RequestUtils;
 import com.ksyun.ks3.util.StringUtils;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestHandle;
+import com.ksyun.loopj.android.http.AsyncHttpResponseHandler;
+import com.ksyun.loopj.android.http.RequestHandle;
 
 public abstract class Ks3HttpRequest implements Serializable {
 
