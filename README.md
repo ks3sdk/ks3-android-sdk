@@ -2,6 +2,7 @@
 ---
 ## V.1.4.1 改动日志
 * Ks3HttpRequest中添加setContentType接口
+* 修改android-async-http的包名，防止客户端引用不同版本的库时冲突
 
 ## V.1.4.0 改动日志
 * 新增ResponseHandler中StringBuffer类型回调参数，将SDK每个请求的流程日志及错误信息回调给客户端，方便排查问题
