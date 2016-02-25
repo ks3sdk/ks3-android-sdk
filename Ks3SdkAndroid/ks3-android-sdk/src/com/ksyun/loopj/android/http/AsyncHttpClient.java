@@ -773,10 +773,10 @@ public class AsyncHttpClient {
 		if (contentType != null) {
 			if (((uriRequest instanceof HttpEntityEnclosingRequestBase))
 					&& (((HttpEntityEnclosingRequestBase) uriRequest)
-							.getEntity() != null))
-				Log.w("AsyncHttpClient",
-						"Passed contentType will be ignored because HttpEntity sets content type");
-			else {
+							.getEntity() != null)){
+//				Log.w("AsyncHttpClient",
+//						"Passed contentType will be ignored because HttpEntity sets content type");
+			}else {
 				uriRequest.setHeader("Content-Type", contentType);
 			}
 		}
