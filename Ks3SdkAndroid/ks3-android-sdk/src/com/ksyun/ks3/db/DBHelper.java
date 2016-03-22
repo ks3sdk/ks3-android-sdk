@@ -10,7 +10,7 @@ public class DBHelper extends SQLiteOpenHelper {
 									DBConstant.TABLE_NAME_LOG + " (" +
 									DBConstant.TABLE_LOG_COLUMN_ID + " INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
 									DBConstant.TABLE_LOG_COLUMN_CONTENT + " TEXT DEFAULT \"\")";
-
+	private static final String SQL_DROP_TABLE = "DROP TABLE IF EXISTS " + DBConstant.TABLE_NAME_LOG;
 	public DBHelper(Context context) {
 		super(context, DBConstant.DB_NAME, null, DBConstant.DB_VERSION);
 	}
@@ -22,7 +22,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+		db.execSQL(SQL_DROP_TABLE);
+		onCreate(db);
 	}
 
 }

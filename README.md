@@ -1,5 +1,8 @@
 #KS3 SDK for Android使用指南
 ---
+## V.1.4.2 改动日志
+* 修改统计日志数据库版本，修复跟视频云播放端和推流端数据统计SDK冲突问题
+
 ## V.1.4.1 改动日志
 * Ks3HttpRequest中添加setContentType接口
 * 修改android-async-http的包名，防止客户端引用不同版本的库时冲突
