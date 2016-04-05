@@ -1,6 +1,9 @@
 #KS3 SDK for Android使用指南
 ---
 ## V.1.4.2 改动日志
+* 修改SDK和demo里AuthUtils计算token的方法，增加contentType为空判断
+
+## V.1.4.2 改动日志
 * 修改统计日志数据库版本，修复跟视频云播放端和推流端数据统计SDK冲突问题
 
 ## V.1.4.1 改动日志
