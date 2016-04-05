@@ -54,6 +54,9 @@ public class AuthUtils {
 			String date, String contentMD5, String resource, String Headers,
 			String accessKeyId, String accessKeySecret)
 			throws SignatureException {
+		if(TextUtils.isEmpty(contentType)){
+			contentType = "";
+		}
 		List<String> signList = new ArrayList<String>();
 		signList.addAll(Arrays.asList(new String[] { httpMethod, contentMD5,
 				contentType, date }));
