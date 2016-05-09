@@ -83,7 +83,7 @@ public class Ks3Client implements Ks3 {
 		this.auth = new Authorization(accesskeyid, accesskeysecret);
 		this.clientConfiguration = clientConfiguration;
 		this.context = context;
-		init();
+//		init();
 	}
 
 	public Ks3Client(Authorization auth, Context context) {
@@ -95,7 +95,7 @@ public class Ks3Client implements Ks3 {
 		this.auth = auth;
 		this.clientConfiguration = clientConfiguration;
 		this.context = context;
-		init();
+//		init();
 	}
 
 	public Ks3Client(AuthListener listener, Context context) {
@@ -108,7 +108,7 @@ public class Ks3Client implements Ks3 {
 		this.authListener = listener;
 		this.clientConfiguration = clientConfiguration;
 		this.context = context;
-		init();
+//		init();
 	}
 
 	public Authorization getAuth() {
@@ -119,14 +119,20 @@ public class Ks3Client implements Ks3 {
 		this.auth = auth;
 	}
 
-	private void init() {
-		setEndpoint(Constants.ClientConfig_END_POINT);
-	}
+//	private void init(String endPoint) {
+//		setEndpoint(Constants.ClientConfig_END_POINT);
+//	}
 
 	public void setConfiguration(Ks3ClientConfiguration clientConfiguration) {
 		this.clientConfiguration = clientConfiguration;
 	}
 
+	/**
+	 * 创建完Ks3Client后应调用此方法设置endpoint;
+	 * endpoint 取值范围请参考：
+	 * http://ks3.ksyun.com/doc/api/index.html  --Region（区域）
+	 * @param endpoint
+	 */
 	public void setEndpoint(String endpoint) {
 		this.endpoint = endpoint;
 	}

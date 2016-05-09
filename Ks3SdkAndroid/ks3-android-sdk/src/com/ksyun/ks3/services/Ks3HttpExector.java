@@ -1,6 +1,7 @@
 package com.ksyun.ks3.services;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.ksyun.ks3.auth.AuthEvent;
@@ -19,6 +20,11 @@ public class Ks3HttpExector {
 			final AsyncHttpResponseHandler resultHandler,
 			Ks3ClientConfiguration clientConfiguration, final Context context,
 			String endpoint, AuthListener authListener, Boolean isUseAsyncMode) {
+		if(TextUtils.isEmpty(endpoint)){
+			Log.e(Constants.LOG_TAG, "The endpoint is empty,do you call setEndpoint() after you create Ks3Client?");
+			return;
+		}
+		
 		/* Configure AsyncHttpClient */
 		if (clientConfiguration != null) {
 			if (isUseAsyncMode) {

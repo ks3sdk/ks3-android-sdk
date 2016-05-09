@@ -279,7 +279,7 @@ public abstract class Ks3HttpRequest implements Serializable {
 	 */
 	public void completeRequset(Ks3AuthHandler ks3AuthHandler,
 			AsyncHttpResponseHandler handler) throws Ks3ClientException {
-
+		
 		this.validateParams();
 		setupRequestDefault();
 		setupRequest();

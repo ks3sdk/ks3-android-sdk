@@ -1,22 +1,13 @@
 package com.ks3.demo.main;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -39,13 +30,13 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
 import com.ks3.demo.main.BucketInpuDialog.OnBucketDialogListener;
 import com.ksyun.ks3.exception.Ks3Error;
 import com.ksyun.ks3.model.PartETag;
 import com.ksyun.ks3.model.result.CompleteMultipartUploadResult;
 import com.ksyun.ks3.model.result.InitiateMultipartUploadResult;
 import com.ksyun.ks3.model.result.ListPartsResult;
-import com.ksyun.ks3.services.AuthListener;
 import com.ksyun.ks3.services.Ks3Client;
 import com.ksyun.ks3.services.Ks3ClientConfiguration;
 import com.ksyun.ks3.services.handler.CompleteMultipartUploadResponseHandler;
@@ -280,6 +271,7 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
 		client = new Ks3Client(Constants.ACCESS_KEY__ID,
 				Constants.ACCESS_KEY_SECRET, UploadActivity.this);
+		client.setEndpoint("ks3-cn-beijing.ksyun.com");
 		client.setConfiguration(configuration);
 
 		// AuthListener方式初始化
