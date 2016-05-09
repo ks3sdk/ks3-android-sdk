@@ -203,6 +203,7 @@ onCalculateAuth（）回调方法参数说明：
 	    client = new Ks3Client(Constants.ACCESS_KEY_ID,Constants.ACCESS_KEY_SECRET, DummyActivity.this);
 	    configuration = Ks3ClientConfiguration.getDefaultConfiguration();
 		client.setConfiguration(configuration);
+		client.setEndpoint("ks3-cn-beijing.ksyun.com");
 
 ```
 
@@ -226,6 +227,7 @@ onCalculateAuth（）回调方法参数说明：
 		}, DummyActivity.this);
 	    configuration = Ks3ClientConfiguration.getDefaultConfiguration();
 		client.setConfiguration(configuration);
+		client.setEndpoint("ks3-cn-beijing.ksyun.com");
 
 ```
 ##SDK介绍及使用
