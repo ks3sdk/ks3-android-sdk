@@ -7,8 +7,6 @@ import java.util.Enumeration;
 
 import org.apache.http.conn.util.InetAddressUtils;
 
-import com.ksyun.ks3.model.LogRecord;
-
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -16,6 +14,8 @@ import android.os.Build;
 import android.provider.Settings.Secure;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+
+import com.ksyun.ks3.model.LogRecord;
 
 public class PhoneInfoUtils {
 
@@ -51,11 +51,11 @@ public class PhoneInfoUtils {
 	/**
 	 * 获取电话号码,不一定获取的到
 	 */
-	public static String getNativePhoneNumber(Context context) {
+	/*public static String getNativePhoneNumber(Context context) {
 		String NativePhoneNumber = null;
 		NativePhoneNumber = getTelephonyManager(context).getLine1Number();
 		return NativePhoneNumber;
-	}
+	}*/
 
 	public static boolean isNetworkAvailable(Context context) {
 		ConnectivityManager mgr = (ConnectivityManager) context
@@ -157,7 +157,7 @@ public class PhoneInfoUtils {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\nDeviceId(IMEI) = " + tm.getDeviceId());
 		sb.append("\nDeviceSoftwareVersion = " + tm.getDeviceSoftwareVersion());
-		sb.append("\nLine1Number = " + tm.getLine1Number());
+//		sb.append("\nLine1Number = " + tm.getLine1Number());
 		sb.append("\nNetworkCountryIso = " + tm.getNetworkCountryIso());
 		sb.append("\nNetworkOperator = " + tm.getNetworkOperator());
 		sb.append("\nNetworkOperatorName = " + tm.getNetworkOperatorName());
