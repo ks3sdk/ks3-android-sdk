@@ -50,7 +50,7 @@ public class MySSLSocketFactory extends org.apache.http.conn.ssl.SSLSocketFactor
 
 			@Override
 			public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
+				 chain[0].checkValidity();
 			}
 
 			@Override
