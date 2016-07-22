@@ -41,8 +41,15 @@ public class Ks3HttpExector {
 			}
 		}
 		request.setAuthorization(auth);
+		//添加代码
 		if (request.getBucketname() != null) {
-			request.setEndpoint(request.getBucketname() + "." + endpoint);
+			if(clientConfiguration.getDomainMode()){
+				request.setEndpoint(endpoint);
+			}else{
+				request.setEndpoint(request.getBucketname() + "." + endpoint);
+			}
+			
+		
 		} else {
 			request.setEndpoint(endpoint);
 		}
@@ -75,6 +82,8 @@ public class Ks3HttpExector {
 					return;
 				}
 
+				
+				
 				doRequset(request, context, resultHandler);
 			}
 		}

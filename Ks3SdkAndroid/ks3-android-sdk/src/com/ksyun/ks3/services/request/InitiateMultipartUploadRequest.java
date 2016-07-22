@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import android.widget.Toast;
+
 import com.ksyun.ks3.exception.Ks3ClientException;
 import com.ksyun.ks3.model.HttpHeaders;
 import com.ksyun.ks3.model.HttpMethod;
@@ -30,7 +32,11 @@ public class InitiateMultipartUploadRequest extends Ks3HttpRequest {
 	protected void setupRequest() throws Ks3ClientException {
 		this.setHttpMethod(HttpMethod.POST);
 		this.addParams("uploads", null);
-		this.addHeader(HttpHeaders.ContentType, "text/plain");
+		this.addHeader(HttpHeaders.ContentType, "image/jpg");
+		System.out.println(HttpHeaders.values());
+		//Toast.makeText(context, text, duration)
+		//Toast.makeText(HttpHeaders.values(), "Toast text, normal", Toast.LENGTH_SHORT).show();  
+		
 		for (Entry<Meta, String> entry : this.objectMeta.getMetadata()
 				.entrySet()) {
 			if (!entry.getKey().equals(Meta.ContentLength)) {

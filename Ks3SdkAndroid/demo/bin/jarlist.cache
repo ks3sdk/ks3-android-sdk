@@ -1,3 +1,7 @@
 # cache for current jar dependency. DO NOT EDIT.
 # format is <lastModified> <length> <SHA-1> <path>
 # Encoding is UTF-8
+1462724834000 621451 5896b0a4e377ac4242eb2bc785220c1c4fc052f4 E:\ks3-android-sdk-master1\ks3-android-sdk-master1\Ks3SdkAndroid\demo\libs\android-support-v4.jar
+1462724834000 621451 5896b0a4e377ac4242eb2bc785220c1c4fc052f4 E:\ks3-android-sdk-master1\ks3-android-sdk-master1\Ks3SdkAndroid\ks3-android-sdk\libs\android-support-v4.jar
+1462724834000 95377 a845a88238be0b5be9d238652c1bc0605ef91f52 E:\ks3-android-sdk-master1\ks3-android-sdk-master1\Ks3SdkAndroid\ks3-android-sdk\libs\android-async-http-1.4.6.jar
+1462724834000 95377 a845a88238be0b5be9d238652c1bc0605ef91f52 E:\ks3-android-sdk-master1\ks3-android-sdk-master1\Ks3SdkAndroid\demo\libs\android-async-http-1.4.6.jar

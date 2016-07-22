@@ -83,7 +83,7 @@ public class Ks3Client implements Ks3 {
 		this.auth = new Authorization(accesskeyid, accesskeysecret);
 		this.clientConfiguration = clientConfiguration;
 		this.context = context;
-//		init();
+	//init();
 	}
 
 	public Ks3Client(Authorization auth, Context context) {

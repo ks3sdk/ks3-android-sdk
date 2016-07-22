@@ -25,6 +25,16 @@ public class Ks3ClientConfiguration {
 	private int maxRetrytime;
 	private int retryTimeOut;
 	private static Ks3ClientConfiguration instantce = null;
+	//添加代码
+	private Boolean domainMode = false;  //true for customized, false for predefined
+	public Boolean getDomainMode() {
+		return domainMode;
+	}
+
+	public void setDomainMode(Boolean domainMode) {
+		this.domainMode = domainMode;
+	}
+
 
 	private Ks3ClientConfiguration() {
 	}

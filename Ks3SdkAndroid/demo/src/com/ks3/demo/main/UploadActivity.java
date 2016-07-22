@@ -271,7 +271,11 @@ public class UploadActivity extends Activity implements OnItemClickListener {
 		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
 		client = new Ks3Client(Constants.ACCESS_KEY__ID,
 				Constants.ACCESS_KEY_SECRET, UploadActivity.this);
-		client.setEndpoint("ks3-cn-beijing.ksyun.com");
+		//如果用户需要通过自己的域名上传，可以将Endpoint设置成自己域名
+		//configuration.setDomainMode(true);
+		//client.setEndpoint("***.***.****");
+	
+		client.setEndpoint("ks3-cn-shanghai.ksyun.com");
 		client.setConfiguration(configuration);
 
 		// AuthListener方式初始化

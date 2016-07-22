@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 /**
  * 
- * 自定义Dialog
+ * 自定义Dialog，Bucket输入对话框
  * 
  */
 public class BucketInpuDialog extends Dialog implements

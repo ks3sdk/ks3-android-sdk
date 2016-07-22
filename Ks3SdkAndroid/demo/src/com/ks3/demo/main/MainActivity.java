@@ -296,7 +296,7 @@ public class MainActivity extends Activity {
 		// AK&SK形式直接初始化，仅建议测试时使用，正式环境下请替换AuthListener方式
 		client = new Ks3Client(Constants.ACCESS_KEY__ID,
 				Constants.ACCESS_KEY_SECRET, MainActivity.this);
-		client.setEndpoint("ks3-cn-beijing.ksyun.com");
+		client.setEndpoint("ks3-cn-shanghai.ksyun.com");
 		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
 		client.setConfiguration(configuration);
 
@@ -348,7 +348,7 @@ public class MainActivity extends Activity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-
+//这块有疑问，没进行操作
 	protected void getObject() {
 		Toast.makeText(MainActivity.this, "Please See Download Activity",
 				Toast.LENGTH_SHORT).show();
