@@ -529,7 +529,7 @@ public abstract class Ks3HttpRequest implements Serializable {
 				replacement = "%2A";
 			} else if ("%7E".equals(replacement)) {
 				replacement = "~";
-			} else if (path && "%2F".equals(replacement)) {
+			} else if ("%2F".equals(replacement)) {
 				replacement = "/";
 			}
 
