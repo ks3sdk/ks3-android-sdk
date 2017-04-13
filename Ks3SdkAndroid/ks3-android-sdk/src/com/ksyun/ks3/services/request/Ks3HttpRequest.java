@@ -70,7 +70,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 
 		pattern.append(Pattern.quote("+")).append("|")
 				.append(Pattern.quote("*")).append("|")
-				.append(Pattern.quote("%7E")).append("|");
+				.append(Pattern.quote("%7E")).append("|")
+				.append(Pattern.quote("%2F"));
 
 		ENCODED_CHARACTERS_PATTERN = Pattern.compile(pattern.toString());
 	}
@@ -274,12 +275,12 @@ public abstract class Ks3HttpRequest implements Serializable {
 
 	/**
 	 * Important, Should call it when completed a request
-	 * 
+	 *
 	 * @param ks3AuthHandler
 	 */
 	public void completeRequset(Ks3AuthHandler ks3AuthHandler,
 			AsyncHttpResponseHandler handler) throws Ks3ClientException {
-		
+
 		this.validateParams();
 		setupRequestDefault();
 		setupRequest();
@@ -528,6 +529,8 @@ public abstract class Ks3HttpRequest implements Serializable {
 				replacement = "%2A";
 			} else if ("%7E".equals(replacement)) {
 				replacement = "~";
+			} else if ("%2F".equals(replacement)) {
+				replacement = "/";
 			}
 
 			matcher.appendReplacement(buffer, replacement);
