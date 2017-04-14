@@ -36,7 +36,9 @@ import com.ksyun.ks3.model.acl.Authorization;
 import com.ksyun.ks3.model.transfer.MD5DigestCalculatingInputStream;
 import com.ksyun.ks3.model.transfer.RequestProgressListener;
 import com.ksyun.ks3.services.AuthListener;
+import com.ksyun.ks3.services.AuthResult;
 import com.ksyun.ks3.services.Ks3AuthHandler;
+import com.ksyun.ks3.services.ServerDateAuthListener;
 import com.ksyun.ks3.util.ByteUtil;
 import com.ksyun.ks3.util.Constants;
 import com.ksyun.ks3.util.DateUtil;
@@ -70,8 +72,7 @@ public abstract class Ks3HttpRequest implements Serializable {
 
 		pattern.append(Pattern.quote("+")).append("|")
 				.append(Pattern.quote("*")).append("|")
-				.append(Pattern.quote("%7E")).append("|")
-				.append(Pattern.quote("%2F"));
+				.append(Pattern.quote("%7E")).append("|");
 
 		ENCODED_CHARACTERS_PATTERN = Pattern.compile(pattern.toString());
 	}
@@ -275,12 +276,12 @@ public abstract class Ks3HttpRequest implements Serializable {
 
 	/**
 	 * Important, Should call it when completed a request
-	 *
+	 * 
 	 * @param ks3AuthHandler
 	 */
 	public void completeRequset(Ks3AuthHandler ks3AuthHandler,
 			AsyncHttpResponseHandler handler) throws Ks3ClientException {
-
+		
 		this.validateParams();
 		setupRequestDefault();
 		setupRequest();
@@ -399,7 +400,7 @@ public abstract class Ks3HttpRequest implements Serializable {
 			sBuffer.append(this.getContentMD5()).append("\n");
 			sBuffer.append(this.getContentType()).append("\n");
 			sBuffer.append(this.getDate()).append("\n");
-			sBuffer.append(AuthUtils.CanonicalizedKSSHeaders(this));
+			sBuffer.append(AuthUtils.CanonicalizedKSSHeaders(this)).append("\n");
 			sBuffer.append(AuthUtils.CanonicalizedKSSResource(this));
 			String signStr = sBuffer.toString();
 			Log.i(Constants.LOG_TAG, "the correct StringToSign should be :"
@@ -408,11 +409,24 @@ public abstract class Ks3HttpRequest implements Serializable {
 				Log.i(Constants.LOG_TAG, "the correct auth string should be "
 						+ new DefaultSigner().calculate(authorization, this).trim());
 			}
-			authorizationStr = authListener.onCalculateAuth(this
-					.getHttpMethod().toString(), this.getContentType(), this
-					.getDate(), this.getContentMD5(), AuthUtils
-					.CanonicalizedKSSResource(this), AuthUtils
-					.CanonicalizedKSSHeaders(this));
+			AuthResult authResult = null;
+			if (authListener instanceof ServerDateAuthListener){
+				authResult = ((ServerDateAuthListener)authListener).onCalculateAuthWithServerDate(this
+						.getHttpMethod().toString(), this.getContentType(), this
+						.getDate(), this.getContentMD5(), AuthUtils
+						.CanonicalizedKSSResource(this), AuthUtils
+						.CanonicalizedKSSHeaders(this));
+				authorizationStr = authResult.getToken();
+				setDate(authResult.getDate());
+			} else {
+				authorizationStr = authListener.onCalculateAuth(this
+						.getHttpMethod().toString(), this.getContentType(), this
+						.getDate(), this.getContentMD5(), AuthUtils
+						.CanonicalizedKSSResource(this), AuthUtils
+						.CanonicalizedKSSHeaders(this));
+			}
+			if(authorizationStr==null)
+				authorizationStr = "";
 			Log.i(Constants.LOG_TAG, "app server return auth string is  :"
 					+ authorizationStr.trim());
 			this.addHeader(HttpHeaders.Authorization.toString(),
@@ -529,8 +543,6 @@ public abstract class Ks3HttpRequest implements Serializable {
 				replacement = "%2A";
 			} else if ("%7E".equals(replacement)) {
 				replacement = "~";
-			} else if ("%2F".equals(replacement)) {
-				replacement = "/";
 			}
 
 			matcher.appendReplacement(buffer, replacement);
