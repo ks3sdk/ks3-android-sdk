@@ -220,19 +220,18 @@ public abstract class Ks3HttpRequest implements Serializable {
 	}
 
 	public String getContentMD5() {
-
-		return this.header.get(HttpHeaders.ContentMD5.toString());
+		String res = this.header.get(HttpHeaders.ContentMD5.toString());
+		return res==null ? "" : res;
 	}
 
 	/* ContentHandler Type */
-	protected void setContentType(String type) {
-
+	public void setContentType(String type) {
 		this.header.put(HttpHeaders.ContentType.toString(), type);
 	}
 
 	public String getContentType() {
-
-		return this.header.get(HttpHeaders.ContentType.toString());
+		String res = this.header.get(HttpHeaders.ContentType.toString());
+		return res==null ? "" : res;
 	}
 
 	/* Date */
@@ -285,6 +284,9 @@ public abstract class Ks3HttpRequest implements Serializable {
 		this.validateParams();
 		setupRequestDefault();
 		setupRequest();
+		if(StringUtils.isBlank(getContentType())){
+			setContentType("text/plain");
+		}
 		if (handler instanceof RequestProgressListener) {
 			this.progressListener = (RequestProgressListener) handler;
 		}
@@ -311,14 +313,12 @@ public abstract class Ks3HttpRequest implements Serializable {
 	}
 
 	private void setupRequestDefault() {
-
 		url = getEndpoint().toString();
 		if (url.startsWith("http://") || url.startsWith("https://"))
 			url = url.replace("http://", "").replace("https://", "");
 		httpMethod = HttpMethod.POST;
 		this.setContentMD5("");
 		this.addHeader(HttpHeaders.UserAgent, Constants.KS3_SDK_USER_AGENT);
-		this.setContentType("text/plain");
 		this.setDate(DateUtil.GetUTCTime());
 	}
 
@@ -552,5 +552,11 @@ public abstract class Ks3HttpRequest implements Serializable {
 		return buffer.toString();
 
 	}
+
+    @Override
+    protected void finalize() throws Throwable {
+        Log.d("Ks3HttpRequest", "Ks3HttpRequest finalize:"+this);
+        super.finalize();
+    }
 
 }

@@ -1,5 +1,7 @@
 package com.ksyun.ks3.services.handler;
 
+import android.util.Log;
+
 import org.apache.http.Header;
 
 import com.ksyun.ks3.exception.Ks3Error;
@@ -45,8 +47,12 @@ public abstract class PutObjectResponseHandler extends Ks3HttpResponceHandler im
 	
 	@Override
 	public final void onProgress(int bytesWritten, int totalSize) {}
-	
-	
+
+	@Override
+	protected void finalize() throws Throwable {
+		Log.d("PutObjectResponseHandler", "PutObjectResponseHandler finalize:"+this);
+		super.finalize();
+	}
 	
 	
 }

@@ -57,7 +57,8 @@ public class UploadPartRequest extends Ks3HttpRequest {
 		this.setHttpMethod(HttpMethod.PUT);
 		this.addParams("uploadId", this.uploadId);
 		this.addParams("partNumber", String.valueOf(this.partNumber));
-		this.addHeader(HttpHeaders.ContentType, "binary/octet-stream");
+		if(StringUtils.isBlank(getContentType()))
+			this.addHeader(HttpHeaders.ContentType, "application/octet-stream");
 		MD5DigestCalculatingInputStream inputStream = null;
 		try {
 			inputStream = new MD5DigestCalculatingInputStream(

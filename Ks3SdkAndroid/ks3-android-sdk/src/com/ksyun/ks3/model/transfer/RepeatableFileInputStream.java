@@ -1,5 +1,7 @@
 package com.ksyun.ks3.model.transfer;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -80,5 +82,11 @@ public class RepeatableFileInputStream extends InputStream{
         int count = fis.read(arg0, arg1, arg2);
         bytesReadPastMarkPoint += count;
         return count;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        Log.d("RepeatableFileInputStream", "RepeatableFileInputStream finalize:"+this);
+        super.finalize();
     }
 }

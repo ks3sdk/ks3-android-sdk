@@ -32,11 +32,8 @@ public class InitiateMultipartUploadRequest extends Ks3HttpRequest {
 	protected void setupRequest() throws Ks3ClientException {
 		this.setHttpMethod(HttpMethod.POST);
 		this.addParams("uploads", null);
-		this.addHeader(HttpHeaders.ContentType, "image/jpg");
-		System.out.println(HttpHeaders.values());
-		//Toast.makeText(context, text, duration)
-		//Toast.makeText(HttpHeaders.values(), "Toast text, normal", Toast.LENGTH_SHORT).show();  
-		
+		if(StringUtils.isBlank(getContentType()))
+			this.addHeader(HttpHeaders.ContentType, "application/octet-stream");
 		for (Entry<Meta, String> entry : this.objectMeta.getMetadata()
 				.entrySet()) {
 			if (!entry.getKey().equals(Meta.ContentLength)) {

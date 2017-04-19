@@ -1,5 +1,7 @@
 package com.ksyun.ks3.auth;
 
+import android.util.Log;
+
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,14 +81,30 @@ public class RepeatableInputStreamRequestEntity extends BasicHttpEntity {
 			if (originalException == null)
 				originalException = ioe;
 			throw originalException;
+		} finally {
+			progressLisener = null;
+			content.close();
+			output.close();
 		}
 	}
+
+	@Override
+    protected void finalize() throws Throwable {
+        Log.d("RepeatableInputStreamRequestEntity", "RepeatableInputStreamRequestEntity finalize:"+this);
+        super.finalize();
+    }
 	
 	public static class CountingOutputStream extends FilterOutputStream {
 
         private final RequestProgressListener listener;
         private long uploaded;
         private long length ;
+
+        @Override
+        protected void finalize() throws Throwable {
+            Log.d("CountingOutputStream", "CountingOutputStream finalize:"+this);
+            super.finalize();
+        }
 
         CountingOutputStream(final OutputStream out,long length, final RequestProgressListener listener) {
             super(out);
