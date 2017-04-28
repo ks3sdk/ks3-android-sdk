@@ -207,6 +207,7 @@ public class MultiUploader {
 
     public void reUpload(final List<PartETag> uploadedParts){
         final List<Integer> leftParts = getLeftParts(uploadedParts);
+        final int N = leftParts.size() + uploadedParts.size();
         doneParts.addAll(uploadedParts);
         if(leftParts.isEmpty())
             mHandler.sendEmptyMessage(PARTS_DONE);
@@ -219,7 +220,7 @@ public class MultiUploader {
                 public void onSuccess(int statesCode, Header[] responceHeaders, PartETag result, String key, int partNo, String uploadId) {
                     result.setPartNumber(partNo);
                     doneParts.add(result);
-                    if(doneParts.size() == leftParts.size())
+                    if(doneParts.size() == N)
                         mHandler.sendEmptyMessage(PARTS_DONE);
                 }
                 @Override
