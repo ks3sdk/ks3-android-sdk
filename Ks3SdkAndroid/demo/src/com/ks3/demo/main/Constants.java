@@ -13,9 +13,13 @@ public class Constants {
 	protected static final String UPLOAD_ID = "YOUR_UPLOAD_ID";
 	// public static final String APP_SERTVER_HOST =
 	// "http://192.168.231.49:11911";
+	public static final String TEST_MULTIUPLOAD_FILE = "Your file in sdcard path";
+	public static final String TEST_MULTIUPLOAD_BUCKET = "Your bucket name";
+
 	public static final String APP_SERTVER_HOST = "YOUR_APP_SERVER_HOST";
 	// 测试用AK&SK
-	public static final String ACCESS_KEY__ID = "S1guCl0KF/r3cvqa5YHG";
-	public static final String ACCESS_KEY_SECRET = "CVpFTtt+tMlxwkg1PtzmD9p1rxHxAu0enzNBbk3F";
+	public static final String ACCESS_KEY__ID = "Your ak";
+	public static final String ACCESS_KEY_SECRET = "Your sk";
+	public static final String END_POINT = "ks3-cn-beijing.ksyun.com";
 	public static final long MULTI_UPLOAD_THREADHOLD = 16 * 1024 * 1024;
 }

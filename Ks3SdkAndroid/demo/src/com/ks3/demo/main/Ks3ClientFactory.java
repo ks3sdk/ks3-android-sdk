@@ -19,6 +19,7 @@ public class Ks3ClientFactory {
 			ks3Client = new Ks3Client(Constants.ACCESS_KEY__ID,
 					Constants.ACCESS_KEY_SECRET,context);
 			ks3Client.setConfiguration(configuration);
+			ks3Client.setEndpoint(Constants.END_POINT);
 		}
 		return ks3Client;
 	}

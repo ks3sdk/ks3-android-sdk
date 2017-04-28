@@ -101,6 +101,8 @@ public class MainActivity extends Activity {
 	// Download
 	public static final int DOWNLOAD = 14;
 	public static final int LIST_PART = 15;
+	public static final int MultiPartUpload = 16;
+
 	private BucketInpuDialog bucketInpuDialog;
 	private BucketObjectInpuDialog bucketObjectInpuDialog;
 
@@ -175,6 +177,12 @@ public class MainActivity extends Activity {
 					break;
 				case LIST_PART:
 					listParts();
+					break;
+				case MultiPartUpload:
+					Intent multi_upload = new Intent(MainActivity.this,
+						MultiUploadActivity.class);
+					startActivity(multi_upload);
+					break;
 				default:
 					break;
 				}
@@ -296,7 +304,7 @@ public class MainActivity extends Activity {
 		// AK&SK形式直接初始化，仅建议测试时使用，正式环境下请替换AuthListener方式
 		client = new Ks3Client(Constants.ACCESS_KEY__ID,
 				Constants.ACCESS_KEY_SECRET, MainActivity.this);
-		client.setEndpoint("ks3-cn-shanghai.ksyun.com");
+		client.setEndpoint("ks3-cn-beijing.ksyun.com");
 		configuration = Ks3ClientConfiguration.getDefaultConfiguration();
 		client.setConfiguration(configuration);
 
