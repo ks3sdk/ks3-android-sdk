@@ -4,7 +4,7 @@
 ###依赖库
 本SDK使用了loopj/android-async-http请求库，使用前请先下载对应的jar包，并导入工程
 
-* [android-async-http:1.4.6](https://github.com/loopj/android-async-http)
+* [android-async-http:1.4.9](https://github.com/loopj/android-async-http)
 
 ###SDK使用准备
 
@@ -21,7 +21,7 @@
 ```
 
 ###SDK配置
-SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.0.3.jar*，以及依赖库文件，放入工程libs文件下。
+SDK以jar包形式呈现。将releases文件夹下*ks3-android-sdk-1.4.3.jar*，以及依赖库文件，放入工程libs文件下。
 
 也可以下载[源码:](https://github.com/ks3sdk/ks3-android-sdk/tree/master/Ks3SdkAndroid/ks3-android-sdk)，以Library库形式添加。
 
