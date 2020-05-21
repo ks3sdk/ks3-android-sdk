@@ -1,3 +1,7 @@
+#最新版 KS3 SDK for Android-1.4.3 请移步新地址
+
+* [KS3 SDK for Android-1.4.3](https://github.com/ks3sdk/new_ks3sdk_android)
+
 #KS3 SDK for Android使用指南
 ---
 ##开发前准备
